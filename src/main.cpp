@@ -9,7 +9,13 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 #pragma GCC diagnostic pop
 
+void error_callback(int error, const char* description) {
+  std::cerr << "Error: " << error << ", Description: " << description << std::endl;
+}
+
 int main() {
+  glfwSetErrorCallback(error_callback);
+
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
