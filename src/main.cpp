@@ -13,10 +13,25 @@ void error_callback(int error, const char* description) {
   std::cerr << "Error: " << error << ", Description: " << description << std::endl;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  std::cout
+    << "key: " << key
+    << " scancode: " << scancode
+    << " action: " << action
+    << " mods: " << mods << std::endl;
+  if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, 1);
+  }
+}
+#pragma GCC diagnostic pop
+
 int main() {
   glfwSetErrorCallback(error_callback);
 
   glfwInit();
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -28,6 +43,11 @@ int main() {
     return -1;
   }
   glfwMakeContextCurrent(window);
+
+  // glfwSetInputMode(@glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+  glfwSetKeyCallback(window, key_callback);
+  // glfwSetScrollCallback(@glfw_window, scroll_callback)
+  // glfwSetCursorPosCallback(@glfw_window, mouse_callback)
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cerr << "Failed to initialize GLAD" << std::endl;
