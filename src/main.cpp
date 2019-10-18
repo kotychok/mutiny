@@ -27,6 +27,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 #pragma GCC diagnostic pop
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+  std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
+}
+#pragma GCC diagnostic pop
+
 int main() {
   glfwSetErrorCallback(error_callback);
 
@@ -46,7 +53,7 @@ int main() {
 
   // glfwSetInputMode(@glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
   glfwSetKeyCallback(window, key_callback);
-  // glfwSetScrollCallback(@glfw_window, scroll_callback)
+  glfwSetScrollCallback(window, scroll_callback);
   // glfwSetCursorPosCallback(@glfw_window, mouse_callback)
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
