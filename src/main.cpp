@@ -62,7 +62,14 @@ int main() {
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+  glfwSetTime(0.0);
+  double last_time = 0.0;
   while(!glfwWindowShouldClose(window)) {
+    double time = glfwGetTime();
+    double dt = time - last_time;
+    last_time = time;
+    std::cout << "dt: " << dt << std::endl;
+
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
