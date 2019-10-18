@@ -2,19 +2,16 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-  glViewport(0, 0, width, height);
-}
-#pragma GCC diagnostic pop
-
 void error_callback(int error, const char* description) {
   std::cerr << "Error: " << error << ", Description: " << description << std::endl;
 }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
   std::cout
     << "key: " << key
@@ -25,12 +22,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     glfwSetWindowShouldClose(window, 1);
   }
 }
-#pragma GCC diagnostic pop
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
   std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
+}
+
+void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+  std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
 #pragma GCC diagnostic pop
 
@@ -51,10 +49,10 @@ int main() {
   }
   glfwMakeContextCurrent(window);
 
-  // glfwSetInputMode(@glfw_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetKeyCallback(window, key_callback);
   glfwSetScrollCallback(window, scroll_callback);
-  // glfwSetCursorPosCallback(@glfw_window, mouse_callback)
+  glfwSetCursorPosCallback(window, mouse_callback);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cerr << "Failed to initialize GLAD" << std::endl;
