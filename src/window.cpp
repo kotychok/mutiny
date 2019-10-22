@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include "renderer.h"
 #include "window.h"
 
 void error_callback(int error, const char* description) {
@@ -65,6 +66,8 @@ int Window::show() {
     return -1;
   }
 
+  Renderer* renderer = new Renderer();
+
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -74,12 +77,10 @@ int Window::show() {
     double time = glfwGetTime();
     double dt = time - last_time;
     last_time = time;
-    std::cout << "dt: " << dt << std::endl;
 
     glfwPollEvents();
 
-    glClearColor(0.2f, 0.3f, 0.3f, 0.1f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    renderer->render(dt);
 
     glfwSwapBuffers(window);
   }
