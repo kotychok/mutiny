@@ -3,25 +3,15 @@
 #include <iostream>
 
 #include "renderer.h"
+#include "shader.h"
 
 Renderer::Renderer() {
   std::cout << "Renderer created" << std::endl;
   glGenBuffers(1, &vbo);
   glGenVertexArrays(1, &vao);
 
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
-
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-
-  unsigned int shaderProgram { glCreateProgram() };
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-  glUseProgram(shaderProgram);
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
+  Shader myShader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag");
+  myShader.use();
 }
 
 void Renderer::render(double dt) {
