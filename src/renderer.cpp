@@ -44,17 +44,25 @@ void Renderer::render(double dt) {
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
   glm::mat4 view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
   glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
-  glm::mat4 trans = projection * view * model;
-  myShader.setMat4("transform", trans);
+  myShader.setMat4("view", view);
+  myShader.setMat4("projection", projection);
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  glDrawArrays(GL_TRIANGLES, 0, 36);
+
+  for (unsigned int i = 0; i < 10; i++) {
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, cubePositions[i]);
+    float angle = 20.0f * i;
+    if (i % 3 == 0) {
+      angle *= glfwGetTime();
+    }
+    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+    myShader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+  }
 }
