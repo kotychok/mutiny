@@ -16,22 +16,22 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  std::cout
-    << "key: " << key
-    << " scancode: " << scancode
-    << " action: " << action
-    << " mods: " << mods << std::endl;
+  // std::cout
+    // << "key: " << key
+    // << " scancode: " << scancode
+    // << " action: " << action
+    // << " mods: " << mods << std::endl;
   if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, 1);
   }
 }
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-  std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
+  // std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
-  std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
+  // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
 #pragma GCC diagnostic pop
 
