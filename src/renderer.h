@@ -68,7 +68,11 @@ class Renderer {
     unsigned int vbo {};
     unsigned int vao {};
     Shader myShader { Shader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag") };
+    glm::vec3 cameraPos { glm::vec3(0.0f, 0.0f,  3.0f) };
+    glm::vec3 cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) };
+    glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
   public:
     Renderer();
     void render(double dt);
+    void processInput(GLFWwindow* window, float dt);
 };

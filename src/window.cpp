@@ -80,6 +80,7 @@ int Window::show() {
 
     glfwPollEvents();
 
+    renderer->processInput(window, dt);
     renderer->render(dt);
 
     glfwSwapBuffers(window);
