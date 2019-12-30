@@ -6,42 +6,29 @@
 
 #include "renderer.h"
 #include "shader.h"
+#include "texture.h"
 
 Renderer::Renderer() {
   std::cout << "Renderer created" << std::endl;
+
+  stbi_set_flip_vertically_on_load(true);
+
   glGenBuffers(1, &vbo);
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &ebo);
 
-  unsigned int texture;
-  glGenTextures(1, &texture);
-
+  // 1st Texture
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  Texture containerTexture("./assets/container.jpg");
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  int width, height, nrChannels;
-  unsigned char *data = stbi_load("./assets/container.jpg", &width, &height, &nrChannels, 0);
-  if (data) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // glTexStorage2D segfaults for some reason.
-    //
-    // glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB8, width, height);
-    // glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
-  } else {
-    std::cerr << "ERROR: Failed to load image" << std::endl;
-  }
-  stbi_image_free(data);
+  // 2nd texture
+  glActiveTexture(GL_TEXTURE1);
+  Texture awesomefaceTexture("./assets/awesomeface.png");
 
   Shader myShader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag");
   myShader.use();
   myShader.setInt("ourTexture", 0);
+  myShader.setInt("texture2", 1);
 }
 
 void Renderer::render(double dt) {
