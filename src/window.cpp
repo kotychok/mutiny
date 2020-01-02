@@ -5,17 +5,17 @@
 #include "renderer.h"
 #include "window.h"
 
-void error_callback(int error, const char* description) {
+void errorCallback(int error, const char* description) {
   std::cerr << "Error: " << error << ", Description: " << description << std::endl;
 }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
   // std::cout
     // << "key: " << key
     // << " scancode: " << scancode
@@ -26,11 +26,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   }
 }
 
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
   // std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+  // renderer.mouseCallback(window, xpos, ypos);
   // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
 #pragma GCC diagnostic pop
@@ -40,7 +41,7 @@ Window::Window() {
 }
 
 int Window::show() {
-  glfwSetErrorCallback(error_callback);
+  glfwSetErrorCallback(errorCallback);
 
   glfwInit();
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -57,9 +58,9 @@ int Window::show() {
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  glfwSetKeyCallback(window, key_callback);
-  glfwSetScrollCallback(window, scroll_callback);
-  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetKeyCallback(window, keyCallback);
+  glfwSetScrollCallback(window, scrollCallback);
+  glfwSetCursorPosCallback(window, mouseCallback);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cerr << "Failed to initialize GLAD" << std::endl;
@@ -69,7 +70,7 @@ int Window::show() {
   Renderer* renderer = new Renderer();
 
   glViewport(0, 0, 800, 600);
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   glfwSetTime(0.0);
   double last_time = 0.0;
