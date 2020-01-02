@@ -80,4 +80,10 @@ void Renderer::processInput(GLFWwindow* window, float dt) {
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
     cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
   }
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+    cameraPos -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+    cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+  }
 }
