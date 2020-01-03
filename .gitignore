@@ -1,2 +1,4 @@
-build
 .gdb_history
+build
+core
+minimal_example/minimal
