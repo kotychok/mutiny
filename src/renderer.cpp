@@ -49,16 +49,13 @@ void Renderer::render(double dt) {
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-  for (unsigned int i = 0; i < 10; i++) {
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, cubePositions[i]);
-    float angle = 20.0f * i;
-    if (i % 3 == 0) {
-      angle *= glfwGetTime();
+  for (unsigned int x = 0; x < 10; x++) {
+    for (unsigned int z = 0; z < 10; z++) {
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, glm::vec3(x, 0, z));
+      myShader.setMat4("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
     }
-    model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-    myShader.setMat4("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
   }
 }
 
