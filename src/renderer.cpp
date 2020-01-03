@@ -88,6 +88,36 @@ void Renderer::processInput(GLFWwindow* window, float dt) {
   }
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  std::cout << "This is renderer mousecallback\n";
+  if (firstMouseMovement) {
+    lastX = xpos;
+    lastY = ypos;
+    firstMouseMovement = false;
+  }
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos;
+  lastX = xpos;
+  lastY = ypos;
+
+  const float sensitivity = 0.05f;
+  xoffset *= sensitivity;
+  yoffset *= sensitivity;
+
+  yaw += xoffset;
+  pitch += yoffset;
+
+  if (pitch > 89.0f) {
+    pitch = 89.0f;
+  } else if (pitch < -89.0f) {
+    pitch = -89.0f;
+  }
+
+  glm::vec3 direction;
+  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  direction.y = sin(glm::radians(pitch));
+  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(direction);
 }
+#pragma GCC diagnostic pop

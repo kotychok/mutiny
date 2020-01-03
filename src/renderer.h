@@ -71,6 +71,11 @@ class Renderer {
     glm::vec3 cameraPos { glm::vec3(0.0f, 0.0f,  3.0f) };
     glm::vec3 cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) };
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
+    float yaw { 270.0f };
+    float pitch { 0.0f };
+    float lastX {};
+    float lastY {};
+    bool firstMouseMovement { true };
   public:
     Renderer();
     void render(double dt);
