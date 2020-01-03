@@ -16,17 +16,11 @@ Renderer::Renderer() {
   glGenBuffers(1, &vbo);
   glGenVertexArrays(1, &vao);
 
-  // 1st Texture
   glActiveTexture(GL_TEXTURE0);
-  Texture containerTexture("./assets/container.jpg");
-
-  // 2nd texture
-  glActiveTexture(GL_TEXTURE1);
-  Texture awesomefaceTexture("./assets/awesomeface.png");
+  Texture containerTexture("./assets/dirt.jpg");
 
   myShader.use();
-  myShader.setInt("ourTexture", 0);
-  myShader.setInt("texture2", 1);
+  myShader.setInt("myTexture", 0);
 }
 
 void Renderer::render(double dt) {
