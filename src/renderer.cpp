@@ -44,12 +44,8 @@ void Renderer::render(double dt) {
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
-  myShader.setMat4("view", view);
-  myShader.setMat4("projection", projection);
+  myShader.setMat4("view", camera.getViewMatrix());
+  myShader.setMat4("projection", camera.getProjectionMatrix());
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -67,57 +63,9 @@ void Renderer::render(double dt) {
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
-  float cameraSpeed = 2.5f * dt;
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-    cameraPos += cameraSpeed * cameraFront;
-  }
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-    cameraPos -= cameraSpeed * cameraFront;
-  }
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    cameraPos -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
-  }
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
-  }
-  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-    cameraPos -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-    cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
-  }
+  camera.processInput(window, dt);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  if (firstMouseMovement) {
-    lastX = xpos;
-    lastY = ypos;
-    firstMouseMovement = false;
-  }
-  float xoffset = xpos - lastX;
-  float yoffset = lastY - ypos;
-  lastX = xpos;
-  lastY = ypos;
-
-  const float sensitivity = 0.05f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
-
-  yaw += xoffset;
-  pitch += yoffset;
-
-  if (pitch > 89.0f) {
-    pitch = 89.0f;
-  } else if (pitch < -89.0f) {
-    pitch = -89.0f;
-  }
-
-  glm::vec3 direction;
-  direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  direction.y = sin(glm::radians(pitch));
-  direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(direction);
+  camera.mouseCallback(window, xpos, ypos);
 }
-#pragma GCC diagnostic pop
