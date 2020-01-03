@@ -87,3 +87,7 @@ void Renderer::processInput(GLFWwindow* window, float dt) {
     cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
   }
 }
+
+void Renderer::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+  std::cout << "This is renderer mousecallback\n";
+}

@@ -75,4 +75,5 @@ class Renderer {
     Renderer();
     void render(double dt);
     void processInput(GLFWwindow* window, float dt);
+    void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 };

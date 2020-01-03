@@ -31,7 +31,8 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  // renderer.mouseCallback(window, xpos, ypos);
+  Renderer* rendererPtr = (Renderer*) glfwGetWindowUserPointer(window);
+  rendererPtr->mouseCallback(window, xpos, ypos);
   // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
 #pragma GCC diagnostic pop
@@ -58,19 +59,21 @@ int Window::show() {
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+  glfwSetCursorPosCallback(window, mouseCallback);
   glfwSetKeyCallback(window, keyCallback);
   glfwSetScrollCallback(window, scrollCallback);
-  glfwSetCursorPosCallback(window, mouseCallback);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cerr << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
 
-  Renderer* renderer = new Renderer();
-
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+  Renderer renderer;
+  glfwSetWindowUserPointer(window, &renderer);
 
   glfwSetTime(0.0);
   double last_time = 0.0;
@@ -81,8 +84,8 @@ int Window::show() {
 
     glfwPollEvents();
 
-    renderer->processInput(window, dt);
-    renderer->render(dt);
+    renderer.processInput(window, dt);
+    renderer.render(dt);
 
     glfwSwapBuffers(window);
   }
