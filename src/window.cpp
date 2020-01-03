@@ -31,7 +31,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  Renderer* rendererPtr = (Renderer*) glfwGetWindowUserPointer(window);
+  Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
   rendererPtr->mouseCallback(window, xpos, ypos);
   // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
