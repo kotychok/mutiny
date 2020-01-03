@@ -76,11 +76,11 @@ int Window::show() {
   glfwSetWindowUserPointer(window, &renderer);
 
   glfwSetTime(0.0);
-  double last_time = 0.0;
+  double lastTime = 0.0;
   while(!glfwWindowShouldClose(window)) {
     double time = glfwGetTime();
-    double dt = time - last_time;
-    last_time = time;
+    double dt = time - lastTime;
+    lastTime = time;
 
     glfwPollEvents();
 
