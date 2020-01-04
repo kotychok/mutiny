@@ -43,14 +43,8 @@ void Renderer::render(double dt) {
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-  for (unsigned int x = 0; x < 10; x++) {
-    for (unsigned int z = 0; z < 10; z++) {
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, glm::vec3(x, 0, z));
-      myShader.setMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-  }
+  glm::mat4 model = glm::mat4(1.0f);
+  myChunk.render(&myShader, model);
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {

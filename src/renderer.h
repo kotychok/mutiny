@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "camera.h"
+#include "chunk.h"
 #include "shader.h"
 
 class Renderer {
@@ -58,6 +59,7 @@ class Renderer {
     unsigned int vao {};
     Shader myShader { Shader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag") };
     Camera camera { Camera() };
+    Chunk myChunk { Chunk() };
   public:
     Renderer();
     void render(double dt);
