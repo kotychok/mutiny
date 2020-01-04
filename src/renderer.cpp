@@ -44,7 +44,9 @@ void Renderer::render(double dt) {
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   glm::mat4 model = glm::mat4(1.0f);
-  myChunk.render(&myShader, model);
+  for (Chunk chunk : chunks) {
+    chunk.render(myShader, model);
+  }
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -59,7 +61,10 @@ class Renderer {
     unsigned int vao {};
     Shader myShader { Shader("./src/shaders/vertex.vert", "./src/shaders/fragment.frag") };
     Camera camera { Camera() };
-    Chunk myChunk { Chunk() };
+    std::vector<Chunk> chunks {
+      Chunk(glm::vec3(0.0f, 0.0f, 0.0f)),
+      Chunk(glm::vec3(0.0f, 2.0f, 0.0f))
+    };
   public:
     Renderer();
     void render(double dt);
