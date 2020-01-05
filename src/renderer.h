@@ -87,7 +87,7 @@ class Renderer {
     Camera camera { Camera() };
     std::vector<Chunk> chunks {
       Chunk(glm::vec3(0.0f, 0.0f, 0.0f)),
-      Chunk(glm::vec3(0.0f, 2.0f, 0.0f))
+      Chunk(glm::vec3(0.0f, 1.0f, 0.0f))
     };
   public:
     Renderer();
