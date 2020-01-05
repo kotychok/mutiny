@@ -1,4 +1,4 @@
-CPPFLAGS := -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include/
+CPPFLAGS := -std=c++17 -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include/
 LDLIBS := -lglfw -ldl
 OPTIONS := $(CPPFLAGS) -o build/mutiny src/*.c src/*.cpp $(LDLIBS)
 

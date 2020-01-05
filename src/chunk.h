@@ -5,10 +5,11 @@
 class Chunk {
   public:
     // Constants
-    static const int SIZE;
+    static constexpr int SIZE { 16 };
 
     // Instance variables
     glm::vec3 pos; // Center of the chunk
+    int blocks[SIZE * SIZE * SIZE] {};
 
     // Constructor
     Chunk(glm::vec3 pos);
