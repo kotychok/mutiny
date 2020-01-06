@@ -33,9 +33,7 @@ Renderer::Renderer() {
 }
 
 void Renderer::render(double dt) {
-  // double vm, rss;
-  // MemoryHelper::process_mem_usage(vm, rss);
-  // std::cout << "VM: " << vm << ", RSS: " << rss << std::endl;
+  MemoryHelper::print_mem_usage_if_changed();
 
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

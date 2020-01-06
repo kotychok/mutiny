@@ -1,7 +1,9 @@
+// Slightly modified from:
 // https://stackoverflow.com/a/671389
 
-#include <unistd.h>
 #include <fstream>
+#include <iostream>
+#include <unistd.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -11,8 +13,20 @@
 //
 // On failure, returns 0.0, 0.0
 
+double vm;
+double rss;
+
 class MemoryHelper {
   public:
+    static void print_mem_usage_if_changed() {
+      double oldVM = vm;
+      double oldRSS = rss;
+      MemoryHelper::process_mem_usage(vm, rss);
+      if (oldVM != vm || oldRSS != rss) {
+        std::cout << "VM: " << vm << ", RSS: " << rss << std::endl;
+      }
+    };
+
     static void process_mem_usage(double& vm_usage, double& resident_set)
     {
       using std::ios_base;
