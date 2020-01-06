@@ -53,10 +53,30 @@ void Renderer::render(double dt) {
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
 
-  glm::mat4 chunkModel = glm::mat4(1.0f);
-  for (const auto &iter : chunks) {
-    auto chunk = iter.second;
-    chunk.render(blockShader, chunkModel);
+  int camChunkX, camChunkZ;
+
+  if (camera.position.x > 0) {
+    camChunkX = floor((camera.position.x + 8) / 16);
+  } else {
+    camChunkX = ceil((camera.position.x - 8) / 16);
+  }
+
+  if (camera.position.z > 0) {
+    camChunkZ = floor((camera.position.z + 8) / 16);
+  } else {
+    camChunkZ = ceil((camera.position.z - 8) / 16);
+  }
+
+  glm::mat4 chunkModel = glm::mat4(1.0f); // This can totally live inside Chunk right?
+
+  for (auto ix = camChunkX - viewingDistance; ix <= camChunkX + viewingDistance; ix++) {
+    for (auto iz = camChunkZ - viewingDistance; iz <= camChunkZ + viewingDistance; iz++) {
+      xyz key = std::make_tuple(ix, 0, iz);
+      if (chunks.find(key) != chunks.end()) {
+        Chunk chunk = chunks.find(key)->second;
+        chunk.render(blockShader, chunkModel);
+      }
+    }
   }
 
   // Axes stuff

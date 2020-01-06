@@ -15,7 +15,7 @@ class Camera {
     bool firstMouseMovement { true };
 
   public:
-    glm::vec3 position { glm::vec3(0.0f, 0.0f,  20.0f) };
+    glm::vec3 position { glm::vec3(0.0f, 20.0f,  7.0f) };
 
     glm::mat4 getViewMatrix() {
       return glm::lookAt(position, position + cameraFront, cameraUp);

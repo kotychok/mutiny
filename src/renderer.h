@@ -95,7 +95,9 @@ class Renderer {
       { std::make_tuple(-1,0,0), Chunk(glm::vec3(-1.0f, 0.0f, 0.0f)) },
       { std::make_tuple(-1,0,-1), Chunk(glm::vec3(-1.0f, 0.0f, -1.0f)) },
       { std::make_tuple(0,0,-1), Chunk(glm::vec3(0.0f, 0.0f, -1.0f)) },
+      { std::make_tuple(-2,0,-2), Chunk(glm::vec3(-2.0f, 0.0f, -2.0f)) },
     };
+    int viewingDistance { 1 };
   public:
     Renderer();
     void render(double dt);
