@@ -23,6 +23,10 @@ Chunk::Chunk(glm::vec3 pos) : pos{pos} {
   }
 }
 
+Chunk::~Chunk() {
+  std::cout << "Chunk at " << pos.x << ", " << pos.y << ", " << pos.z << " destroyed" << std::endl;
+}
+
 void Chunk::render(const Shader &myShader, const glm::mat4 &chunkModel) {
   for (unsigned int x = 0; x < Chunk::SIZE; x++) {
     for (unsigned int z = 0; z < Chunk::SIZE; z++) {

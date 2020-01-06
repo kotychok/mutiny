@@ -13,6 +13,7 @@ class Chunk {
 
     // Constructor
     Chunk(glm::vec3 pos);
+    ~Chunk();
 
     // Instance methods
     void render(const Shader &myShader, const glm::mat4 &chunkModel);
