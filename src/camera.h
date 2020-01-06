@@ -5,9 +5,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 class Camera {
+  private:
+    glm::vec3 cameraFront { glm::vec3(0.0f, -1.0f, -1.0f) };
+    glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
+    float yaw { 270.0f };
+    float pitch { 0.0f };
+    float lastX {};
+    float lastY {};
+    bool firstMouseMovement { true };
+
   public:
+    glm::vec3 position { glm::vec3(0.0f, 0.0f,  20.0f) };
+
     glm::mat4 getViewMatrix() {
-      return glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+      return glm::lookAt(position, position + cameraFront, cameraUp);
     };
 
     glm::mat4 getProjectionMatrix() {
@@ -16,24 +27,26 @@ class Camera {
     };
 
     void processInput(GLFWwindow* window, float dt) {
-      float cameraSpeed = 2.5f * dt;
+      float cameraSpeed = 7.0f * dt;
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        cameraPos += cameraSpeed * cameraFront;
+        position.x += cameraSpeed * cos(glm::radians(yaw));
+        position.z += cameraSpeed * sin(glm::radians(yaw));
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        cameraPos -= cameraSpeed * cameraFront;
+        position.x -= cameraSpeed * cos(glm::radians(yaw));
+        position.z -= cameraSpeed * sin(glm::radians(yaw));
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        cameraPos -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        position -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        cameraPos += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        position += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
       }
       if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        cameraPos -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        position -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
       }
       if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        cameraPos += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        position += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
       }
     };
 
@@ -70,14 +83,4 @@ class Camera {
       cameraFront = glm::normalize(direction);
     };
 #pragma GCC diagnostic pop
-
-  private:
-    glm::vec3 cameraPos { glm::vec3(0.0f, 0.0f,  20.0f) };
-    glm::vec3 cameraFront { glm::vec3(0.0f, -1.0f, -1.0f) };
-    glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
-    float yaw { 270.0f };
-    float pitch { 0.0f };
-    float lastX {};
-    float lastY {};
-    bool firstMouseMovement { true };
 };
