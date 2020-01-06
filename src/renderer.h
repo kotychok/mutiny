@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <unordered_map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -85,11 +85,11 @@ class Renderer {
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
     Camera camera { Camera() };
-    std::vector<Chunk> chunks {
-      Chunk(glm::vec3(0.0f, 0.0f, 0.0f)),
-      Chunk(glm::vec3(-1.0f, 0.0f, 0.0f)),
-      Chunk(glm::vec3(-1.0f, 0.0f, -1.0f)),
-      Chunk(glm::vec3(0.0f, 0.0f, -1.0f)),
+    std::unordered_map<std::string, Chunk> chunks {
+      { "0,0,0", Chunk(glm::vec3(0.0f, 0.0f, 0.0f)) },
+      { "-1,0,0", Chunk(glm::vec3(-1.0f, 0.0f, 0.0f)) },
+      { "-1,0,-1", Chunk(glm::vec3(-1.0f, 0.0f, -1.0f)) },
+      { "0,0,-1", Chunk(glm::vec3(0.0f, 0.0f, -1.0f)) },
     };
   public:
     Renderer();

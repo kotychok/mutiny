@@ -54,7 +54,8 @@ void Renderer::render(double dt) {
   blockShader.setMat4("projection", camera.getProjectionMatrix());
 
   glm::mat4 chunkModel = glm::mat4(1.0f);
-  for (Chunk chunk : chunks) {
+  for (const auto &iter : chunks) {
+    auto chunk = iter.second;
     chunk.render(blockShader, chunkModel);
   }
 
