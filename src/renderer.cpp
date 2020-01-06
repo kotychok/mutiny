@@ -2,6 +2,7 @@
 
 #include "stb/stb_image.h"
 
+#include "memory_helper.h"
 #include "renderer.h"
 #include "shader.h"
 #include "texture.h"
@@ -32,6 +33,10 @@ Renderer::Renderer() {
 }
 
 void Renderer::render(double dt) {
+  // double vm, rss;
+  // MemoryHelper::process_mem_usage(vm, rss);
+  // std::cout << "VM: " << vm << ", RSS: " << rss << std::endl;
+
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
