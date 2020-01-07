@@ -76,7 +76,7 @@ void Renderer::render(double dt) {
     for (auto iz = camChunkZ - viewingDistance; iz <= camChunkZ + viewingDistance; iz++) {
       xyz key = std::make_tuple(ix, 0, iz);
       if (chunks.find(key) != chunks.end()) {
-        Chunk chunk = chunks.find(key)->second;
+        Chunk &chunk = chunks.find(key)->second;
         chunk.render(blockShader, chunkModel);
       }
     }
