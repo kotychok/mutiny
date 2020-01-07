@@ -90,13 +90,7 @@ class Renderer {
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
     Camera camera { Camera() };
-    std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {
-      { std::make_tuple(0, 0, 0), Chunk(glm::vec3(0.0f, 0.0f, 0.0f)) },
-      { std::make_tuple(-1,0,0), Chunk(glm::vec3(-1.0f, 0.0f, 0.0f)) },
-      { std::make_tuple(-1,0,-1), Chunk(glm::vec3(-1.0f, 0.0f, -1.0f)) },
-      { std::make_tuple(0,0,-1), Chunk(glm::vec3(0.0f, 0.0f, -1.0f)) },
-      { std::make_tuple(-2,0,-2), Chunk(glm::vec3(-2.0f, 0.0f, -2.0f)) },
-    };
+    std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
     int viewingDistance { 1 };
   public:
     Renderer();

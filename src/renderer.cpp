@@ -75,7 +75,10 @@ void Renderer::render(double dt) {
   for (auto ix = camChunkX - viewingDistance; ix <= camChunkX + viewingDistance; ix++) {
     for (auto iz = camChunkZ - viewingDistance; iz <= camChunkZ + viewingDistance; iz++) {
       xyz key = std::make_tuple(ix, 0, iz);
-      if (chunks.find(key) != chunks.end()) {
+      if (chunks.find(key) == chunks.end()) {
+        Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, 0, iz)).first->second;
+        chunk.render(blockShader, chunkModel);
+      } else {
         Chunk &chunk = chunks.find(key)->second;
         chunk.render(blockShader, chunkModel);
       }
