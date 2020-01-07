@@ -4,26 +4,6 @@
 
 #include "chunk.h"
 
-Chunk::Chunk(const Chunk &chunk) : pos{chunk.pos} {
-  std::cout << "Chunk " << this << " at " << pos.x << ", " << pos.y << ", " << pos.z << " copy constructor called, copying Chunk " << &chunk << std::endl;
-  int radius = 8;
-  for (unsigned int x = 0; x < Chunk::SIZE; x++) {
-    for (unsigned int z = 0; z < Chunk::SIZE; z++) {
-      for (unsigned int y = 0; y < Chunk::SIZE; y++) {
-        if (y < 8) {
-          unsigned int blockX = x - Chunk::SIZE / 2;
-          unsigned int blockY = y - Chunk::SIZE / 2;
-          unsigned int blockZ = z - Chunk::SIZE / 2;
-          if (sqrt(blockX * blockX + blockY * blockY + blockZ * blockZ) < radius) {
-            unsigned int index { z * SIZE * SIZE + y * SIZE + x };
-            blocks[index] = 1;
-          }
-        }
-      }
-    }
-  }
-}
-
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
   std::cout << "Chunk " << this << " at " << pos.x << ", " << pos.y << ", " << pos.z << " created" << std::endl;
   int radius = 8;
