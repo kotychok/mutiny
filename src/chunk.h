@@ -12,6 +12,7 @@ class Chunk {
     int blocks[SIZE * SIZE * SIZE] {};
 
     // Constructor
+    Chunk(const Chunk &chunk);
     Chunk(glm::vec3 pos);
     ~Chunk();
 
