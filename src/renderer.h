@@ -4,6 +4,7 @@
 
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -89,9 +90,13 @@ class Renderer {
 
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
+
     Camera camera { Camera() };
+    glm::ivec3 lastCameraChunkPosition {};
+
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
     int viewingDistance { 1 };
+    std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
   public:
     Renderer();
     void render(double dt);

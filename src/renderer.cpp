@@ -75,10 +75,14 @@ void Renderer::render(double dt) {
 
   glm::mat4 chunkModel = glm::mat4(1.0f); // This can totally live inside Chunk right?
 
+  std::unordered_set<xyz, hash_tuple::hash<xyz>> areaOfInterest {};
+
   for (auto ix = cameraChunkPosition.x - viewingDistance; ix <= cameraChunkPosition.x + viewingDistance; ix++) {
     for (auto iz = cameraChunkPosition.z - viewingDistance; iz <= cameraChunkPosition.z + viewingDistance; iz++) {
       for (auto iy = std::max(0, cameraChunkPosition.y - viewingDistance); iy <= cameraChunkPosition.y + viewingDistance; iy++) {
         xyz key = std::make_tuple(ix, iy, iz);
+
+        areaOfInterest.insert(key);
 
         if (chunks.find(key) == chunks.end()) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz)).first->second;
@@ -89,6 +93,20 @@ void Renderer::render(double dt) {
         }
       }
     }
+  }
+
+  if (cameraChunkPosition != lastCameraChunkPosition) {
+    std::cout << "\nChunk changed!!" << std::endl;
+    std::cout << cameraChunkPosition.x << " " << cameraChunkPosition.y << " " << cameraChunkPosition.z << std::endl;
+
+    // If the current AoI doesn't have a previous AoI key, then it is outside
+    // of the AoI and we want to unload it.
+    for (xyz oldKey : lastAreaOfInterest) {
+      if (areaOfInterest.find(oldKey) == areaOfInterest.end()) {
+        chunks.erase(oldKey);
+      }
+    }
+    std::cout << "Total number of chunks loaded: " << chunks.size() << std::endl;
   }
 
   // Axes stuff
@@ -127,6 +145,9 @@ void Renderer::render(double dt) {
   lineShader.setVec3("color", glm::vec3(0.0f, 0.0f, 1.0f));
   glDrawArrays(GL_LINES, 0, 2);
   glDrawArrays(GL_POINTS, 0, 2);
+
+  lastCameraChunkPosition = cameraChunkPosition;
+  lastAreaOfInterest = areaOfInterest;
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
