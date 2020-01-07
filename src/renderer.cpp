@@ -57,27 +57,27 @@ void Renderer::render(double dt) {
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
 
-  int camChunkX, camChunkZ, camChunkY;
+  glm::ivec3 cameraChunkPosition {};
 
   if (camera.position.x > 0) {
-    camChunkX = floor((camera.position.x + 8) / 16);
+    cameraChunkPosition.x = floor((camera.position.x + 8) / 16);
   } else {
-    camChunkX = ceil((camera.position.x - 8) / 16);
+    cameraChunkPosition.x = ceil((camera.position.x - 8) / 16);
   }
 
   if (camera.position.z > 0) {
-    camChunkZ = floor((camera.position.z + 8) / 16);
+    cameraChunkPosition.z = floor((camera.position.z + 8) / 16);
   } else {
-    camChunkZ = ceil((camera.position.z - 8) / 16);
+    cameraChunkPosition.z = ceil((camera.position.z - 8) / 16);
   }
 
-  camChunkY = floor((camera.position.y) / 16);
+  cameraChunkPosition.y = floor((camera.position.y) / 16);
 
   glm::mat4 chunkModel = glm::mat4(1.0f); // This can totally live inside Chunk right?
 
-  for (auto ix = camChunkX - viewingDistance; ix <= camChunkX + viewingDistance; ix++) {
-    for (auto iz = camChunkZ - viewingDistance; iz <= camChunkZ + viewingDistance; iz++) {
-      for (auto iy = std::max(0, camChunkY - viewingDistance); iy <= camChunkY + viewingDistance; iy++) {
+  for (auto ix = cameraChunkPosition.x - viewingDistance; ix <= cameraChunkPosition.x + viewingDistance; ix++) {
+    for (auto iz = cameraChunkPosition.z - viewingDistance; iz <= cameraChunkPosition.z + viewingDistance; iz++) {
+      for (auto iy = std::max(0, cameraChunkPosition.y - viewingDistance); iy <= cameraChunkPosition.y + viewingDistance; iy++) {
         xyz key = std::make_tuple(ix, iy, iz);
 
         if (chunks.find(key) == chunks.end()) {
