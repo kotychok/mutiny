@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 
 #include "stb/stb_image.h"
@@ -56,7 +57,7 @@ void Renderer::render(double dt) {
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
 
-  int camChunkX, camChunkZ;
+  int camChunkX, camChunkZ, camChunkY;
 
   if (camera.position.x > 0) {
     camChunkX = floor((camera.position.x + 8) / 16);
@@ -70,17 +71,22 @@ void Renderer::render(double dt) {
     camChunkZ = ceil((camera.position.z - 8) / 16);
   }
 
+  camChunkY = floor((camera.position.y) / 16);
+
   glm::mat4 chunkModel = glm::mat4(1.0f); // This can totally live inside Chunk right?
 
   for (auto ix = camChunkX - viewingDistance; ix <= camChunkX + viewingDistance; ix++) {
     for (auto iz = camChunkZ - viewingDistance; iz <= camChunkZ + viewingDistance; iz++) {
-      xyz key = std::make_tuple(ix, 0, iz);
-      if (chunks.find(key) == chunks.end()) {
-        Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, 0, iz)).first->second;
-        chunk.render(blockShader, chunkModel);
-      } else {
-        Chunk &chunk = chunks.find(key)->second;
-        chunk.render(blockShader, chunkModel);
+      for (auto iy = std::max(0, camChunkY - viewingDistance); iy <= camChunkY + viewingDistance; iy++) {
+        xyz key = std::make_tuple(ix, iy, iz);
+
+        if (chunks.find(key) == chunks.end()) {
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz)).first->second;
+          chunk.render(blockShader, chunkModel);
+        } else {
+          Chunk &chunk = chunks.find(key)->second;
+          chunk.render(blockShader, chunkModel);
+        }
       }
     }
   }
