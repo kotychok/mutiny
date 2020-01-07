@@ -73,8 +73,6 @@ void Renderer::render(double dt) {
 
   cameraChunkPosition.y = floor((camera.position.y) / 16);
 
-  glm::mat4 chunkModel = glm::mat4(1.0f); // This can totally live inside Chunk right?
-
   std::unordered_set<xyz, hash_tuple::hash<xyz>> areaOfInterest {};
 
   for (auto ix = cameraChunkPosition.x - viewingDistance; ix <= cameraChunkPosition.x + viewingDistance; ix++) {
@@ -86,10 +84,10 @@ void Renderer::render(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz)).first->second;
-          chunk.render(blockShader, chunkModel);
+          chunk.render(blockShader);
         } else {
           Chunk &chunk = chunks.find(key)->second;
-          chunk.render(blockShader, chunkModel);
+          chunk.render(blockShader);
         }
       }
     }

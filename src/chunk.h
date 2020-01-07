@@ -22,5 +22,5 @@ class Chunk {
     Chunk& operator=(Chunk &&) = delete; // Delete move assignment
 
     // Instance methods
-    void render(const Shader &myShader, const glm::mat4 &chunkModel);
+    void render(const Shader &myShader);
 };
