@@ -1,3 +1,7 @@
+// https://0fps.net/2012/06/30/meshing-in-a-minecraft-game/
+// https://github.com/mikolalysenko/mikolalysenko.github.com/blob/gh-pages/MinecraftMeshes/js/greedy.js
+// https://gist.github.com/Vercidium/a3002bd083cce2bc854c9ff8f0118d33
+
 #include "all_equal.h"
 #include "mesher_greedy.h"
 
@@ -5,8 +9,7 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
   std::vector<quad> quads {};
 
   // Sweep over each axis (X (d = 0), Y (d = 1) and Z (d = 2))
-  for (auto d = 0; d < 3; ++d)
-  {
+  for (auto d = 0; d < 3; ++d) {
     int i, j, k, l, w, h;
     int u = (d + 1) % 3;
     int v = (d + 2) % 3;
@@ -17,14 +20,11 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
     q[d] = 1;
 
     // Check each slice of the chunk one at a time
-    for (x[d] = -1; x[d] < Chunk::SIZE;)
-    {
+    for (x[d] = -1; x[d] < Chunk::SIZE;) {
       // Compute the mask
       auto n = 0;
-      for (x[v] = 0; x[v] < Chunk::SIZE; ++x[v])
-      {
-        for (x[u] = 0; x[u] < Chunk::SIZE; ++x[u])
-        {
+      for (x[v] = 0; x[v] < Chunk::SIZE; ++x[v]) {
+        for (x[u] = 0; x[u] < Chunk::SIZE; ++x[u]) {
           // q determines the direction (X, Y or Z) that we are searching
           // chunk.isBlockAt(x,y,z) takes local-to-chunk map positions and returns true if a block exists there
 
@@ -43,12 +43,9 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
 
       // Generate a mesh from the mask using lexicographic ordering,
       //   by looping over each block in this slice of the chunk
-      for (j = 0; j < Chunk::SIZE; ++j)
-      {
-        for (i = 0; i < Chunk::SIZE;)
-        {
-          if (mask[n])
-          {
+      for (j = 0; j < Chunk::SIZE; ++j) {
+        for (i = 0; i < Chunk::SIZE;) {
+          if (mask[n]) {
             // Compute the width of this quad and store it in w
             //   This is done by searching along the current axis until mask[n + w] is false
             for (w = 1; i + w < Chunk::SIZE && mask[n + w]; w++) { }
@@ -59,21 +56,19 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
             //   greedy meshing will attempt to expand this quad out to Chunk::SIZE x 5, but will stop if it reaches a hole in the mask
 
             auto done = false;
-            for (h = 1; j + h < Chunk::SIZE; h++)
-            {
+            for (h = 1; j + h < Chunk::SIZE; h++) {
               // Check each block next to this quad
-              for (k = 0; k < w; ++k)
-              {
+              for (k = 0; k < w; ++k) {
                 // If there's a hole in the mask, exit
-                if (!mask[n + k + h * Chunk::SIZE])
-                {
+                if (!mask[n + k + h * Chunk::SIZE]) {
                   done = true;
                   break;
                 }
               }
 
-              if (done)
+              if (done) {
                 break;
+              }
             }
 
             x[u] = i;
@@ -97,16 +92,16 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
             quads.push_back(quad);
 
             // Clear this part of the mask, so we don't add duplicate faces
-            for (l = 0; l < h; ++l)
-              for (k = 0; k < w; ++k)
+            for (l = 0; l < h; ++l) {
+              for (k = 0; k < w; ++k) {
                 mask[n + k + l * Chunk::SIZE] = false;
+              }
+            }
 
             // Increment counters and continue
             i += w;
             n += w;
-          }
-          else
-          {
+          } else {
             i++;
             n++;
           }
