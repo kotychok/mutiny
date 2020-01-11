@@ -26,7 +26,8 @@ class Chunk {
 
   private:
     unsigned int cubeVAO {};
-    unsigned int cubeVBO {};
+    unsigned int chunkVBO {};
+    // unsigned int chunkEBO {};
 
     float cubeVertices[180] {
       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
