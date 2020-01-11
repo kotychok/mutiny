@@ -95,7 +95,7 @@ class Renderer {
     glm::ivec3 lastCameraChunkPosition {};
 
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
-    int viewingDistance { 1 };
+    int viewingDistance { 0 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
   public:
     Renderer();

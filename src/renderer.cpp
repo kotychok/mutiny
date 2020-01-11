@@ -38,7 +38,7 @@ void Renderer::render(double dt) {
 
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Cube stuff
   glBindVertexArray(cubeVAO);
