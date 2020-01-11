@@ -25,10 +25,6 @@ Renderer::Renderer() {
   glGenVertexArrays(1, &zAxisVAO);
   glGenBuffers(1, &zAxisVBO);
 
-  // Cubes
-  glGenVertexArrays(1, &cubeVAO);
-  glGenBuffers(1, &cubeVBO);
-
   glActiveTexture(GL_TEXTURE0);
   Texture containerTexture("./assets/dirt.jpg");
 }
@@ -38,19 +34,7 @@ void Renderer::render(double dt) {
 
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-  // Cube stuff
-  glBindVertexArray(cubeVAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   blockShader.use();
   blockShader.setInt("myTexture", 0);
