@@ -1,16 +1,18 @@
+#include <array>
 #include <cmath>
+#include <vector>
 
 #include <glm/gtx/scalar_multiplication.hpp>
 
+#include "all_equal.h"
 #include "chunk.h"
 
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
   std::cout << "Chunk " << this << " at " << pos.x << ", " << pos.y << ", " << pos.z << " created" << std::endl;
 
   // Cubes
-  glGenVertexArrays(1, &cubeVAO);
+  glGenVertexArrays(1, &chunkVAO);
   glGenBuffers(1, &chunkVBO);
-  // glGenBuffers(1, &chunkEBO);
 
   if (pos.y > 0) {
     return;
@@ -28,53 +30,103 @@ Chunk::~Chunk() {
 }
 
 void Chunk::render(const Shader &myShader) {
-  // float chunkVertices[24] =  {
-    // 8.0f, 1.0f,  8.0f,   // right-top-front corner
-    // 8.0f, 1.0f, -8.0f,   // right-top-back corner
-    // -8.0f, 1.0f, -8.0f,   // left-top-back corner
-    // -8.0f, 1.0f,  8.0f,   // left-top-front corner
-
-    // -8.0f, 0.0f, -8.0f,   // left-bottom-back corner
-    // 8.0f, 0.0f, -8.0f,   // right-bottom-back corner
-    // -8.0f, 0.0f,  8.0f,   // left-bottom-front corner
-    // 8.0f, 0.0f,  8.0f,   // left-bottom-front corner
-  // };
-
-  float chunkVertices[] =  {
-     8.0f, 1.0f,  8.0f,  8.0f,  8.0f,   // right-top-front corner
-     8.0f, 1.0f, -8.0f,  8.0f, -8.0f,  // right-top-back corner
-    -8.0f, 1.0f,  8.0f, -8.0f,  8.0f,  // left-top-front corner
-
-     8.0f, 1.0f, -8.0f,  8.0f, -8.0f,  // right-top-back corner
-    -8.0f, 1.0f, -8.0f, -8.0f, -8.0f,  // left-top-back corner
-    -8.0f, 1.0f,  8.0f, -8.0f,  8.0f,  // left-top-front corner
+  std::vector<quad> quads = {
+    {
+      -8.0f, 1.0f, -8.0f, // left top
+       8.0f, 1.0f, -8.0f, // right top
+      -8.0f, 1.0f,  8.0f, // left bottom
+       8.0f, 1.0f,  8.0f, // right bottom
+    },
+    {
+      -8.0f, 0.0f, -8.0f, // left top
+       8.0f, 0.0f, -8.0f, // right top
+      -8.0f, 0.0f,  8.0f, // left bottom
+       8.0f, 0.0f,  8.0f, // right bottom
+    },
+    {
+      -8.0f, 1.0f, -8.0f, // left top
+      -8.0f, 1.0f,  8.0f, // right top
+      -8.0f, 0.0f, -8.0f, // left bottom
+      -8.0f, 0.0f,  8.0f, // right bottom
+    },
   };
 
-  // float chunkIndices[] = {
-    // 0, 1, 2,
-    // 1, 4, 2,
-  // };
+  for (quad quad : quads) {
+    float rb_x { quad.at(9) }, rb_y { quad.at(10) }, rb_z { quad.at(11) }, // right bottom
+          rt_x { quad.at(3) }, rt_y { quad.at(4) },  rt_z { quad.at(5) },  // right top
+          lb_x { quad.at(6) }, lb_y { quad.at(7) },  lb_z { quad.at(8) },  // left bottom
+          lt_x { quad.at(0) }, lt_y { quad.at(1) },  lt_z { quad.at(2) };  // left top
 
-  glBindVertexArray(cubeVAO);
+    float rb_u, rb_v, // right bottom
+          rt_u, rt_v, // right top
+          lb_u, lb_v, // left bottom
+          lt_u, lt_v; // left top
 
-  glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(chunkVertices), chunkVertices, GL_STATIC_DRAW);
+    if (all_equal(rb_x, rt_x, lb_x, lt_x)) {
+      // If x is constant,
+      // then left-to-right (u-axis) is along the z-axis
+      // and top-to-bottom (v-axis) is along the y-axis.
+      rb_u = rb_z;
+      rt_u = rt_z;
+      lb_u = lb_z;
+      lt_u = lt_z;
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
+      rb_v = rb_y;
+      rt_v = rt_y;
+      lb_v = lb_y;
+      lt_v = lt_y;
+    } else if (all_equal(rb_y, rt_y, lb_y, lt_y)) {
+      // If y is constant,
+      // then left-to-right (u-axis) is along the x-axis
+      // and top-to-bottom (v-axis) is along the z-axis.
+      rb_u = rb_x;
+      rt_u = rt_x;
+      lb_u = lb_x;
+      lt_u = lt_x;
 
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
+      rb_v = rb_z;
+      rt_v = rt_z;
+      lb_v = lb_z;
+      lt_v = lt_z;
+    } else if (all_equal(rb_z, rt_z, lb_z, lt_z)) {
+      // If z is constant,
+      // then left-to-right (u-axis) is along the x-axis
+      // and top-to-bottom (v-axis) is along the y-axis.
+      rb_u = rb_x;
+      rt_u = rt_x;
+      lb_u = lb_x;
+      lt_u = lt_x;
 
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunkEBO);
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(chunkIndices), chunkIndices, GL_STATIC_DRAW);
+      rb_v = rb_y;
+      rt_v = rt_y;
+      lb_v = lb_y;
+      lt_v = lt_y;
+    }
 
-  // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-  // glEnableVertexAttribArray(1);
+    float vertices[30] {
+      rb_x, rb_y, rb_z, rb_u, rb_v, // right bottom
+      rt_x, rt_y, rt_z, rt_u, rt_v, // right top
+      lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
 
-  glm::mat4 blockModel = glm::mat4(1.0);
-  blockModel = glm::translate(blockModel, pos * Chunk::SIZE);
-  myShader.setMat4("model", blockModel);
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+      lt_x, lt_y, lt_z, lt_u, lt_v, // left top
+      rt_x, rt_y, rt_z, rt_u, rt_v, // right top
+      lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
+    };
+
+    glBindVertexArray(chunkVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glm::mat4 blockModel = glm::mat4(1.0);
+    blockModel = glm::translate(blockModel, pos * Chunk::SIZE);
+    myShader.setMat4("model", blockModel);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+  }
 }

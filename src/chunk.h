@@ -1,6 +1,10 @@
 #pragma once
 
+#include <array>
+
 #include "shader.h"
+
+typedef std::array<float, 12> quad;
 
 class Chunk {
   public:
@@ -25,9 +29,8 @@ class Chunk {
     void render(const Shader &myShader);
 
   private:
-    unsigned int cubeVAO {};
+    unsigned int chunkVAO {};
     unsigned int chunkVBO {};
-    // unsigned int chunkEBO {};
 
     float cubeVertices[180] {
       -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
