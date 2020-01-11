@@ -53,31 +53,12 @@ class Chunk {
 
     // Instance methods
     void render(const Shader &myShader);
+    bool isBlockAt(int x, int y, int z) const;
 
   private:
     unsigned int chunkVAO {};
     unsigned int chunkVBO {};
 
-    std::vector<quad> quads {
-      {
-        -8.0f, 1.0f, -8.0f, // left top
-         8.0f, 1.0f, -8.0f, // right top
-        -8.0f, 1.0f,  8.0f, // left bottom
-         8.0f, 1.0f,  8.0f, // right bottom
-      },
-      {
-        -8.0f, 0.0f, -8.0f, // left top
-         8.0f, 0.0f, -8.0f, // right top
-        -8.0f, 0.0f,  8.0f, // left bottom
-         8.0f, 0.0f,  8.0f, // right bottom
-      },
-      {
-        -8.0f, 1.0f, -8.0f, // left top
-        -8.0f, 1.0f,  8.0f, // right top
-        -8.0f, 0.0f, -8.0f, // left bottom
-        -8.0f, 0.0f,  8.0f, // right bottom
-      },
-    };
-
+    std::vector<quad> quads {};
     std::vector<quad_mesh> quadMeshes {};
 };
