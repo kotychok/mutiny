@@ -44,18 +44,18 @@ void Renderer::render(double dt) {
   glm::ivec3 cameraChunkPosition {};
 
   if (camera.position.x > 0) {
-    cameraChunkPosition.x = floor((camera.position.x + 8) / 16);
+    cameraChunkPosition.x = floor((camera.position.x + Chunk::SIZE / 2) / Chunk::SIZE);
   } else {
-    cameraChunkPosition.x = ceil((camera.position.x - 8) / 16);
+    cameraChunkPosition.x = ceil((camera.position.x - Chunk::SIZE / 2) / Chunk::SIZE);
   }
 
   if (camera.position.z > 0) {
-    cameraChunkPosition.z = floor((camera.position.z + 8) / 16);
+    cameraChunkPosition.z = floor((camera.position.z + Chunk::SIZE / 2) / Chunk::SIZE);
   } else {
-    cameraChunkPosition.z = ceil((camera.position.z - 8) / 16);
+    cameraChunkPosition.z = ceil((camera.position.z - Chunk::SIZE / 2) / Chunk::SIZE);
   }
 
-  cameraChunkPosition.y = floor((camera.position.y) / 16);
+  cameraChunkPosition.y = floor((camera.position.y) / Chunk::SIZE);
 
   std::unordered_set<xyz, hash_tuple::hash<xyz>> areaOfInterest {};
 

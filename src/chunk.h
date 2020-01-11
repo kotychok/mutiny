@@ -35,7 +35,7 @@ typedef std::array<float, 30> quad_mesh;
 class Chunk {
   public:
     // Constants
-    static constexpr int SIZE { 16 };
+    static constexpr int SIZE { 32 };
 
     // Instance variables
     glm::vec3 pos; // Center of the chunk
