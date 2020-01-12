@@ -33,3 +33,9 @@ core:
 gdb:
 	tmux new-window -n gdb
 	tmux send-keys -t gdb.0 "make core" C-m
+
+# * Exports my bookstack document as a GFM README.md file
+#
+# ./create_README.sh isn't checked in since it contains bookstack auth.
+readme:
+	./create_README.sh
