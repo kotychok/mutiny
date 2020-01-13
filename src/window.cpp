@@ -17,12 +17,12 @@ int Window::show() {
   glfwSetErrorCallback(errorCallback);
 
   glfwInit();
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Mutiny :)", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Mutiny", NULL, NULL);
   if (window == NULL) {
     std::cerr << "Failed to create GLFW window" << std::endl;
     glfwTerminate();
@@ -49,6 +49,7 @@ int Window::show() {
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+  glfwSetWindowSizeCallback(window, windowSizeCallback);
 
   focusInGame(window);
 
@@ -100,6 +101,12 @@ void Window::errorCallback(int error, const char* description) {
 void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
 }
+
+void Window::windowSizeCallback(GLFWwindow* window, int width, int height) {
+  Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+  rendererPtr->windowSizeCallback(window, width, height);
+}
+
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
   // std::cout

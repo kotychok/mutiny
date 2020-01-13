@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -15,6 +17,8 @@ class Camera {
     float lastX {};
     float lastY {};
     bool firstMouseMovement { true };
+    int width { Window::WIDTH };
+    int height { Window::HEIGHT };
 
   public:
     glm::vec3 position { glm::vec3(0.0f, 15.0f,  0.0f) };
@@ -24,8 +28,7 @@ class Camera {
     };
 
     glm::mat4 getProjectionMatrix() {
-      // TODO Don't hardcode height & width
-      return glm::perspective(glm::radians(45.0f), static_cast<float>(Window::WIDTH) / Window::HEIGHT, 0.1f, 100.0f);
+      return glm::perspective(glm::radians(45.0f), static_cast<float>(width) / height, 0.1f, 100.0f);
     };
 
     void processInput(GLFWwindow* window, float dt) {
@@ -83,6 +86,11 @@ class Camera {
       direction.y = sin(glm::radians(pitch));
       direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
       cameraFront = glm::normalize(direction);
+    };
+
+    void windowSizeCallback(GLFWwindow* window, int width, int height) {
+      this->width = width;
+      this->height = height;
     };
 #pragma GCC diagnostic pop
 };

@@ -139,3 +139,7 @@ void Renderer::processInput(GLFWwindow* window, float dt) {
 void Renderer::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
   camera.mouseCallback(window, xpos, ypos);
 }
+
+void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
+  camera.windowSizeCallback(window, width, height);
+}
