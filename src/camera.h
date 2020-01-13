@@ -57,7 +57,7 @@ class Camera {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-    void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+    void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
       if (firstMouseMovement) {
         lastX = xpos;
         lastY = ypos;

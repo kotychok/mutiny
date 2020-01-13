@@ -30,7 +30,7 @@ int Window::show() {
   }
   glfwMakeContextCurrent(window);
 
-  glfwSetCursorPosCallback(window, mouseCallback);
+  glfwSetCursorPosCallback(window, cursorPosCallback);
   glfwSetKeyCallback(window, keyCallback);
   glfwSetScrollCallback(window, scrollCallback);
 
@@ -135,10 +135,10 @@ void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) 
   // std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
 }
 
-void Window::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+void Window::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
   if (isFocusedInGame(window)) {
     Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    rendererPtr->mouseCallback(window, xpos, ypos);
+    rendererPtr->cursorPosCallback(window, xpos, ypos);
   }
   // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
