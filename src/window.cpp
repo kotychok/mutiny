@@ -9,52 +9,6 @@
 #include "renderer.h"
 #include "window.h"
 
-void errorCallback(int error, const char* description) {
-  std::cerr << "Error: " << error << ", Description: " << description << std::endl;
-}
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-void framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-  glViewport(0, 0, width, height);
-}
-
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  // std::cout
-    // << "key: " << key
-    // << " scancode: " << scancode
-    // << " action: " << action
-    // << " mods: " << mods << std::endl;
-  if (action == GLFW_PRESS) {
-    switch (key) {
-      case GLFW_KEY_ESCAPE:
-      case GLFW_KEY_Q:
-        glfwSetWindowShouldClose(window, 1);
-        break;
-      case GLFW_KEY_M:
-        if (Window::isFocusedInGame(window)) {
-          Window::focusInGUI(window);
-        } else {
-          Window::focusInGame(window);
-        }
-        break;
-    }
-  }
-}
-
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-  // std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
-}
-
-void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  if (Window::isFocusedInGame(window)) {
-    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
-    rendererPtr->mouseCallback(window, xpos, ypos);
-  }
-  // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
-}
-#pragma GCC diagnostic pop
-
 Window::Window() {
   std::cout << "Window created" << std::endl;
 }
@@ -68,7 +22,7 @@ int Window::show() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(Window::WIDTH, Window::HEIGHT, "Mutiny :)", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Mutiny :)", NULL, NULL);
   if (window == NULL) {
     std::cerr << "Failed to create GLFW window" << std::endl;
     glfwTerminate();
@@ -93,7 +47,7 @@ int Window::show() {
   ImGui_ImplOpenGL3_Init(glsl_version);
   bool show_demo_window = true;
 
-  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
+  glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   focusInGame(window);
@@ -136,6 +90,52 @@ int Window::show() {
   glfwTerminate();
   return 0;
 }
+
+void Window::errorCallback(int error, const char* description) {
+  std::cerr << "Error: " << error << ", Description: " << description << std::endl;
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
+void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  // std::cout
+    // << "key: " << key
+    // << " scancode: " << scancode
+    // << " action: " << action
+    // << " mods: " << mods << std::endl;
+  if (action == GLFW_PRESS) {
+    switch (key) {
+      case GLFW_KEY_ESCAPE:
+      case GLFW_KEY_Q:
+        glfwSetWindowShouldClose(window, 1);
+        break;
+      case GLFW_KEY_M:
+        if (isFocusedInGame(window)) {
+          focusInGUI(window);
+        } else {
+          focusInGame(window);
+        }
+        break;
+    }
+  }
+}
+
+void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+  // std::cout << "xoffset: " << xoffset << " yoffset: " << yoffset << std::endl;
+}
+
+void Window::mouseCallback(GLFWwindow* window, double xpos, double ypos) {
+  if (isFocusedInGame(window)) {
+    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    rendererPtr->mouseCallback(window, xpos, ypos);
+  }
+  // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
+}
+#pragma GCC diagnostic pop
 
 bool Window::isFocusedInGame(GLFWwindow* window) {
   // We only want to process in-game input when we are actually "in the game".
