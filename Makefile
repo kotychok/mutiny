@@ -3,18 +3,6 @@
 # i.e. before any make command is run.
 _dummy := $(shell mkdir -p build/objects)
 
-# GLAD_PATH := ./include/glad/%.c
-# GLAD_SOURCES := $(wildcard ./include/glad/*.c)
-# GLAD_OBJECTS := $(patsubst $(GLAD_PATH), ./build/%.o, $(GLAD_SOURCES))
-
-# IMGUI_PATH := ./include/imgui/%.cpp
-# IMGUI_SOURCES := $(wildcard ./include/imgui/*.cpp)
-# IMGUI_OBJECTS := $(patsubst $(IMGUI_PATH), ./build/%.o, $(IMGUI_SOURCES))
-
-# STB_PATH := ./include/stb/%.cpp
-# STB_SOURCES := $(wildcard ./include/stb/*.cpp)
-# STB_OBJECTS := $(patsubst $(STB_PATH), ./build/%.o, $(STB_SOURCES))
-
 C_SOURCES := $(wildcard ./third_party_src/*.c)
 CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 
@@ -53,24 +41,6 @@ debug: ./build/debug
 
 ./build/debug: $(MUTINY_PREREQS)
 	g++ -g3 $(OPTIONS) -o ./build/debug
-
-# Glad
-# glad: $(GLAD_OBJECTS)
-	# @echo $(GLAD_OBJECTS)
-# build/%.o: $(GLAD_PATH)
-	# g++ -isystem ./include -c $< -o $@
-
-# DearImgui
-# imgui: $(IMGUI_OBJECTS)
-	# @echo $(IMGUI_OBJECTS)
-# build/%.o: $(IMGUI_PATH)
-	# g++ -isystem ./include -c $< -o $@
-
-# STB
-# stb: $(STB_OBJECTS)
-	# @echo $(STB_OBJECTS)
-# build/%.o: $(STB_PATH)
-	# g++ -isystem ./include -c $< -o $@
 
 # Other Tasks
 watch:
