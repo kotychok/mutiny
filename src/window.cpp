@@ -43,9 +43,12 @@ int Window::show() {
   ImGui::CreateContext();
   ImGui::StyleColorsDark();
   ImGui_ImplGlfw_InitForOpenGL(window, true);
-  const char* glsl_version = "#version 130";
-  ImGui_ImplOpenGL3_Init(glsl_version);
+  const char* glslVersion = "#version 130";
+  ImGui_ImplOpenGL3_Init(glslVersion);
   bool show_demo_window = true;
+
+  ImGuiIO& io = ImGui::GetIO();
+  io.IniFilename = NULL;
 
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
