@@ -9,8 +9,6 @@
 #include "mesher_greedy.h"
 
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
-  std::cout << "Chunk " << this << " at " << pos.x << ", " << pos.y << ", " << pos.z << " created" << std::endl;
-
   // Cubes
   glGenVertexArrays(1, &chunkVAO);
   glGenBuffers(1, &chunkVBO);
@@ -46,7 +44,6 @@ Chunk::Chunk(glm::vec3 pos) : pos{pos} {
 }
 
 Chunk::~Chunk() {
-  std::cout << "Chunk " << this << " at " << pos.x << ", " << pos.y << ", " << pos.z << " destroyed" << std::endl;
 }
 
 bool Chunk::isBlockAt(int x, int y, int z) const {
