@@ -10,7 +10,7 @@ C_OBJECTS := $(patsubst ./third_party_src/%.c, ./build/objects/%.o, $(C_SOURCES)
 CPP_OBJECTS := $(patsubst ./third_party_src/%.cpp, ./build/objects/%.o, $(CPP_SOURCES))
 OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS)
 
-MUTINY_PREREQS := src/**/* $(OBJECTS)
+MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
 
 CPPFLAGS := -std=c++17 -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl
@@ -56,11 +56,11 @@ min:
 # creates the debug build,
 # runs it to segfault and generate new core file,
 # starts gdb with new core file.
-core:
+core: debug
 	ulimit -c unlimited && rm core; make debug && ./build/debug; gdb ./build/debug core
 
 # * Shortcut to debug core file in new tmux window *
-gdb:
+gdb: debug
 	tmux new-window -n gdb
 	tmux send-keys -t gdb.0 "make core" C-m
 
