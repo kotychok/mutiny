@@ -2,6 +2,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 #include "renderer.h"
 #include "window.h"
 
@@ -21,8 +25,20 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     // << " scancode: " << scancode
     // << " action: " << action
     // << " mods: " << mods << std::endl;
-  if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, 1);
+  if (action == GLFW_PRESS) {
+    switch (key) {
+      case GLFW_KEY_ESCAPE:
+      case GLFW_KEY_Q:
+        glfwSetWindowShouldClose(window, 1);
+        break;
+      case GLFW_KEY_M:
+        if (Window::isFocusedInGame(window)) {
+          Window::focusInGUI(window);
+        } else {
+          Window::focusInGame(window);
+        }
+        break;
+    }
   }
 }
 
@@ -31,8 +47,10 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
-  Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
-  rendererPtr->mouseCallback(window, xpos, ypos);
+  if (Window::isFocusedInGame(window)) {
+    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    rendererPtr->mouseCallback(window, xpos, ypos);
+  }
   // std::cout << "xpos: " << xpos << " ypos: " << ypos << std::endl;
 }
 #pragma GCC diagnostic pop
@@ -58,8 +76,6 @@ int Window::show() {
   }
   glfwMakeContextCurrent(window);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
   glfwSetCursorPosCallback(window, mouseCallback);
   glfwSetKeyCallback(window, keyCallback);
   glfwSetScrollCallback(window, scrollCallback);
@@ -69,8 +85,18 @@ int Window::show() {
     return -1;
   }
 
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGui::StyleColorsDark();
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  const char* glsl_version = "#version 130";
+  ImGui_ImplOpenGL3_Init(glsl_version);
+  bool show_demo_window = true;
+
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+
+  focusInGame(window);
 
   Renderer renderer;
   glfwSetWindowUserPointer(window, &renderer);
@@ -84,12 +110,59 @@ int Window::show() {
 
     glfwPollEvents();
 
-    renderer.processInput(window, dt);
+    // Start the Dear ImGui frame
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    // Show a demo window
+    ImGui::ShowDemoWindow(&show_demo_window);
+
+    if (isFocusedInGame(window)) {
+      renderer.processInput(window, dt);
+    }
     renderer.render(dt);
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
   }
 
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+
   glfwTerminate();
   return 0;
+}
+
+bool Window::isFocusedInGame(GLFWwindow* window) {
+  // We only want to process in-game input when we are actually "in the game".
+  //
+  // Now that we have a GUI we want to interact with, we need to know whether
+  // we are focused in game or focused in the gui, and only do input for one or
+  // the other.
+  int cursorMode = glfwGetInputMode(window, GLFW_CURSOR);
+  return cursorMode == GLFW_CURSOR_DISABLED;
+}
+
+bool Window::isFocusedInGUI(GLFWwindow* window) {
+  return !isFocusedInGame(window);
+}
+
+void Window::focusInGame(GLFWwindow* window) {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide cursor
+
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags |= ImGuiConfigFlags_NoMouse;            // Disable Mouse
+  io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // Disable Keyboard
+}
+
+void Window::focusInGUI(GLFWwindow* window) {
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // Show cursor
+
+  ImGuiIO& io = ImGui::GetIO();
+  io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;          // Enable Mouse
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
 }
