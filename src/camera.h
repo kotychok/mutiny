@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "window.h"
+
 class Camera {
   private:
     glm::vec3 cameraFront { glm::vec3(0.0f, -1.0f, -1.0f) };
@@ -23,7 +25,7 @@ class Camera {
 
     glm::mat4 getProjectionMatrix() {
       // TODO Don't hardcode height & width
-      return glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+      return glm::perspective(glm::radians(45.0f), static_cast<float>(Window::WIDTH) / Window::HEIGHT, 0.1f, 100.0f);
     };
 
     void processInput(GLFWwindow* window, float dt) {

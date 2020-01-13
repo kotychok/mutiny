@@ -68,7 +68,7 @@ int Window::show() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "Mutiny :)", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(Window::WIDTH, Window::HEIGHT, "Mutiny :)", NULL, NULL);
   if (window == NULL) {
     std::cerr << "Failed to create GLFW window" << std::endl;
     glfwTerminate();
@@ -93,7 +93,7 @@ int Window::show() {
   ImGui_ImplOpenGL3_Init(glsl_version);
   bool show_demo_window = true;
 
-  glViewport(0, 0, 800, 600);
+  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   focusInGame(window);
