@@ -4,8 +4,8 @@
 
 class Window {
   public:
-    static constexpr int WIDTH { 800 };
-    static constexpr int HEIGHT { 600 };
+    static constexpr int WIDTH { 1600 };
+    static constexpr int HEIGHT { 1000 };
 
     static void errorCallback(int error, const char* description);
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
