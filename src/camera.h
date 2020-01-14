@@ -30,9 +30,17 @@ class Camera {
     static constexpr float MIN_FAR_PLANE { 0.01f };
     static constexpr float MAX_FAR_PLANE { 1000.0f };
 
+    static constexpr float MIN_SPEED { 1.0f };
+    static constexpr float MAX_SPEED { 32.0f };
+
+    static constexpr float MIN_SENSITIVITY { 0.01f };
+    static constexpr float MAX_SENSITIVITY { 1.0f };
+
     float fov { 45.0f };
     float nearPlane { 0.1f };
     float farPlane { 400.0f }; // This is a tiny bit over enough to see 10 chunks out.
+    float speed { 7.0f };
+    float sensitivity { 0.05f };
 
     glm::vec3 position { glm::vec3(0.0f, 15.0f,  0.0f) };
 
@@ -53,7 +61,7 @@ class Camera {
     };
 
     void processInput(GLFWwindow* window, float dt) {
-      float cameraSpeed = 7.0f * dt;
+      float cameraSpeed = speed * dt;
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         position.x += cameraSpeed * cos(glm::radians(yaw));
         position.z += cameraSpeed * sin(glm::radians(yaw));
@@ -89,7 +97,6 @@ class Camera {
       lastX = xpos;
       lastY = ypos;
 
-      const float sensitivity = 0.05f;
       xoffset *= sensitivity;
       yoffset *= sensitivity;
 

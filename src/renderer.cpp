@@ -210,6 +210,8 @@ void Renderer::renderOverlay() {
     ImGui::SliderFloat("FOV", &camera.fov, Camera::MIN_FOV, Camera::MAX_FOV);
     ImGui::SliderFloat("Near Plane", &camera.nearPlane, Camera::MIN_NEAR_PLANE, Camera::MAX_NEAR_PLANE);
     ImGui::SliderFloat("Far Plane", &camera.farPlane, Camera::MIN_FAR_PLANE, Camera::MAX_FAR_PLANE);
+    ImGui::SliderFloat("Camera Speed", &camera.speed, Camera::MIN_SPEED, Camera::MAX_SPEED);
+    ImGui::SliderFloat("Mouse Sensitivity", &camera.sensitivity, Camera::MIN_SENSITIVITY, Camera::MAX_SENSITIVITY);
 
     ImGui::Separator();
 
