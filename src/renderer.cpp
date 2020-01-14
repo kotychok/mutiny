@@ -93,7 +93,6 @@ void Renderer::render(double dt) {
         chunks.erase(oldKey);
       }
     }
-    std::cout << "Total number of chunks loaded: " << chunks.size() << std::endl;
   }
 
   // Axes stuff
@@ -190,6 +189,15 @@ void Renderer::showOverlay() {
 
     ImGui::Text("Rendering:");
     ImGui::Checkbox("Wire mode?", &wireMode);
+    ImGui::SliderInt("Viewing Distance", &viewingDistance, 0, 10);
+    int viewingDistanceDiameter { 2 * viewingDistance + 1 };
+    ImGui::Text(
+      "Defined Area of Interest: %ix%ix%i (%i chunks)",
+      viewingDistanceDiameter, viewingDistanceDiameter, viewingDistanceDiameter,
+      viewingDistanceDiameter * viewingDistanceDiameter * viewingDistanceDiameter
+    );
+    ImGui::Text("Chunks loaded: %lu", chunks.size());
+    ImGui::Text("lastAreaOfInterest size: %lu", lastAreaOfInterest.size());
   }
   ImGui::End();
 }
