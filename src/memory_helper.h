@@ -15,10 +15,10 @@
 
 class MemoryHelper {
   public:
-    static void print_mem_usage_if_changed() {
+    static void printMemUsageIfChanged() {
       double vm;
       double rss;
-      MemoryHelper::process_mem_usage(vm, rss);
+      MemoryHelper::processMemUsage(vm, rss);
       static double prevVM { vm };
       static double prevRSS { rss };
       if (prevVM != vm || prevRSS != rss) {
@@ -28,7 +28,7 @@ class MemoryHelper {
       prevRSS = rss;
     };
 
-    static void process_mem_usage(double& vm_usage, double& resident_set)
+    static void processMemUsage(double& vm_usage, double& resident_set)
     {
       using std::ios_base;
       using std::ifstream;

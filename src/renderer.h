@@ -54,6 +54,13 @@ class Renderer {
     int viewingDistance { 2 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
+    // FPS
+    // https://stackoverflow.com/a/4687507
+    int framesThisSecond { -1 };
+    float avgFPS { 60.0f };
+    float fpsDecay { 0.9f };
+    double lastSecond { glfwGetTime() };
+
     // Coordinate lines
     bool showCoordinateLines { true };
     void renderCoordinateLines();
