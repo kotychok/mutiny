@@ -69,10 +69,10 @@ class Camera {
         position += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
       }
       if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-        position -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        position -= cameraSpeed * cameraUp;
       }
       if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        position += cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
+        position += cameraSpeed * cameraUp;
       }
     };
 
