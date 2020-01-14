@@ -21,6 +21,11 @@ class Camera {
     int height { Window::HEIGHT };
 
   public:
+    static constexpr float MIN_FOV { 22.5f };
+    static constexpr float MAX_FOV { 67.5f };
+
+    float fov { 45.0f };
+
     glm::vec3 position { glm::vec3(0.0f, 15.0f,  0.0f) };
 
     glm::mat4 getViewMatrix() {
@@ -28,7 +33,7 @@ class Camera {
     };
 
     glm::mat4 getProjectionMatrix() {
-      return glm::perspective(glm::radians(45.0f), static_cast<float>(width) / height, 0.1f, 100.0f);
+      return glm::perspective(glm::radians(fov), static_cast<float>(width) / height, 0.1f, 100.0f);
     };
 
     void processInput(GLFWwindow* window, float dt) {
