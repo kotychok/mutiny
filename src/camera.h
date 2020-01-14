@@ -24,7 +24,15 @@ class Camera {
     static constexpr float MIN_FOV { 22.5f };
     static constexpr float MAX_FOV { 67.5f };
 
+    static constexpr float MIN_NEAR_PLANE { 0.01f };
+    static constexpr float MAX_NEAR_PLANE { 10.0f };
+
+    static constexpr float MIN_FAR_PLANE { 0.01f };
+    static constexpr float MAX_FAR_PLANE { 1000.0f };
+
     float fov { 45.0f };
+    float nearPlane { 0.1f };
+    float farPlane { 400.0f }; // This is a tiny bit over enough to see 10 chunks out.
 
     glm::vec3 position { glm::vec3(0.0f, 15.0f,  0.0f) };
 
@@ -33,7 +41,7 @@ class Camera {
     };
 
     glm::mat4 getProjectionMatrix() {
-      return glm::perspective(glm::radians(fov), static_cast<float>(width) / height, 0.1f, 100.0f);
+      return glm::perspective(glm::radians(fov), static_cast<float>(width) / height, nearPlane, farPlane);
     };
 
     void processInput(GLFWwindow* window, float dt) {

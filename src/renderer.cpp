@@ -208,6 +208,8 @@ void Renderer::renderOverlay() {
     ImGui::Text("Position: (%.0f,%.0f, %.0f)", camera.position.x, camera.position.y, camera.position.z);
     ImGui::Text("Chunk: (%i,%i, %i)", lastCameraChunkPosition.x, lastCameraChunkPosition.y, lastCameraChunkPosition.z);
     ImGui::SliderFloat("FOV", &camera.fov, Camera::MIN_FOV, Camera::MAX_FOV);
+    ImGui::SliderFloat("Near Plane", &camera.nearPlane, Camera::MIN_NEAR_PLANE, Camera::MAX_NEAR_PLANE);
+    ImGui::SliderFloat("Far Plane", &camera.farPlane, Camera::MIN_FAR_PLANE, Camera::MAX_FAR_PLANE);
 
     ImGui::Separator();
 
