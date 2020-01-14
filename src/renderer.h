@@ -54,13 +54,18 @@ class Renderer {
     int viewingDistance { 2 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
+    // Coordinate lines
+    bool showCoordinateLines { true };
+    void renderCoordinateLines();
+
     // Overlay
-    bool isOverlayOpen { true };
-    void showOverlay();
+    bool showOverlay { true };
+    void renderOverlay();
   public:
     Renderer();
     void render(double dt);
     void processInput(GLFWwindow* window, float dt);
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
+    void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     void windowSizeCallback(GLFWwindow* window, int width, int height);
 };

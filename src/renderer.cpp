@@ -95,7 +95,45 @@ void Renderer::render(double dt) {
     }
   }
 
-  // Axes stuff
+  lastCameraChunkPosition = cameraChunkPosition;
+  lastAreaOfInterest = areaOfInterest;
+
+  if (showCoordinateLines) {
+    renderCoordinateLines();
+  }
+
+  // Do this at the end so that we have the most up-to-date info for this frame.
+  if (showOverlay) {
+    renderOverlay();
+  }
+}
+
+void Renderer::processInput(GLFWwindow* window, float dt) {
+  camera.processInput(window, dt);
+}
+
+void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+  camera.cursorPosCallback(window, xpos, ypos);
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void Renderer::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  if (action == GLFW_PRESS) {
+    switch (key) {
+      case GLFW_KEY_F3:
+        showOverlay = !showOverlay;
+        break;
+    }
+  }
+}
+#pragma GCC diagnostic pop
+
+void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
+  camera.windowSizeCallback(window, width, height);
+}
+
+void Renderer::renderCoordinateLines() {
   glm::mat4 axisModel = glm::mat4(1.0f);
   lineShader.use();
   lineShader.setMat4("view", camera.getViewMatrix());
@@ -131,27 +169,9 @@ void Renderer::render(double dt) {
   lineShader.setVec3("color", glm::vec3(0.0f, 0.0f, 1.0f));
   glDrawArrays(GL_LINES, 0, 2);
   glDrawArrays(GL_POINTS, 0, 2);
-
-  lastCameraChunkPosition = cameraChunkPosition;
-  lastAreaOfInterest = areaOfInterest;
-
-  // Do this at the end so that we have the most up-to-date info for this frame.
-  showOverlay();
 }
 
-void Renderer::processInput(GLFWwindow* window, float dt) {
-  camera.processInput(window, dt);
-}
-
-void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-  camera.cursorPosCallback(window, xpos, ypos);
-}
-
-void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
-  camera.windowSizeCallback(window, width, height);
-}
-
-void Renderer::showOverlay() {
+void Renderer::renderOverlay() {
   ImGuiIO& io = ImGui::GetIO();
 
   const float DISTANCE = 10.0f;
@@ -167,7 +187,7 @@ void Renderer::showOverlay() {
     ImGuiWindowFlags_NoFocusOnAppearing |
     ImGuiWindowFlags_NoNav;
 
-  if (ImGui::Begin("Info", &isOverlayOpen, flags)) {
+  if (ImGui::Begin("Info", &showOverlay, flags)) {
     ImGui::Text("Debug Info");
 
     ImGui::Separator();
@@ -189,6 +209,7 @@ void Renderer::showOverlay() {
 
     ImGui::Text("Rendering:");
     ImGui::Checkbox("Wire mode?", &wireMode);
+    ImGui::Checkbox("Show Coordinate Lines?", &showCoordinateLines);
     ImGui::SliderInt("Viewing Distance", &viewingDistance, 0, 10);
     int viewingDistanceDiameter { 2 * viewingDistance + 1 };
     ImGui::Text(

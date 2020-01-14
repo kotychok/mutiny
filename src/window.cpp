@@ -127,6 +127,10 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
         break;
     }
   }
+  if (isFocusedInGame(window)) {
+    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    rendererPtr->keyCallback(window, key, scancode, action, mods);
+  }
 }
 
 void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
