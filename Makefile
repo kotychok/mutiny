@@ -60,9 +60,13 @@ core: debug
 	ulimit -c unlimited && rm core; make debug && ./build/debug; gdb ./build/debug core
 
 # * Shortcut to debug core file in new tmux window *
-gdb: debug
+gdbcore: debug
 	tmux new-window -n gdb
 	tmux send-keys -t gdb.0 "make core" C-m
+
+gdb: debug
+	tmux new-window -n gdb
+	tmux send-keys -t gdb.0 "gdb ./build/debug" C-m
 
 # * Exports my bookstack document as a GFM README.md file
 readme:
