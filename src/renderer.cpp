@@ -27,7 +27,7 @@ Renderer::Renderer() {
   glGenBuffers(1, &zAxisVBO);
 
   glActiveTexture(GL_TEXTURE0);
-  Texture containerTexture("./assets/dirt.jpg");
+  Texture("./assets/dirt.jpg");
 }
 
 #pragma GCC diagnostic push
