@@ -13,18 +13,19 @@
 //
 // On failure, returns 0.0, 0.0
 
-double vm;
-double rss;
-
 class MemoryHelper {
   public:
     static void print_mem_usage_if_changed() {
-      double oldVM = vm;
-      double oldRSS = rss;
+      double vm;
+      double rss;
       MemoryHelper::process_mem_usage(vm, rss);
-      if (oldVM != vm || oldRSS != rss) {
+      static double prevVM { vm };
+      static double prevRSS { rss };
+      if (prevVM != vm || prevRSS != rss) {
         std::cout << "VM: " << vm << ", RSS: " << rss << std::endl;
       }
+      prevVM = vm;
+      prevRSS = rss;
     };
 
     static void process_mem_usage(double& vm_usage, double& resident_set)
