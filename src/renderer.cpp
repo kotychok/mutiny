@@ -38,8 +38,6 @@ void Renderer::render(double dt) {
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  showOverlay();
-
   blockShader.use();
   blockShader.setInt("myTexture", 0);
   blockShader.setMat4("view", camera.getViewMatrix());
@@ -134,6 +132,9 @@ void Renderer::render(double dt) {
 
   lastCameraChunkPosition = cameraChunkPosition;
   lastAreaOfInterest = areaOfInterest;
+
+  // Do this at the end so that we have the most up-to-date info for this frame.
+  showOverlay();
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
@@ -149,9 +150,9 @@ void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
 }
 
 void Renderer::showOverlay() {
-  const float DISTANCE = 10.0f;
   ImGuiIO& io = ImGui::GetIO();
 
+  const float DISTANCE = 10.0f;
   ImVec2 window_pos = ImVec2(DISTANCE, DISTANCE);
   ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
   ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
@@ -163,14 +164,17 @@ void Renderer::showOverlay() {
     ImGuiWindowFlags_NoSavedSettings |
     ImGuiWindowFlags_NoFocusOnAppearing |
     ImGuiWindowFlags_NoNav;
-  if (ImGui::Begin("Info", &isOverlayOpen, flags))
-  {
+
+  if (ImGui::Begin("Info", &isOverlayOpen, flags)) {
     ImGui::Text("Debug Info");
+
     ImGui::Separator();
+
+    ImGui::Text("Mouse:");
     if (ImGui::IsMousePosValid()) {
-      ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+      ImGui::Text("(%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
     } else {
-      ImGui::Text("Mouse Position: <invalid>");
+      ImGui::Text("<invalid>");
     }
   }
   ImGui::End();
