@@ -14,9 +14,6 @@ class Camera {
     float pitch { 0.0f };
     glm::vec3 cameraFront { computeCameraFront() };
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
-    float lastX {};
-    float lastY {};
-    bool firstMouseMovement { true };
     int width { Window::WIDTH };
     int height { Window::HEIGHT };
 
@@ -87,11 +84,8 @@ class Camera {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-      if (firstMouseMovement) {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouseMovement = false;
-      }
+      static double lastX { xpos };
+      static double lastY { ypos };
       float xoffset = xpos - lastX;
       float yoffset = lastY - ypos;
       lastX = xpos;
