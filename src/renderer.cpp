@@ -28,8 +28,6 @@ Renderer::Renderer() {
 
   glActiveTexture(GL_TEXTURE0);
   Texture containerTexture("./assets/dirt.jpg");
-
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void Renderer::render(double dt) {
@@ -37,6 +35,12 @@ void Renderer::render(double dt) {
 
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  if (wireMode) {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  } else {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
 
   blockShader.use();
   blockShader.setInt("myTexture", 0);
@@ -182,6 +186,10 @@ void Renderer::showOverlay() {
     ImGui::Text("Position: (%.0f,%.0f, %.0f)", camera.position.x, camera.position.y, camera.position.z);
     ImGui::Text("Chunk: (%i,%i, %i)", lastCameraChunkPosition.x, lastCameraChunkPosition.y, lastCameraChunkPosition.z);
 
+    ImGui::Separator();
+
+    ImGui::Text("Rendering:");
+    ImGui::Checkbox("Wire mode?", &wireMode);
   }
   ImGui::End();
 }

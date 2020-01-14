@@ -45,6 +45,8 @@ class Renderer {
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
 
+    bool wireMode { false };
+
     Camera camera { Camera() };
     glm::ivec3 lastCameraChunkPosition {};
 
