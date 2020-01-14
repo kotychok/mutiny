@@ -118,7 +118,7 @@ void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, 
       case GLFW_KEY_Q:
         glfwSetWindowShouldClose(window, 1);
         break;
-      case GLFW_KEY_M:
+      case GLFW_KEY_E:
         if (isFocusedInGame(window)) {
           focusInGUI(window);
         } else {
