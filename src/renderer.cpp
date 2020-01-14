@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <iostream>
 
-#include "stb/stb_image.h"
+#include <imgui/imgui.h>
+#include <stb/stb_image.h>
 
 #include "memory_helper.h"
 #include "renderer.h"
@@ -27,6 +28,8 @@ Renderer::Renderer() {
 
   glActiveTexture(GL_TEXTURE0);
   Texture containerTexture("./assets/dirt.jpg");
+
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 void Renderer::render(double dt) {
@@ -34,7 +37,8 @@ void Renderer::render(double dt) {
 
   glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+  showOverlay();
 
   blockShader.use();
   blockShader.setInt("myTexture", 0);
@@ -142,4 +146,32 @@ void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 
 void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
   camera.windowSizeCallback(window, width, height);
+}
+
+void Renderer::showOverlay() {
+  const float DISTANCE = 10.0f;
+  ImGuiIO& io = ImGui::GetIO();
+
+  ImVec2 window_pos = ImVec2(DISTANCE, DISTANCE);
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+  ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+
+  const auto flags =
+    ImGuiWindowFlags_NoMove |
+    ImGuiWindowFlags_NoDecoration |
+    ImGuiWindowFlags_AlwaysAutoResize |
+    ImGuiWindowFlags_NoSavedSettings |
+    ImGuiWindowFlags_NoFocusOnAppearing |
+    ImGuiWindowFlags_NoNav;
+  if (ImGui::Begin("Info", &isOverlayOpen, flags))
+  {
+    ImGui::Text("Debug Info");
+    ImGui::Separator();
+    if (ImGui::IsMousePosValid()) {
+      ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
+    } else {
+      ImGui::Text("Mouse Position: <invalid>");
+    }
+  }
+  ImGui::End();
 }

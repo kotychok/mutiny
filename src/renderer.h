@@ -51,6 +51,10 @@ class Renderer {
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
     int viewingDistance { 2 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
+
+    // Overlay
+    bool isOverlayOpen { true };
+    void showOverlay();
   public:
     Renderer();
     void render(double dt);
