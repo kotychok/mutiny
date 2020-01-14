@@ -30,10 +30,12 @@ Renderer::Renderer() {
   Texture containerTexture("./assets/dirt.jpg");
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::render(double dt) {
   MemoryHelper::print_mem_usage_if_changed();
 
-  glClearColor(0.2f * dt, 0.3f, 0.3f, 0.1f); // Use dt here for now to get rid of the warning while I fill out the rest of the missing code. It's a nice color.
+  glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -107,6 +109,7 @@ void Renderer::render(double dt) {
     renderOverlay();
   }
 }
+#pragma GCC diagnostic pop
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
   camera.processInput(window, dt);
