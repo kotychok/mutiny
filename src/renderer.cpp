@@ -81,7 +81,6 @@ void Renderer::render(double dt) {
 
   if (cameraChunkPosition != lastCameraChunkPosition) {
     std::cout << "\nChunk changed!!" << std::endl;
-    std::cout << cameraChunkPosition.x << " " << cameraChunkPosition.y << " " << cameraChunkPosition.z << std::endl;
 
     // If the current AoI doesn't have a previous AoI key, then it is outside
     // of the AoI and we want to unload it.
@@ -176,6 +175,13 @@ void Renderer::showOverlay() {
     } else {
       ImGui::Text("<invalid>");
     }
+
+    ImGui::Separator();
+
+    ImGui::Text("Camera:");
+    ImGui::Text("Position: (%.0f,%.0f, %.0f)", camera.position.x, camera.position.y, camera.position.z);
+    ImGui::Text("Chunk: (%i,%i, %i)", lastCameraChunkPosition.x, lastCameraChunkPosition.y, lastCameraChunkPosition.z);
+
   }
   ImGui::End();
 }
