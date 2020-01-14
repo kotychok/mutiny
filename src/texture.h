@@ -34,6 +34,9 @@ class Texture {
             internalFormat = GL_RGBA8;
             format = GL_RGBA;
             break;
+          default:
+            std::cerr << "Error: Unsupported number of channels in texture: " << imagePath << std::endl;
+            break;
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
