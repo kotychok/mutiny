@@ -34,12 +34,16 @@ Renderer::Renderer() {
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::render(double dt) {
   double now = glfwGetTime();
-  if (now - lastSecond > 1) {
+  double diff = now - lastSecond;
+  if (diff > 1) {
     lastSecond = now;
     avgFPS = fpsDecay * avgFPS + (1.0 - fpsDecay) * framesThisSecond;
     framesThisSecond = -1;
   }
   framesThisSecond++;
+  if (diff > 0) {
+    currentFPS = framesThisSecond / diff;
+  }
 
   glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -241,6 +245,7 @@ void Renderer::renderOverlay() {
     MemoryHelper::processMemUsage(vm, rss);
     ImGui::Text("VM: %.0f, RSS: %.0f", vm, rss);
     ImGui::Text("AVG FPS: %.0f", avgFPS);
+    ImGui::Text("Current FPS: %.0f", currentFPS);
   }
   ImGui::End();
 }

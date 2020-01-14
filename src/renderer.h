@@ -57,6 +57,7 @@ class Renderer {
     // FPS
     // https://stackoverflow.com/a/4687507
     int framesThisSecond { -1 };
+    float currentFPS { 0 };
     float avgFPS { 60.0f };
     float fpsDecay { 0.9f };
     double lastSecond { glfwGetTime() };
