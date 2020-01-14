@@ -10,7 +10,6 @@
 
 class Camera {
   private:
-    glm::vec3 cameraFront { glm::vec3(0.0f, -1.0f, -1.0f) };
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
     float yaw { 270.0f };
     float pitch { 0.0f };
@@ -36,8 +35,16 @@ class Camera {
 
     glm::vec3 position { glm::vec3(0.0f, 15.0f,  0.0f) };
 
+    glm::vec3 cameraFront() {
+      glm::vec3 direction {};
+      direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+      direction.y = sin(glm::radians(pitch));
+      direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+      return glm::normalize(direction);
+    };
+
     glm::mat4 getViewMatrix() {
-      return glm::lookAt(position, position + cameraFront, cameraUp);
+      return glm::lookAt(position, position + cameraFront(), cameraUp);
     };
 
     glm::mat4 getProjectionMatrix() {
@@ -55,10 +62,10 @@ class Camera {
         position.z -= cameraSpeed * sin(glm::radians(yaw));
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        position -= cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        position -= cameraSpeed * glm::normalize(glm::cross(cameraFront(), cameraUp));
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        position += cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        position += cameraSpeed * glm::normalize(glm::cross(cameraFront(), cameraUp));
       }
       if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         position -= cameraSpeed * glm::vec3(0.0f, 1.0f, 0.0f);
@@ -93,12 +100,6 @@ class Camera {
       } else if (pitch < -89.0f) {
         pitch = -89.0f;
       }
-
-      glm::vec3 direction;
-      direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-      direction.y = sin(glm::radians(pitch));
-      direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-      cameraFront = glm::normalize(direction);
     };
 
     void windowSizeCallback(GLFWwindow* window, int width, int height) {
