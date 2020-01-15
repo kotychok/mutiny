@@ -1,3 +1,12 @@
+**Table of Contents**
+* [0 - Bootstrap the project](#0---bootstrap-the-project)
+* [1 - Chunks](#1---chunks)
+* [2 - Chunk loading and unloading](#2---chunk-loading-and-unloading)
+* [3 - Meshing](#3---meshing)
+* [4 - GUI](#4---gui)
+* [5 - Multiple block types](#5---multiple-block-types)
+* [Probable/Possible Future Steps](#probablepossible-future-steps)
+
 # Creating a Voxel Engine from Scratch
 
 It is next to impossible to find a thorough resource on how to do this, so I guess I'll pull a bunch together to figure it out and write about what I learn.
@@ -43,9 +52,9 @@ Right now, all I want to be able to do is render a 2x2 area of chunks, where eac
 The general outline for how I did this is:
 
 - Create a chunk class with nothing more than a render method, and move the render code for our plane to it. Chunks will have to render their own blocks/vertices, so this is a good first thing to do to make this area available to write future code in.
-- Render an array of chunks. This will introduce the fact that chunks have a position. This position is normalized with respect to the chunk size so that the chunk position vectors won't have to change regardless of what the chunk size is. e.g. Two chunks next to each other might have positions (0, 0, 0) and (1, 0, 0). Not (0, 0, 0) and (16, 0, 0). 
+- Render an array of chunks. This will introduce the fact that chunks have a position. This position is normalized with respect to the chunk size so that the chunk position vectors won't have to change regardless of what the chunk size is. e.g. Two chunks next to each other might have positions (0, 0, 0) and (1, 0, 0). Not (0, 0, 0) and (16, 0, 0).
   - This also makes chunk position invariant with respect to where blocks are aligned in the chunk. More written about this later.
-- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk 
+- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk
   - I liked the symmetry around the xz plane (i.e. the horizontal plane) and the fact that a chunk at the bottom of the map would start at y = 0 (if we define the bottom of the world at y = 0, which I am).
 - Add an array of blocks to the Chunk class which store a 1 or 0, indicating whether the block at that position is present or absent.
 
@@ -138,10 +147,10 @@ The rough order I did this in is:
 
 Having done that, there are some other improvements we can start thinking about, which I might look into next or at a later time. We'll see. But anyways, here's a list with some thoughts and/or links for future reference:
 
-- Can we cull chunk faces that are next to each other? 
+- Can we cull chunk faces that are next to each other?
   - From the /r/VoxelGameDev discord, JWNJWN mentioned it would be possible to store duplicate voxel data in each chunk, the blocks right next to the edge, that we could use to occlusion check.
   - Also from the /r/VoxelGameDev discord, Vercidium mentioned their `isBlockAt` method takes the world position and handles checking blocks outside the current chunk. Since our other chunks are already loaded in memory, we could do something similar without too much trouble.
-- Can we cull vertices that aren't visible from the current camera position? 
+- Can we cull vertices that aren't visible from the current camera position?
   - Perhaps by implementing logic that looks at cube faces with respect to camera position, as mentioned [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evfzn05/).
   - Also by frustrum culling, to remove all vertices that aren't even in the camera's field of view.
   - Other culling? How about culling vertices hidden by other blocks (ray casting?)

@@ -88,6 +88,15 @@ done
 
 # Convert html file to github markdown
 # Remove the automatically included final section which contains metadata
-reverse_markdown export.html --github-flavored=true | tac | sed '0,/* * */d' | tac > README.md
+TMP_README=$(mktemp)
+reverse_markdown export.html --github-flavored=true | tac | sed '0,/* * */d' | tac > "$TMP_README"
 
+echo "Inserting table of contents"
+cat \
+  <(tac "$TMP_README" | sed '$a\ ' - | sed 's/ *$//') \
+  <(tac "$TMP_README" | ./bin/gh-md-toc - | sed 's/^[	 ]*//' | head -n-1) \
+  <(printf "**Table of Contents**\n") \
+  | tac > README.md
+
+rm "$TMP_README"
 rm export.html
