@@ -3,6 +3,7 @@
 #include <array>
 #include <vector>
 
+#include "block.h"
 #include "shader.h"
 #include "quad.h"
 
@@ -13,7 +14,7 @@ class Chunk {
 
     // Instance variables
     glm::vec3 pos; // Center of the chunk
-    int blocks[SIZE * SIZE * SIZE] {};
+    Block blocks[SIZE * SIZE * SIZE] {};
 
     // Constructor
     Chunk(glm::vec3 pos);

@@ -5,6 +5,7 @@
 
 #include <glm/gtx/scalar_multiplication.hpp>
 
+#include "block.h"
 #include "chunk.h"
 #include "mesher_greedy.h"
 
@@ -17,7 +18,7 @@ Chunk::Chunk(glm::vec3 pos) : pos{pos} {
     for (unsigned int x = 0; x < Chunk::SIZE; x++) {
       for (unsigned int z = 0; z < Chunk::SIZE; z++) {
         unsigned int index { z * SIZE * SIZE + 0 * SIZE + x };
-        blocks[index] = 1;
+        blocks[index] = Block { BlockType::BEDROCK };
       }
     }
 
@@ -48,7 +49,7 @@ Chunk::~Chunk() {
 
 bool Chunk::isBlockAt(int x, int y, int z) const {
   int index { z * SIZE * SIZE + y * SIZE + x };
-  return blocks[index] == 1;
+  return blocks[index].type != BlockType::AIR;
 }
 
 void Chunk::render(const Shader &myShader) {
