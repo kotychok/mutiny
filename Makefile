@@ -70,4 +70,4 @@ gdb: debug
 
 # * Exports my bookstack document as a GFM README.md file
 readme:
-	./bin/create_README.sh
+	./bin/create_README

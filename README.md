@@ -1,4 +1,6 @@
 **Table of Contents**
+
+* [Creating a Voxel Engine from Scratch](#creating-a-voxel-engine-from-scratch)
 * [0 - Bootstrap the project](#0---bootstrap-the-project)
 * [1 - Chunks](#1---chunks)
 * [2 - Chunk loading and unloading](#2---chunk-loading-and-unloading)
@@ -52,9 +54,8 @@ Right now, all I want to be able to do is render a 2x2 area of chunks, where eac
 The general outline for how I did this is:
 
 - Create a chunk class with nothing more than a render method, and move the render code for our plane to it. Chunks will have to render their own blocks/vertices, so this is a good first thing to do to make this area available to write future code in.
-- Render an array of chunks. This will introduce the fact that chunks have a position. This position is normalized with respect to the chunk size so that the chunk position vectors won't have to change regardless of what the chunk size is. e.g. Two chunks next to each other might have positions (0, 0, 0) and (1, 0, 0). Not (0, 0, 0) and (16, 0, 0).
-  - This also makes chunk position invariant with respect to where blocks are aligned in the chunk. More written about this later.
-- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk
+- Render an array of chunks. This will introduce the fact that chunks have a position. This position is normalized with respect to the chunk size so that the chunk position vectors won't have to change regardless of what the chunk size is. e.g. Two chunks next to each other might have positions (0, 0, 0) and (1, 0, 0). Not (0, 0, 0) and (16, 0, 0). - This also makes chunk position invariant with respect to where blocks are aligned in the chunk. More written about this later.
+- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk 
   - I liked the symmetry around the xz plane (i.e. the horizontal plane) and the fact that a chunk at the bottom of the map would start at y = 0 (if we define the bottom of the world at y = 0, which I am).
 - Add an array of blocks to the Chunk class which store a 1 or 0, indicating whether the block at that position is present or absent.
 
@@ -81,7 +82,7 @@ For now, an array of 1s and 0s should be sufficient. If there is a 1, draw a blo
 
 I wrote up some temporary code to make each chunk filled with half a sphere, and this is the result. You should be able to get something similar now:
 
-[![chunks.png](./README/dirt_plane.png)](./README/screenshot_13.png)
+[![chunks.png](./README/screenshot_13.png)](./README/screenshot_13.png)
 
 # 2 - Chunk loading and unloading
 
@@ -113,7 +114,7 @@ I ran into quite a few issues with memory management. I ended up adding lots of 
 
 Anyways, after figuring out the memory issues -- by the way, I also disabled the copy and move constructors as well as the copy and move assignment operators, which should hopefully make it harder to make mistakes since the compiler will check me -- anyways, after doing that I was able to implement the loading and unloading logic without too many issues.
 
-[![chunk-loading-unloading.gif](./README/dirt_plane.png)](./README/chunk-loading-unloading.gif)
+[![chunk-loading-unloading.gif](./README/chunk-loading-unloading.gif)](./README/chunk-loading-unloading.gif)
 
 # 3 - Meshing
 
@@ -147,10 +148,10 @@ The rough order I did this in is:
 
 Having done that, there are some other improvements we can start thinking about, which I might look into next or at a later time. We'll see. But anyways, here's a list with some thoughts and/or links for future reference:
 
-- Can we cull chunk faces that are next to each other?
+- Can we cull chunk faces that are next to each other? 
   - From the /r/VoxelGameDev discord, JWNJWN mentioned it would be possible to store duplicate voxel data in each chunk, the blocks right next to the edge, that we could use to occlusion check.
   - Also from the /r/VoxelGameDev discord, Vercidium mentioned their `isBlockAt` method takes the world position and handles checking blocks outside the current chunk. Since our other chunks are already loaded in memory, we could do something similar without too much trouble.
-- Can we cull vertices that aren't visible from the current camera position?
+- Can we cull vertices that aren't visible from the current camera position? 
   - Perhaps by implementing logic that looks at cube faces with respect to camera position, as mentioned [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evfzn05/).
   - Also by frustrum culling, to remove all vertices that aren't even in the camera's field of view.
   - Other culling? How about culling vertices hidden by other blocks (ray casting?)
@@ -160,9 +161,9 @@ Having done that, there are some other improvements we can start thinking about,
 - More stuff [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evd70sh/)
 - Also, right now we store both `quads` and `quadMeshes`. This probably uses about 33% more memory than it needs to. We can discard the quads entirely after created the `quadMeshes`, or better yet, just create the `quadMesh` directly from the quad vertices directly in the meshing algorithm. I'm going to save this very easy optimization for later once we have proper profiling and can more easily see the benefits to our optimizations.
 
-[![mesh_plane.png](./README/dirt_plane.png)](./README/mesh_plane.png)
+[![mesh_plane.png](./README/mesh_plane.png)](./README/mesh_plane.png)
 
-[![mesh_half_sphere.png](./README/dirt_plane.png)](./README/mesh_half_sphere.png)
+[![mesh_half_sphere.png](./README/mesh_half_sphere.png)](./README/mesh_half_sphere.png)
 
 # 4 - GUI
 
@@ -174,9 +175,15 @@ Take a look at the commits if you want, it's nothing terribly surprising.
 
 One thing I didn't add right now, but think I will in the future is a command menu. I would like to be able to hit /, open up a text input to type a command (e.g. /wires, /axes, etc). This would be more convenient than having to use the mouse. Maybe I'll look into it when I get tired of clicking all the time.
 
-[![gui.png](./README/dirt_plane.png)](./README/gui.png)
+[![gui.png](./README/gui.png)](./README/gui.png)
 
 # 5 - Multiple block types
+
+Finally! We have a few things to do here
+
+- Add a Block struct and define some BlockTypes
+- Update current code to compile with these being used
+- Figure out how to render the correct texture based on the block type
 
 # Probable/Possible Future Steps
 
@@ -201,4 +208,3 @@ https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixe
 **Other walkthru links**
 
 [Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
-
