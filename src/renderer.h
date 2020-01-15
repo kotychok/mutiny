@@ -61,6 +61,7 @@ class Renderer {
     float avgFPS { 60.0f };
     float fpsDecay { 0.9f };
     double lastSecond { glfwGetTime() };
+    void calculateFPS();
 
     // Coordinate lines
     bool showCoordinateLines { true };

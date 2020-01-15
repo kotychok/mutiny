@@ -33,17 +33,7 @@ Renderer::Renderer() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::render(double dt) {
-  double now = glfwGetTime();
-  double diff = now - lastSecond;
-  if (diff > 1) {
-    lastSecond = now;
-    avgFPS = fpsDecay * avgFPS + (1.0 - fpsDecay) * framesThisSecond;
-    framesThisSecond = -1;
-  }
-  framesThisSecond++;
-  if (diff > 0) {
-    currentFPS = framesThisSecond / diff;
-  }
+  calculateFPS();
 
   glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -144,6 +134,20 @@ void Renderer::keyCallback(GLFWwindow* window, int key, int scancode, int action
 
 void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
   camera.windowSizeCallback(window, width, height);
+}
+
+void Renderer::calculateFPS() {
+  double now = glfwGetTime();
+  double diff = now - lastSecond;
+  if (diff > 1) {
+    lastSecond = now;
+    avgFPS = fpsDecay * avgFPS + (1.0 - fpsDecay) * framesThisSecond;
+    framesThisSecond = -1;
+  }
+  framesThisSecond++;
+  if (diff > 0) {
+    currentFPS = framesThisSecond / diff;
+  }
 }
 
 void Renderer::renderCoordinateLines() {
