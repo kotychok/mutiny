@@ -38,7 +38,7 @@ Chunks are also used for world serialization. We need to be able to read data fr
 
 While there are probably other benefits to chunking that I'm forgetting or not realizing at moment, this should be sufficient background to justify their existence and begin implementing them.
 
-Right now, all I want to be able to do is render a 2x2 area of chunks, where each chunk is, let's say 16x16x16. That is, no generation, no loading, no occulusion, just the most basic chunk functionality I can imagine. I should be able to specify "present" or "absent" for each block in the chunk, and it should show up appropriately.
+Right now, all I want to be able to do is render a 2x2 area of chunks, where each chunk is, let's say 16x16x16. That is, no generation, no loading, no culling, just the most basic chunk functionality I can imagine. I should be able to specify "present" or "absent" for each block in the chunk, and it should show up appropriately.
 
 The general outline for how I did this is:
 
@@ -134,6 +134,8 @@ The rough order I did this in is:
 - Cache our generated mesh so we don't do it every frame. It should only happen when a chunk is loaded (generated or read from disk) or a block changes (block insertion/deletion is supported yet, but when it is)
 - Introduce the meshing algorithm.
 
+* * *
+
 Having done that, there are some other improvements we can start thinking about, which I might look into next or at a later time. We'll see. But anyways, here's a list with some thoughts and/or links for future reference:
 
 - Can we cull chunk faces that are next to each other? 
@@ -146,6 +148,26 @@ Having done that, there are some other improvements we can start thinking about,
 - Add support for [meshing when we have multiple block types](https://0fps.net/2012/07/07/meshing-minecraft-part-2/).
 - [Culling after adding cave generation](https://tomcc.github.io/2014/08/31/visibility-1.html)?
 - Other optimizations I'm not even sure how to categorize [this](https://vercidium.com/blog/voxel-world-optimisations/).
+- More stuff [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evd70sh/)
+- Also, right now we store both `quads` and `quadMeshes`. This probably uses about 33% more memory than it needs to. We can discard the quads entirely after created the `quadMeshes`, or better yet, just create the `quadMesh` directly from the quad vertices directly in the meshing algorithm. I'm going to save this very easy optimization for later once we have proper profiling and can more easily see the benefits to our optimizations.
+
+[![mesh_plane.png](./README/dirt_plane.png)](./README/mesh_plane.png)
+
+[![mesh_half_sphere.png](./README/dirt_plane.png)](./README/mesh_half_sphere.png)
+
+# 4 - GUI
+
+[003-meshing...004-gui](https://github.com/boatrite/mutiny/compare/003-meshing...004-gui)
+
+This isn't really specific to voxel engines at all, but I'm writing a ton of code here to add basic debugging controls and output which I do not want to appear in another section's commits.
+
+Take a look at the commits if you want, it's nothing terribly surprising.
+
+One thing I didn't add right now, but think I will in the future is a command menu. I would like to be able to hit /, open up a text input to type a command (e.g. /wires, /axes, etc). This would be more convenient than having to use the mouse. Maybe I'll look into it when I get tired of clicking all the time.
+
+[![gui.png](./README/dirt_plane.png)](./README/gui.png)
+
+# 5 - Multiple block types
 
 # Probable/Possible Future Steps
 
@@ -161,7 +183,13 @@ Then, we'll probably need some concept of a "World". When our program is first s
 
 Building on the previous step, we'll start generating and saving new chunks when the camera moves to a spot where this isn't one yet.
 
-\ ***... other resources, might be usable in the future**
+**Compute and use normals**
 
-Here is a resource that goes thru some steps of creating a voxel engine. Might be helpful: https://en.wikibooks.org/wiki/OpenGL\_Programming/Glescraft\_1
+There's probably lots of things normals can be used for. I think textures is one of them, altho the code I have now is fine. When it starts to matter more:
+
+https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixel-shader https://c0de517e.blogspot.com/2008/10/normals-without-normals.html https://bitbucket.org/volumesoffun/polyvox/wiki/Computing%20normals%20in%20a%20fragment%20shader
+
+**Other walkthru links**
+
+[Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
 
