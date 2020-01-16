@@ -7,6 +7,7 @@ enum class BlockType {
   BEDROCK,
   DIRT,
   STONE,
+  COBBLESTONE,
 };
 
 struct Block {

@@ -1,11 +1,13 @@
 #include <iostream>
 
+#include <unordered_map>
+
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
 #include "texture.h"
 
-Texture::Texture(const char* imagePath) {
+Texture::Texture(std::string imagePath) {
   glGenTextures(1, &ID);
   glBindTexture(GL_TEXTURE_2D, ID);
 
@@ -15,7 +17,7 @@ Texture::Texture(const char* imagePath) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   int width, height, nrChannels;
-  unsigned char *data = stbi_load(imagePath, &width, &height, &nrChannels, 0);
+  unsigned char *data = stbi_load(imagePath.c_str(), &width, &height, &nrChannels, 0);
   if (data) {
     GLint internalFormat;
     GLenum format;
@@ -44,4 +46,45 @@ Texture::Texture(const char* imagePath) {
     std::cerr << "ERROR: Failed to load image. Path: " << imagePath << std::endl;
   }
   stbi_image_free(data);
+}
+
+void Texture::use() {
+  glBindTexture(GL_TEXTURE_2D, ID);
+  // Pretty sure I want to put TexParam calls here b/c those also care about
+  // active texture. Which means they need to be set each time in case the
+  // active texture image unit has changed.
+}
+
+Texture& Texture::fetch(BlockType blockType) {
+  static std::unordered_map<BlockType, Texture> loadedTextures {};
+
+  if (loadedTextures.find(blockType) == loadedTextures.end()) {
+    Texture &texture = loadedTextures.try_emplace(blockType, imagePath(blockType)).first->second;
+    return texture;
+  } else {
+    Texture &texture = loadedTextures.find(blockType)->second;
+    return texture;
+  }
+}
+
+std::string Texture::imagePath(BlockType blockType) {
+  std::string imagePath {};
+  switch (blockType) {
+    case BlockType::BEDROCK:
+      imagePath = "bedrock.png";
+      break;
+    case BlockType::DIRT:
+      imagePath = "dirt.png";
+      break;
+    case BlockType::STONE:
+      imagePath = "stone.png";
+      break;
+    case BlockType::COBBLESTONE:
+      imagePath = "cobblestone.png";
+      break;
+    default:
+      imagePath = "missing.png";
+      break;
+  }
+  return "./assets/" + imagePath;
 }
