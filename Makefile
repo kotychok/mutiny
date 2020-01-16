@@ -15,9 +15,9 @@ MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
 
 CPPFLAGS := -std=c++17 -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl
-OPTIONS := $(CPPFLAGS) src/*.cpp $(OBJECTS) $(LDLIBS)
+OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(LDLIBS)
 
-all: objects mutiny
+all: objects mutiny test
 
 clean:
 	rm -rf build
@@ -58,7 +58,7 @@ endef
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 
 ./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
-	g++ -g3 $(CPPFLAGS) -I src/ src/*.cpp $< $(OBJECTS) $(LDLIBS) -o $@
+	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) $(LDLIBS) -o $@
 
 watch_tests:
 	find test -type f | entr -scr "make test"
