@@ -2,6 +2,7 @@
 # This happens when the Makefile is read.
 # i.e. before any make command is run.
 _dummy := $(shell mkdir -p build/objects)
+_dummy2 := $(shell mkdir -p build/test)
 
 C_SOURCES := $(wildcard ./third_party_src/*.c)
 CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
@@ -42,9 +43,29 @@ debug: ./build/debug
 ./build/debug: $(MUTINY_PREREQS)
 	g++ -g3 $(OPTIONS) -o ./build/debug
 
+# Testing
+TEST_SOURCES := $(wildcard ./test/*.cpp)
+TEST_NAMES := $(patsubst ./test/%.cpp, %, $(TEST_SOURCES))
+
+test: $(TEST_NAMES)
+	@echo $(TEST_NAMES)
+
+define test_template
+$(1): ./build/test/$(1)
+	./build/test/$(1)
+endef
+
+$(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
+
+./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
+	g++ -g3 $(CPPFLAGS) -I src/ src/*.cpp $< $(OBJECTS) $(LDLIBS) -o $@
+
+watch_tests:
+	find test -type f | entr -scr "make test"
+
 # Other Tasks
 watch:
-	find -name "*.cpp" -o -name "*.c" -o -name "*.h" -o -name "Makefile" | entr -scr "make && ./build/mutiny"
+	find src -type f | entr -scr "make mutiny && ./build/mutiny"
 
 min:
 	g++ -g3 $(CPPFLAGS) -o minimal_example/minimal minimal_example/*.c* $(LDLIBS)
