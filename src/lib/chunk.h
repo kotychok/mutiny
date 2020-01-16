@@ -13,8 +13,7 @@ class Chunk {
     static constexpr int SIZE { 32 };
 
     // Instance variables
-    glm::vec3 pos; // Center of the chunk
-    Block blocks[SIZE * SIZE * SIZE] {};
+    glm::vec3 pos;
 
     // Constructor
     Chunk(glm::vec3 pos);
@@ -33,6 +32,8 @@ class Chunk {
   private:
     unsigned int chunkVAO {};
     unsigned int chunkVBO {};
+
+    Block blocks[SIZE * SIZE * SIZE] {};
 
     std::vector<quad> quads {};
     std::vector<quad_mesh> quadMeshes {};
