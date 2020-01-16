@@ -8,6 +8,7 @@
 #include "block.h"
 #include "chunk.h"
 #include "mesher_greedy.h"
+#include "texture.h"
 
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
   // Cubes
@@ -18,7 +19,7 @@ Chunk::Chunk(glm::vec3 pos) : pos{pos} {
     for (unsigned int x = 0; x < Chunk::SIZE; x++) {
       for (unsigned int z = 0; z < Chunk::SIZE; z++) {
         unsigned int index { z * SIZE * SIZE + 0 * SIZE + x };
-        blocks[index] = Block { BlockType::BEDROCK };
+        blocks[index] = Block { BlockType::STONE };
       }
     }
 
@@ -68,6 +69,11 @@ void Chunk::render(const Shader &myShader) {
     glm::mat4 blockModel = glm::mat4(1.0);
     blockModel = glm::translate(blockModel, pos * Chunk::SIZE);
     myShader.setMat4("model", blockModel);
+
+    Texture& dirt = Texture::fetch(BlockType::DIRT);
+    // Texture& bedrock = Texture::fetch(BlockType::BEDROCK);
+    glBindTexture(GL_TEXTURE_2D, dirt.ID);
+
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
 }

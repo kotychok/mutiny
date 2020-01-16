@@ -27,11 +27,6 @@ Renderer::Renderer() {
   glGenBuffers(1, &zAxisVBO);
 
   glActiveTexture(GL_TEXTURE0);
-  Texture& dirt = Texture::fetch(BlockType::DIRT);
-
-  Texture& bedrock = Texture::fetch(BlockType::BEDROCK);
-
-  glBindTexture(GL_TEXTURE_2D, dirt.ID);
 }
 
 #pragma GCC diagnostic push
