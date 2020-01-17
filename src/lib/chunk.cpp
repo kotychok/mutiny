@@ -7,14 +7,9 @@
 
 #include "block.h"
 #include "chunk.h"
-#include "mesher_greedy.h"
 #include "texture.h"
 
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
-  // Cubes
-  glGenVertexArrays(1, &chunkVAO);
-  glGenBuffers(1, &chunkVBO);
-
   if (pos.y == 0) {
     for (unsigned int x = 0; x < Chunk::SIZE; x++) {
       for (unsigned int z = 0; z < Chunk::SIZE; z++) {
@@ -40,12 +35,13 @@ Chunk::Chunk(glm::vec3 pos) : pos{pos} {
       // }
     // }
   }
-
-  quads = MesherGreedy::chunkToQuads(*this);
-  transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
 }
 
 Chunk::~Chunk() {
+}
+
+void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
+  this->quadMeshes = quadMeshes;
 }
 
 bool Chunk::isBlockAt(int x, int y, int z) const {
@@ -54,6 +50,13 @@ bool Chunk::isBlockAt(int x, int y, int z) const {
 }
 
 void Chunk::render(const Shader &myShader) {
+  if (!chunkVAO) {
+    glGenVertexArrays(1, &chunkVAO);
+  }
+  if (!chunkVBO) {
+    glGenBuffers(1, &chunkVBO);
+  }
+
   for (quad_mesh quadMesh : quadMeshes) {
     glBindVertexArray(chunkVAO);
 

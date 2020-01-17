@@ -26,6 +26,7 @@ class Chunk {
     Chunk& operator=(Chunk &&) = delete; // Delete move assignment
 
     // Instance methods
+    void setMesh(std::vector<quad_mesh> quadMeshes);
     void render(const Shader &myShader);
     bool isBlockAt(int x, int y, int z) const;
 
@@ -35,6 +36,5 @@ class Chunk {
 
     Block blocks[SIZE * SIZE * SIZE] {};
 
-    std::vector<quad> quads {};
     std::vector<quad_mesh> quadMeshes {};
 };

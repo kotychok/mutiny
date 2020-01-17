@@ -5,6 +5,7 @@
 #include <stb/stb_image.h>
 
 #include "memory_helper.h"
+#include "mesher_greedy.h"
 #include "renderer.h"
 #include "shader.h"
 #include "texture.h"
@@ -74,7 +75,15 @@ void Renderer::render(double dt) {
         areaOfInterest.insert(key);
 
         if (chunks.find(key) == chunks.end()) {
+          // If our chunk is not loaded, we need to create it
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz)).first->second;
+
+          // Then generate its mesh
+          std::vector<quad> quads = MesherGreedy::chunkToQuads(chunk);
+          std::vector<quad_mesh> quadMeshes {};
+          transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
+          chunk.setMesh(quadMeshes);
+
           chunk.render(blockShader);
         } else {
           Chunk &chunk = chunks.find(key)->second;
