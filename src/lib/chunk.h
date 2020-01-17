@@ -26,13 +26,13 @@ class Chunk {
     // Instance methods
     void setMesh(std::vector<quad_mesh> quadMeshes);
     void render(const Shader &myShader);
-    bool isBlockAt(int x, int y, int z) const;
+    bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
 
   private:
     unsigned int chunkVAO {};
     unsigned int chunkVBO {};
 
-    Block blocks[CHUNK_SIZE_CUBED] {};
+    std::array<Block, CHUNK_SIZE_CUBED> blocks {};
 
     std::vector<quad_mesh> quadMeshes {};
 };

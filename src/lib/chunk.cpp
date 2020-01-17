@@ -44,9 +44,9 @@ void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
   this->quadMeshes = quadMeshes;
 }
 
-bool Chunk::isBlockAt(int x, int y, int z) const {
-  int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-  return blocks[index].type != BlockType::AIR;
+bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
+  unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
+  return blocks.at(index).type != BlockType::AIR;
 }
 
 void Chunk::render(const Shader &myShader) {
