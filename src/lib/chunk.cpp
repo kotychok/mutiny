@@ -11,23 +11,23 @@
 
 Chunk::Chunk(glm::vec3 pos) : pos{pos} {
   if (pos.y == 0) {
-    for (unsigned int x = 0; x < Chunk::SIZE; x++) {
-      for (unsigned int z = 0; z < Chunk::SIZE; z++) {
-        unsigned int index { z * SIZE * SIZE + 0 * SIZE + x };
+    for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+      for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+        unsigned int index { z * CHUNK_SIZE_SQUARED + 0 * CHUNK_SIZE + x };
         blocks[index] = Block { BlockType::STONE };
       }
     }
 
     // int radius = 8;
-    // for (unsigned int x = 0; x < Chunk::SIZE; x++) {
-      // for (unsigned int z = 0; z < Chunk::SIZE; z++) {
-        // for (unsigned int y = 0; y < Chunk::SIZE; y++) {
+    // for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+      // for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+        // for (unsigned int y = 0; y < CHUNK_SIZE; y++) {
           // if (y < 8) {
-            // unsigned int blockX = x - Chunk::SIZE / 2;
-            // unsigned int blockY = y - Chunk::SIZE / 2;
-            // unsigned int blockZ = z - Chunk::SIZE / 2;
+            // unsigned int blockX = x - CHUNK_SIZE / 2;
+            // unsigned int blockY = y - CHUNK_SIZE / 2;
+            // unsigned int blockZ = z - CHUNK_SIZE / 2;
             // if (sqrt(blockX * blockX + blockY * blockY + blockZ * blockZ) < radius) {
-              // unsigned int index { z * SIZE * SIZE + y * SIZE + x };
+              // unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
               // blocks[index] = 1;
             // }
           // }
@@ -45,7 +45,7 @@ void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
 }
 
 bool Chunk::isBlockAt(int x, int y, int z) const {
-  int index { z * SIZE * SIZE + y * SIZE + x };
+  int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
   return blocks[index].type != BlockType::AIR;
 }
 
@@ -70,7 +70,7 @@ void Chunk::render(const Shader &myShader) {
     glEnableVertexAttribArray(1);
 
     glm::mat4 blockModel = glm::mat4(1.0);
-    blockModel = glm::translate(blockModel, pos * Chunk::SIZE);
+    blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
     myShader.setMat4("model", blockModel);
 
     Texture& dirt = Texture::fetch(BlockType::DIRT);

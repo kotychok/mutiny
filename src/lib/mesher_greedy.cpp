@@ -16,20 +16,20 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
     float x[3] {};
     float q[3] {};
 
-    bool mask[Chunk::SIZE * Chunk::SIZE] {};
+    bool mask[CHUNK_SIZE_SQUARED] {};
     q[d] = 1;
 
     // Check each slice of the chunk one at a time
-    for (x[d] = -1; x[d] < Chunk::SIZE;) {
+    for (x[d] = -1; x[d] < CHUNK_SIZE;) {
       // Compute the mask
       auto n = 0;
-      for (x[v] = 0; x[v] < Chunk::SIZE; ++x[v]) {
-        for (x[u] = 0; x[u] < Chunk::SIZE; ++x[u]) {
+      for (x[v] = 0; x[v] < CHUNK_SIZE; ++x[v]) {
+        for (x[u] = 0; x[u] < CHUNK_SIZE; ++x[u]) {
           // q determines the direction (X, Y or Z) that we are searching
           // chunk.isBlockAt(x,y,z) takes local-to-chunk map positions and returns true if a block exists there
 
           bool blockCurrent = 0 <= x[d]              ? chunk.isBlockAt(x[0],        x[1],        x[2])        : false;
-          bool blockCompare = x[d] < Chunk::SIZE - 1 ? chunk.isBlockAt(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : false;
+          bool blockCompare = x[d] < CHUNK_SIZE - 1 ? chunk.isBlockAt(x[0] + q[0], x[1] + q[1], x[2] + q[2]) : false;
 
           // The mask is set to true if there is a visible face between two blocks,
           //   i.e. both aren't empty and both aren't blocks
@@ -43,24 +43,24 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
 
       // Generate a mesh from the mask using lexicographic ordering,
       //   by looping over each block in this slice of the chunk
-      for (j = 0; j < Chunk::SIZE; ++j) {
-        for (i = 0; i < Chunk::SIZE;) {
+      for (j = 0; j < CHUNK_SIZE; ++j) {
+        for (i = 0; i < CHUNK_SIZE;) {
           if (mask[n]) {
             // Compute the width of this quad and store it in w
             //   This is done by searching along the current axis until mask[n + w] is false
-            for (w = 1; i + w < Chunk::SIZE && mask[n + w]; w++) { }
+            for (w = 1; i + w < CHUNK_SIZE && mask[n + w]; w++) { }
 
             // Compute the height of this quad and store it in h
             //   This is done by checking if every block next to this row (range 0 to w) is also part of the mask.
             //   For example, if w is 5 we currently have a quad of dimensions 1 x 5. To reduce triangle count,
-            //   greedy meshing will attempt to expand this quad out to Chunk::SIZE x 5, but will stop if it reaches a hole in the mask
+            //   greedy meshing will attempt to expand this quad out to CHUNK_SIZE x 5, but will stop if it reaches a hole in the mask
 
             auto done = false;
-            for (h = 1; j + h < Chunk::SIZE; h++) {
+            for (h = 1; j + h < CHUNK_SIZE; h++) {
               // Check each block next to this quad
               for (k = 0; k < w; ++k) {
                 // If there's a hole in the mask, exit
-                if (!mask[n + k + h * Chunk::SIZE]) {
+                if (!mask[n + k + h * CHUNK_SIZE]) {
                   done = true;
                   break;
                 }
@@ -83,10 +83,10 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
 
             // Create a quad for this face. Colour, normal or textures are not stored in this block vertex format.
             quad quad {
-              x[0]                 - Chunk::SIZE / 2, x[1]                 - 1, x[2]                 - Chunk::SIZE / 2, // Top-left vertice position
-              x[0] + du[0]         - Chunk::SIZE / 2, x[1] + du[1]         - 1, x[2] + du[2]         - Chunk::SIZE / 2, // Top right vertice position
-              x[0] + dv[0]         - Chunk::SIZE / 2, x[1] + dv[1]         - 1, x[2] + dv[2]         - Chunk::SIZE / 2, // Bottom left vertice position
-              x[0] + du[0] + dv[0] - Chunk::SIZE / 2, x[1] + du[1] + dv[1] - 1, x[2] + du[2] + dv[2] - Chunk::SIZE / 2  // Bottom right vertice position
+              x[0]                 - CHUNK_SIZE_HALVED, x[1]                 - 1, x[2]                 - CHUNK_SIZE_HALVED, // Top-left vertice position
+              x[0] + du[0]         - CHUNK_SIZE_HALVED, x[1] + du[1]         - 1, x[2] + du[2]         - CHUNK_SIZE_HALVED, // Top right vertice position
+              x[0] + dv[0]         - CHUNK_SIZE_HALVED, x[1] + dv[1]         - 1, x[2] + dv[2]         - CHUNK_SIZE_HALVED, // Bottom left vertice position
+              x[0] + du[0] + dv[0] - CHUNK_SIZE_HALVED, x[1] + du[1] + dv[1] - 1, x[2] + du[2] + dv[2] - CHUNK_SIZE_HALVED  // Bottom right vertice position
             };
 
             quads.push_back(quad);
@@ -94,7 +94,7 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
             // Clear this part of the mask, so we don't add duplicate faces
             for (l = 0; l < h; ++l) {
               for (k = 0; k < w; ++k) {
-                mask[n + k + l * Chunk::SIZE] = false;
+                mask[n + k + l * CHUNK_SIZE] = false;
               }
             }
 

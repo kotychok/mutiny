@@ -4,14 +4,12 @@
 #include <vector>
 
 #include "block.h"
-#include "shader.h"
+#include "constants.h"
 #include "quad.h"
+#include "shader.h"
 
 class Chunk {
   public:
-    // Constants
-    static constexpr int SIZE { 32 };
-
     // Instance variables
     glm::vec3 pos;
 
@@ -34,7 +32,7 @@ class Chunk {
     unsigned int chunkVAO {};
     unsigned int chunkVBO {};
 
-    Block blocks[SIZE * SIZE * SIZE] {};
+    Block blocks[CHUNK_SIZE_CUBED] {};
 
     std::vector<quad_mesh> quadMeshes {};
 };
