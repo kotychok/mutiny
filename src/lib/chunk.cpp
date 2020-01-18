@@ -9,9 +9,8 @@
 #include "chunk_generator.h"
 #include "texture.h"
 
-Chunk::Chunk(glm::vec3 pos) : pos{pos} {
-  // blocks = ChunkGenerator::halfSphere();
-  blocks = ChunkGenerator::flat();
+Chunk::Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()> chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
+  blocks = chunkGeneratorFunc();
 }
 
 Chunk::~Chunk() {

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <vector>
 
 #include "block.h"
+#include "chunk_generator.h"
 #include "constants.h"
 #include "quad.h"
 #include "shader.h"
@@ -12,9 +14,10 @@ class Chunk {
   public:
     // Instance variables
     glm::vec3 pos;
+    std::function<std::array<Block, CHUNK_SIZE_CUBED>()> chunkGeneratorFunc;
 
     // Constructor
-    Chunk(glm::vec3 pos);
+    Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()> chunkGeneratorFunc);
     ~Chunk();
 
     // Explicitly delete since these shouldn't be used

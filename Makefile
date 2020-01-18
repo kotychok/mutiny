@@ -52,7 +52,7 @@ test: $(TEST_NAMES)
 
 define test_template
 $(1): ./build/test/$(1)
-	./build/test/$(1)
+	./build/test/$(1) --report_level=detailed
 endef
 
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
