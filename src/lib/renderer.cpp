@@ -79,8 +79,17 @@ void Renderer::render(double dt) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flat).first->second;
 
           // Then generate its mesh
-          std::vector<quad> quads = MesherGreedy::chunkToQuads(chunk);
-          std::vector<quad_mesh> quadMeshes {};
+          // std::vector<quad> quads = MesherGreedy::chunkToQuads(chunk);
+          std::vector<std::pair<quad, BlockType>> quads {
+            std::make_pair(quad{-16, -1, -16, -16, 0, -16, -16, -1, 16, -16, 0, 16}, BlockType::DIRT), // X constant (-16), Then Y changes (-1, 0), Then Z changes (-16, 16)
+            std::make_pair(quad{16, -1, -16, 16, 0, -16, 16, -1, 16, 16, 0, 16}, BlockType::STONE),     // Same, but X = 16
+            std::make_pair(quad{-16, -1, -16, -16, -1, 16, 16, -1, -16, 16, -1, 16}, BlockType::DIRT), // Y constant (-1), Then Z changes (-16, 16), Then X changes (16, 16)
+            std::make_pair(quad{-16, 0, -16, -16, 0, 16, 16, 0, -16, 16, 0, 16}, BlockType::STONE),     // Same, but Y = 0
+            std::make_pair(quad{-16, -1, -16, 16, -1, -16, -16, 0, -16, 16, 0, -16}, BlockType::DIRT), // Z constants (-16), Then X changes (-16, 16), Then Y changes (-1, 0)
+            std::make_pair(quad{-16, -1, 16, 16, -1, 16, -16, 0, 16, 16, 0, 16}, BlockType::STONE),     // Same, but Z = 16
+          };
+
+          std::vector<std::pair<quad_mesh, BlockType>> quadMeshes {};
           transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
           chunk.setMesh(quadMeshes);
 

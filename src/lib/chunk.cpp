@@ -16,7 +16,7 @@ Chunk::Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()>
 Chunk::~Chunk() {
 }
 
-void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
+void Chunk::setMesh(std::vector<std::pair<quad_mesh, BlockType>> quadMeshes) {
   this->quadMeshes = quadMeshes;
 }
 
@@ -33,7 +33,10 @@ void Chunk::render(const Shader &myShader) {
     glGenBuffers(1, &chunkVBO);
   }
 
-  for (quad_mesh quadMesh : quadMeshes) {
+  for (std::pair<quad_mesh, BlockType> pair : quadMeshes) {
+    quad_mesh& quadMesh { pair.first };
+    BlockType& blockType { pair.second };
+
     glBindVertexArray(chunkVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
@@ -49,9 +52,8 @@ void Chunk::render(const Shader &myShader) {
     blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
     myShader.setMat4("model", blockModel);
 
-    Texture& dirt = Texture::fetch(BlockType::DIRT);
-    // Texture& bedrock = Texture::fetch(BlockType::BEDROCK);
-    glBindTexture(GL_TEXTURE_2D, dirt.ID);
+    Texture& texture = Texture::fetch(blockType);
+    glBindTexture(GL_TEXTURE_2D, texture.ID);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }

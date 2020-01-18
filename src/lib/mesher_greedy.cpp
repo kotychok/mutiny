@@ -5,8 +5,8 @@
 #include "all_equal.h"
 #include "mesher_greedy.h"
 
-std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
-  std::vector<quad> quads {};
+std::vector<std::pair<quad, BlockType>> MesherGreedy::chunkToQuads(const Chunk &chunk) {
+  std::vector<std::pair<quad, BlockType>> quads {};
 
   // Sweep over each axis (X (d = 0), Y (d = 1) and Z (d = 2))
   for (auto d = 0; d < 3; ++d) {
@@ -89,7 +89,7 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
               x[0] + du[0] + dv[0] - CHUNK_SIZE_HALVED, x[1] + du[1] + dv[1] - 1, x[2] + du[2] + dv[2] - CHUNK_SIZE_HALVED  // Bottom right vertice position
             };
 
-            quads.push_back(quad);
+            quads.push_back(std::make_pair(quad, BlockType::DIRT));
 
             // Clear this part of the mask, so we don't add duplicate faces
             for (l = 0; l < h; ++l) {
@@ -113,7 +113,10 @@ std::vector<quad> MesherGreedy::chunkToQuads(const Chunk &chunk) {
   return quads;
 }
 
-quad_mesh MesherGreedy::quadToQuadMesh(const quad &quad) {
+std::pair<quad_mesh, BlockType> MesherGreedy::quadToQuadMesh(const std::pair<quad, BlockType> &pair) {
+  const quad& quad { pair.first };
+  const BlockType& blockType { pair.second };
+
   float rb_x { quad.at(9) }, rb_y { quad.at(10) }, rb_z { quad.at(11) }, // right bottom
         rt_x { quad.at(3) }, rt_y { quad.at(4) },  rt_z { quad.at(5) },  // right top
         lb_x { quad.at(6) }, lb_y { quad.at(7) },  lb_z { quad.at(8) },  // left bottom
@@ -175,5 +178,5 @@ quad_mesh MesherGreedy::quadToQuadMesh(const quad &quad) {
     lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
   };
 
-  return quadMesh;
+  return std::make_pair(quadMesh, blockType);
 }
