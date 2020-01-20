@@ -30,6 +30,24 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf() {
   return blocks;
 }
 
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare() {
+  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+  unsigned int y = 0;
+  for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+    for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+      unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
+      if (x > CHUNK_SIZE / 4 && x < 3 * CHUNK_SIZE / 4 && z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4) {
+        blocks[index] = Block { BlockType::BEDROCK };
+      } else if (x < CHUNK_SIZE_HALVED) {
+        blocks[index] = Block { BlockType::DIRT };
+      } else {
+        blocks[index] = Block { BlockType::STONE };
+      }
+    }
+  }
+  return blocks;
+}
+
 std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half() {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {

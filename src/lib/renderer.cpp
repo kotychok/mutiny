@@ -76,7 +76,7 @@ void Renderer::render(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flatHalfAndHalf).first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flatHalfAndHalfWithSquare).first->second;
 
           // Then generate its mesh
           std::vector<std::pair<quad, BlockType>> quads = MesherGreedy::chunkToQuads(chunk);
