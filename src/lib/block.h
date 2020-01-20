@@ -13,3 +13,5 @@ enum class BlockType {
 struct Block {
   BlockType type;
 };
+
+static const struct Block EmptyBlock { BlockType::EMPTY };
