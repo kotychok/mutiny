@@ -12,6 +12,14 @@ enum class BlockType {
 
 struct Block {
   BlockType type;
+
+  bool operator==(const Block& other) const {
+    return this->type == other.type;
+  }
+
+  bool operator!=(const Block& other) const {
+    return !(*this == other);
+  }
 };
 
 static const struct Block EmptyBlock { BlockType::EMPTY };

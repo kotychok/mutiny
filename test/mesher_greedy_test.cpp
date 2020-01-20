@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE MesherGreedy
 #include <boost/test/included/unit_test.hpp>
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <iostream>
@@ -68,7 +69,7 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFlat) {
     }, BlockType::DIRT),
   };
 
-  BOOST_TEST(actual == expected);
+  BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(chunkToQuadsFlatHalfAndHalf) {
@@ -79,7 +80,6 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFlatHalfAndHalf) {
   std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::chunkToQuads(chunk) };
 
   std::vector<std::pair<quad, BlockType>> expected {
-    // X constant (-CHUNK_SIZE_HALVED), Then Y changes (-1, 0), Then Z changes (-CHUNK_SIZE_HALVED, CHUNK_SIZE)
     std::make_pair(quad{
       -CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
       -CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
@@ -87,48 +87,85 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFlatHalfAndHalf) {
       -CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
     }, BlockType::DIRT),
 
-    // Same, but X = CHUNK_SIZE_HALVED
     std::make_pair(quad{
-      CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
-    }, BlockType::DIRT),
+      0, -1, -CHUNK_SIZE_HALVED,
+      0, 0, -CHUNK_SIZE_HALVED,
+      0, -1, CHUNK_SIZE_HALVED,
+      0, 0, CHUNK_SIZE_HALVED
+    }, BlockType::STONE),
 
-    // Y constant (-1), Then Z changes (-CHUNK_SIZE_HALVED, CHUNK_SIZE_HALVED), Then X changes (CHUNK_SIZE_HALVED, CHUNK_SIZE_HALVED)
     std::make_pair(quad{
       -CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
       -CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
+      0, -1, -CHUNK_SIZE_HALVED,
+      0, -1, CHUNK_SIZE_HALVED
+    }, BlockType::DIRT),
+
+    std::make_pair(quad{
+      0, -1, -CHUNK_SIZE_HALVED,
+      0, -1, CHUNK_SIZE_HALVED,
       CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
       CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED
-    }, BlockType::DIRT),
+    }, BlockType::STONE),
 
-    // Same, but Y = 0
-    std::make_pair(quad{
-      -CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
-      -CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
-    }, BlockType::DIRT),
-
-    // Z constants (-CHUNK_SIZE_HALVED), Then X changes (-CHUNK_SIZE_HALVED, CHUNK_SIZE_HALVED), Then Y changes (-1, 0)
     std::make_pair(quad{
       -CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
+      0, -1, -CHUNK_SIZE_HALVED,
       -CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED
+      0, 0, -CHUNK_SIZE_HALVED
     }, BlockType::DIRT),
 
-    // Same, but Z = CHUNK_SIZE_HALVED
+    std::make_pair(quad{
+      0, -1, -CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
+      0, 0, -CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED
+    }, BlockType::STONE),
+
+    std::make_pair(quad{
+      0, -1, -CHUNK_SIZE_HALVED,
+      0, 0, -CHUNK_SIZE_HALVED,
+      0, -1, CHUNK_SIZE_HALVED,
+      0, 0, CHUNK_SIZE_HALVED
+    }, BlockType::DIRT),
+
+    std::make_pair(quad{
+      CHUNK_SIZE_HALVED, -1, -CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
+    }, BlockType::STONE),
+
+    std::make_pair(quad{
+      -CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
+      -CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED,
+      0, 0, -CHUNK_SIZE_HALVED,
+      0, 0, CHUNK_SIZE_HALVED
+    }, BlockType::DIRT),
+
+    std::make_pair(quad{
+      0, 0, -CHUNK_SIZE_HALVED,
+      0, 0, CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, -CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
+    }, BlockType::STONE),
+
     std::make_pair(quad{
       -CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
+      0, -1, CHUNK_SIZE_HALVED,
       -CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED,
-      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
+      0, 0, CHUNK_SIZE_HALVED
     }, BlockType::DIRT),
+
+    std::make_pair(quad{
+      0, -1, CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, -1, CHUNK_SIZE_HALVED,
+      0, 0, CHUNK_SIZE_HALVED,
+      CHUNK_SIZE_HALVED, 0, CHUNK_SIZE_HALVED
+    }, BlockType::STONE),
   };
 
-  BOOST_TEST(actual == expected);
+  BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(chunkToQuadsFilled) {
@@ -188,7 +225,7 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFilled) {
     }, BlockType::DIRT),
   };
 
-  BOOST_TEST(actual == expected);
+  BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
 BOOST_AUTO_TEST_CASE(chunkToQuadsHalfSphere) {
@@ -718,5 +755,5 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsHalfSphere) {
     std::make_pair(quad{-2, 6, 14, 3, 6, 14, -2, 7, 14, 3, 7, 14}, BlockType::DIRT),
   };
 
-  BOOST_TEST(actual == expected);
+  BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
