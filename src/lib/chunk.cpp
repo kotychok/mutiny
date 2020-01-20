@@ -21,8 +21,19 @@ void Chunk::setMesh(std::vector<std::pair<quad_mesh, BlockType>> quadMeshes) {
 }
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
+  return blockAt(x, y, z).type != BlockType::EMPTY;
+}
+
+Block Chunk::blockAt(unsigned int x, unsigned int y, unsigned int z) const {
+  if (x > CHUNK_SIZE - 1)
+    throw std::invalid_argument("X is larger than CHUNK_SIZE - 1");
+  if (y > CHUNK_SIZE - 1)
+    throw std::invalid_argument("Y is larger than CHUNK_SIZE - 1");
+  if (z > CHUNK_SIZE - 1)
+    throw std::invalid_argument("Z is larger than CHUNK_SIZE - 1");
+
   unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-  return blocks.at(index).type != BlockType::EMPTY;
+  return blocks.at(index);
 }
 
 void Chunk::render(const Shader &myShader) {

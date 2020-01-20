@@ -30,6 +30,7 @@ class Chunk {
     void setMesh(std::vector<std::pair<quad_mesh, BlockType>> quadMeshes);
     void render(const Shader &myShader);
     bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
+    Block blockAt(unsigned int x, unsigned int y, unsigned int z) const;
 
   private:
     unsigned int chunkVAO {};
