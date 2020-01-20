@@ -12,10 +12,7 @@ Dir["./README/**/*"].each do |file|
   FileUtils.rm file
 end
 
-# Ensure bookstack auth for curl is present
-
-## Assume we are using the default profile
-PROFILE = `grep -E '^\\[Profile|^Path|^Default' ~/.mozilla/firefox/profiles.ini | grep -1 '^Default=1' | grep '^Path' | cut -c6-`.strip
+PROFILE = 'fq0yteia.default'
 
 ## Create a file to cache session in so we don't have to fetch it every time
 ## this script runs

@@ -179,11 +179,24 @@ One thing I didn't add right now, but think I will in the future is a command me
 
 # 5 - Multiple block types
 
+[004-gui...005-multiple-block-types](https://github.com/boatrite/mutiny/compare/004-gui...005-multiple-block-types)
+
 Finally! We have a few things to do here
 
 - Add a Block struct and define some BlockTypes
-- Update current code to compile with these being used
-- Figure out how to render the correct texture based on the block type
+- Figure out how to render the correct texture based on the block type 
+  - Use some stubbed out quads here to test the rendering
+- Update the meshing algorithm to handle multiple block types
+
+This was a pretty heavy lift for me. When the meshing code was first added, it was almost completely copy-pasted and it mostly "just worked" without having to actually understand it. Now, however, I really dug in to try to figure out how it would have to be updated. After a few days, I did in fact come to understand the code, but all my ideas for implementing multi-block support did not pan out. It wasn't all sunk time though, because I was able to look at [this implementation](https://github.com/roboleary/GreedyMesh/blob/master/src/mygame/Main.java) which has multi-block support and is also based off of the same code ours is and basically copy in the relevant bits of code.
+
+I don't totally understand the logic behind it, specifically that flip-flop which surrounds the entire previous algorithm. I think at its core though, it has to do with the fact that we need to get voxel information from both sides of the edges where a transition occurs. One of the things I learned pouring over the previous code is that the `mask` array was basically holding edge data. i.e. at this edge, was there a transition from absent to present or present to absent. The later code when reading the mask then used that to determine the quad sizing. The big difference now is that with multiple block types, we don't just have a single bit of data at the edge, we need to know the block type at both sides. This, I believe, is the core reason behind the flip-flop which wraps the entire previous algorithm. With that, we execute all the meshing twice, the first time looking at one side of the edge, and the next time looking at the other side.
+
+The other minor changes are much more obvious. The fact that the height and width code is updated to check that the block type doesn't change is pretty obvious to me (my initial attempts tried something similar, although in a different way).
+
+Something exciting about this change is that we now have face/directional information which I believe can be used to further optimize the culling. I'm not quite sure how this would work, but it's something to consider later on if we need to start working on performance optimizations.
+
+[![multiple-block-types.gif](./README/multiple-block-types.gif)](./README/multiple-block-types.gif)
 
 # Probable/Possible Future Steps
 
@@ -208,3 +221,21 @@ https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixe
 **Other walkthru links**
 
 [Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
+
+**Block storage/compression**
+
+Palette Compression
+
+- https://hbfs.wordpress.com/2011/03/22/compressing-voxel-worlds/
+- https://old.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased\_compression\_for\_chunked\_discrete/
+
+Octrees
+
+- [Efficient Sparse Voxel Oxtrees - Analysis, Extensions, and Implementation](https://pdfs.semanticscholar.org/5ca0/7a56725f8ae6c74778a86a4736ebaab6add6.pdf)
+- [Sparse voxel octree Wikipedia](https://en.wikipedia.org/wiki/Sparse_voxel_octree)
+- [The sparse tree data structure](https://yacas.readthedocs.io/en/latest/book_of_algorithms/multivar.html)
+- [Sparse Voxel Octree Raytracing based Occlusion Culling (Theory)](https://voxels.blogspot.com/2015/05/sparse-voxel-octree-raytracing-based.html)
+
+Culling
+
+- [Voxel Occlusion Testing: A Shadow Determination Accelerator for Ray Tracing](http://graphicsinterface.org/wp-content/uploads/gi1990-26.pdf)
