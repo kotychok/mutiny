@@ -22,7 +22,7 @@ void Chunk::setMesh(std::vector<std::pair<quad_mesh, BlockType>> quadMeshes) {
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
   unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-  return blocks.at(index).type != BlockType::AIR;
+  return blocks.at(index).type != BlockType::EMPTY;
 }
 
 void Chunk::render(const Shader &myShader) {

@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 enum class BlockType {
-  AIR = 0,
+  EMPTY = 0,
   BEDROCK,
   DIRT,
   STONE,
