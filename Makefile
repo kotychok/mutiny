@@ -14,7 +14,7 @@ OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS)
 MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
 
 CPPFLAGS := -std=c++17 -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
-LDLIBS := -lglfw -ldl
+LDLIBS := -lglfw -ldl -lstdc++fs
 OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(LDLIBS)
 
 all: objects mutiny test
@@ -41,7 +41,7 @@ debug: ./build/debug
 	@echo ./build/debug
 
 ./build/debug: $(MUTINY_PREREQS)
-	g++ -g3 $(OPTIONS) -o ./build/debug
+	g++ -g3 -O0 $(OPTIONS) -o ./build/debug
 
 # Testing
 TEST_SOURCES := $(wildcard ./test/*.cpp)
