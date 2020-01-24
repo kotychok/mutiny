@@ -18,7 +18,14 @@ const std::unordered_map<BlockType, std::string> Texture::blockTypeToString {
 
 const int Texture::BLOCK_COUNT = blockTypeToString.size();
 
-std::unordered_map<BlockType, float> Texture::blockTypeToTextureIndex {};
+const std::unordered_map<BlockType, float> Texture::blockTypeToTextureIndex {
+  {
+    { BlockType::BEDROCK, 0 },
+    { BlockType::COBBLESTONE, 1 },
+    { BlockType::DIRT, 2 },
+    { BlockType::STONE, 3 },
+  }
+};
 
 void Texture::loadBlockTextures() {
   GLuint textureID;
@@ -27,10 +34,10 @@ void Texture::loadBlockTextures() {
 
   glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 16, 16, BLOCK_COUNT);
 
-  float i = 0;
   for(auto it : blockTypeToString) {
     const BlockType& blockType = it.first;
     const std::string& blockName = it.second;
+    float textureIndex { blockTypeToTextureIndex.find(blockType)->second };
 
     std::string path = "./assets/" + blockName + ".png";
 
@@ -42,7 +49,7 @@ void Texture::loadBlockTextures() {
       0,                 // mipmap level
       0,                 // xoffset
       0,                 // yoffset
-      i,                 // zoffset, i.e. index in texture array
+      textureIndex,      // zoffset, i.e. index in texture array
       width,             // width
       height,            // height
       1,                 // depth
@@ -51,10 +58,7 @@ void Texture::loadBlockTextures() {
       data               // pixel data
     );
 
-    blockTypeToTextureIndex.emplace(blockType, i);
-
     stbi_image_free(data);
-    i++;
   }
 
   glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
