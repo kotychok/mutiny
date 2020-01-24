@@ -1,23 +1,15 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
 
 #include "block.h"
 
 class Texture {
   public:
-    static Texture& fetch(BlockType blockType);
-    static std::string imagePath(BlockType blockType);
+    static const std::unordered_map<BlockType, std::string> blockTypeToString;
+    static std::unordered_map<BlockType, float> blockTypeToTextureIndex;
+    static const int BLOCK_COUNT;
 
-    unsigned int ID {};
-
-    Texture(std::string imagePath);
-
-    // Explicitly delete since these shouldn't be used
-    Texture(const Texture&) = delete; // Delete copy constructor
-    Texture& operator=(const Texture&) = delete; // Delete copy assignment
-    Texture(Texture&&) = delete; // Delete move constructor
-    Texture& operator=(Texture &&) = delete; // Delete move assignment
-
-    void use();
+    static void loadBlockTextures();
 };

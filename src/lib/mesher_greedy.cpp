@@ -4,6 +4,7 @@
 
 #include "all_equal.h"
 #include "mesher_greedy.h"
+#include "texture.h"
 
 std::vector<std::pair<quad, BlockType>> MesherGreedy::chunkToQuads(const Chunk &chunk) {
   std::vector<std::pair<quad, BlockType>> quads {};
@@ -122,7 +123,7 @@ std::vector<std::pair<quad, BlockType>> MesherGreedy::chunkToQuads(const Chunk &
   return quads;
 }
 
-std::pair<quad_mesh, BlockType> MesherGreedy::quadToQuadMesh(const std::pair<quad, BlockType> &pair) {
+quad_mesh MesherGreedy::quadToQuadMesh(const std::pair<quad, BlockType> &pair) {
   const quad& quad { pair.first };
   const BlockType& blockType { pair.second };
 
@@ -177,15 +178,17 @@ std::pair<quad_mesh, BlockType> MesherGreedy::quadToQuadMesh(const std::pair<qua
     lt_v = lt_y;
   }
 
-  quad_mesh quadMesh {
-    rb_x, rb_y, rb_z, rb_u, rb_v, // right bottom
-    rt_x, rt_y, rt_z, rt_u, rt_v, // right top
-    lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
+  float textureLayer = Texture::blockTypeToTextureIndex.find(blockType)->second;
 
-    lt_x, lt_y, lt_z, lt_u, lt_v, // left top
-    rt_x, rt_y, rt_z, rt_u, rt_v, // right top
-    lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
+  quad_mesh quadMesh {
+    rb_x, rb_y, rb_z, rb_u, rb_v, textureLayer, // right bottom
+    rt_x, rt_y, rt_z, rt_u, rt_v, textureLayer, // right top
+    lb_x, lb_y, lb_z, lb_u, lb_v, textureLayer, // left bottom
+
+    lt_x, lt_y, lt_z, lt_u, lt_v, textureLayer, // left top
+    rt_x, rt_y, rt_z, rt_u, rt_v, textureLayer, // right top
+    lb_x, lb_y, lb_z, lb_u, lb_v, textureLayer, // left bottom
   };
 
-  return std::make_pair(quadMesh, blockType);
+  return quadMesh;
 }

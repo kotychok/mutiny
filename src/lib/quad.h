@@ -19,12 +19,12 @@ typedef std::array<float, 12> quad;
 // follows:
 //
 // quad_mesh quadMesh {
-//   rb_x, rb_y, rb_z, rb_u, rb_v, // right bottom
-//   rt_x, rt_y, rt_z, rt_u, rt_v, // right top
-//   lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
+//   rb_x, rb_y, rb_z, rb_u, rb_v, texture layer // right bottom
+//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
+//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
 //
-//   lt_x, lt_y, lt_z, lt_u, lt_v, // left top
-//   rt_x, rt_y, rt_z, rt_u, rt_v, // right top
-//   lb_x, lb_y, lb_z, lb_u, lb_v, // left bottom
+//   lt_x, lt_y, lt_z, lt_u, lt_v, texture layer // left top
+//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
+//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
 // };
-typedef std::array<float, 30> quad_mesh;
+typedef std::array<float, 36> quad_mesh;

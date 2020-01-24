@@ -8,5 +8,5 @@
 class MesherGreedy {
   public:
     static std::vector<std::pair<quad, BlockType>> chunkToQuads(const Chunk &chunk);
-    static std::pair<quad_mesh, BlockType> quadToQuadMesh(const std::pair<quad, BlockType> &pair);
+    static quad_mesh quadToQuadMesh(const std::pair<quad, BlockType> &pair);
 };

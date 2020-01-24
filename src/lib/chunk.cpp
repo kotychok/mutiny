@@ -16,7 +16,7 @@ Chunk::Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()>
 Chunk::~Chunk() {
 }
 
-void Chunk::setMesh(std::vector<std::pair<quad_mesh, BlockType>> quadMeshes) {
+void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
   this->quadMeshes = quadMeshes;
 
   if (!chunkVAO) {
@@ -48,24 +48,17 @@ void Chunk::render(const Shader &myShader) {
   blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
   myShader.setMat4("model", blockModel);
 
-  for (std::pair<quad_mesh, BlockType> pair : quadMeshes) {
-    quad_mesh& quadMesh { pair.first };
-    BlockType& blockType { pair.second };
-
+  for (quad_mesh quadMesh : quadMeshes) {
     glBindVertexArray(chunkVAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadMesh), quadMesh.data(), GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
-    myShader.setInt("layerIndex", 0);
-    // Texture& texture = Texture::fetch(blockType);
-    // glBindTexture(GL_TEXTURE_2D, texture.ID);
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }

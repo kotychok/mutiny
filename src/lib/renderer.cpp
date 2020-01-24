@@ -29,41 +29,7 @@ Renderer::Renderer() {
   glGenBuffers(1, &zAxisVBO);
 
   glActiveTexture(GL_TEXTURE0);
-
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
-
-  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 16, 16, 4);
-
-  int i = 0;
-  for(auto& file : std::experimental::filesystem::directory_iterator("./assets")) {
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(file.path().c_str(), &width, &height, &nrChannels, 0);
-
-    glTexSubImage3D(
-      GL_TEXTURE_2D_ARRAY,
-      0,                 // mipmap level
-      0,                 // xoffset
-      0,                 // yoffset
-      i,                 // zoffset, i.e. index in texture array
-      width,             // width
-      height,            // height
-      1,                 // depth
-      GL_RGBA,           // cpu pixel format
-      GL_UNSIGNED_BYTE,  // cpu pixel coord type
-      data               // pixel data
-    );
-
-    i++;
-  }
-
-  glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
-
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  Texture::loadBlockTextures();
 }
 
 #pragma GCC diagnostic push
@@ -116,7 +82,7 @@ void Renderer::render(double dt) {
 
           // Then generate its mesh
           std::vector<std::pair<quad, BlockType>> quads = MesherGreedy::chunkToQuads(chunk);
-          std::vector<std::pair<quad_mesh, BlockType>> quadMeshes {};
+          std::vector<quad_mesh> quadMeshes {};
           transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
           chunk.setMesh(quadMeshes);
 
