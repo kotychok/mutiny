@@ -6,7 +6,7 @@
 #include "mesher_greedy.h"
 #include "texture.h"
 
-std::vector<float> MesherGreedy::chunkToQuads(const Chunk &chunk) {
+std::vector<float> MesherGreedy::computeChunkMesh(const Chunk &chunk) {
   std::vector<float> mesh {};
 
   // Sweep over each axis (X (d = 0), Y (d = 1) and Z (d = 2))
@@ -98,10 +98,7 @@ std::vector<float> MesherGreedy::chunkToQuads(const Chunk &chunk) {
                 currBlockCoords[0] + du[0] + dv[0] - CHUNK_SIZE_HALVED, currBlockCoords[1] + du[1] + dv[1] - 1, currBlockCoords[2] + du[2] + dv[2] - CHUNK_SIZE_HALVED  // Bottom right vertice position
               };
 
-              quad_mesh quadMesh = quadToQuadMesh(quad, mask[n]);
-              for (float& f : quadMesh) {
-                mesh.push_back(f);
-              }
+              loadQuadIntoMesh(quad, mask[n], mesh);
 
               // Clear this part of the mask, so we don't add duplicate faces
               for (l = 0; l < height; ++l) {
@@ -126,7 +123,22 @@ std::vector<float> MesherGreedy::chunkToQuads(const Chunk &chunk) {
   return mesh;
 }
 
-quad_mesh MesherGreedy::quadToQuadMesh(const quad& quad, const BlockType& blockType) {
+// This computes all the vertices needed to render the quad, which is composed
+// of 2 triangles. It also contains the texture coordinates.
+//
+// The order of the vertices used to compose each triangle can be seen as
+// follows:
+//
+// {
+//   rb_x, rb_y, rb_z, rb_u, rb_v, texture layer // right bottom
+//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
+//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
+//
+//   lt_x, lt_y, lt_z, lt_u, lt_v, texture layer // left top
+//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
+//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
+// }
+void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType, std::vector<float>& mesh) {
   float rb_x { quad.at(9) }, rb_y { quad.at(10) }, rb_z { quad.at(11) }, // right bottom
         rt_x { quad.at(3) }, rt_y { quad.at(4) },  rt_z { quad.at(5) },  // right top
         lb_x { quad.at(6) }, lb_y { quad.at(7) },  lb_z { quad.at(8) },  // left bottom
@@ -180,15 +192,51 @@ quad_mesh MesherGreedy::quadToQuadMesh(const quad& quad, const BlockType& blockT
 
   float textureLayer = Texture::blockTypeToTextureIndex.find(blockType)->second;
 
-  quad_mesh quadMesh {
-    rb_x, rb_y, rb_z, rb_u, rb_v, textureLayer, // right bottom
-    rt_x, rt_y, rt_z, rt_u, rt_v, textureLayer, // right top
-    lb_x, lb_y, lb_z, lb_u, lb_v, textureLayer, // left bottom
+  // right bottom
+  mesh.push_back(rb_x);
+  mesh.push_back(rb_y);
+  mesh.push_back(rb_z);
+  mesh.push_back(rb_u);
+  mesh.push_back(rb_v);
+  mesh.push_back(textureLayer);
 
-    lt_x, lt_y, lt_z, lt_u, lt_v, textureLayer, // left top
-    rt_x, rt_y, rt_z, rt_u, rt_v, textureLayer, // right top
-    lb_x, lb_y, lb_z, lb_u, lb_v, textureLayer, // left bottom
-  };
+  // right top
+  mesh.push_back(rt_x);
+  mesh.push_back(rt_y);
+  mesh.push_back(rt_z);
+  mesh.push_back(rt_u);
+  mesh.push_back(rt_v);
+  mesh.push_back(textureLayer);
 
-  return quadMesh;
+  // left bottom
+  mesh.push_back(lb_x);
+  mesh.push_back(lb_y);
+  mesh.push_back(lb_z);
+  mesh.push_back(lb_u);
+  mesh.push_back(lb_v);
+  mesh.push_back(textureLayer);
+
+  // left top
+  mesh.push_back(lt_x);
+  mesh.push_back(lt_y);
+  mesh.push_back(lt_z);
+  mesh.push_back(lt_u);
+  mesh.push_back(lt_v);
+  mesh.push_back(textureLayer);
+
+  // right top
+  mesh.push_back(rt_x);
+  mesh.push_back(rt_y);
+  mesh.push_back(rt_z);
+  mesh.push_back(rt_u);
+  mesh.push_back(rt_v);
+  mesh.push_back(textureLayer);
+
+  // left bottom
+  mesh.push_back(lb_x);
+  mesh.push_back(lb_y);
+  mesh.push_back(lb_z);
+  mesh.push_back(lb_u);
+  mesh.push_back(lb_v);
+  mesh.push_back(textureLayer);
 }

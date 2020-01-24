@@ -7,8 +7,8 @@
 
 class MesherGreedy {
   public:
-    static std::vector<float> chunkToQuads(const Chunk &chunk);
+    static std::vector<float> computeChunkMesh(const Chunk &chunk);
 
   private:
-    static quad_mesh quadToQuadMesh(const quad& quad, const BlockType& blockType);
+    static void loadQuadIntoMesh(const quad& quad, const BlockType& blockType, std::vector<float>& mesh);
 };

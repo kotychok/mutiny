@@ -12,12 +12,12 @@
 #include "constants.h"
 #include "mesher_greedy.h"
 
-BOOST_AUTO_TEST_CASE(chunkToQuadsFlat) {
+BOOST_AUTO_TEST_CASE(computeChunkMeshFlat) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
   std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::flat;
   Chunk chunk = Chunk(pos, func);
 
-  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::chunkToQuads(chunk) };
+  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::computeChunkMesh(chunk) };
 
   std::vector<std::pair<quad, BlockType>> expected {
     // X constant (-CHUNK_SIZE_HALVED), Then Y changes (-1, 0), Then Z changes (-CHUNK_SIZE_HALVED, CHUNK_SIZE)
@@ -72,12 +72,12 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFlat) {
   BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
-BOOST_AUTO_TEST_CASE(chunkToQuadsFlatHalfAndHalf) {
+BOOST_AUTO_TEST_CASE(computeChunkMeshFlatHalfAndHalf) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
   std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::flatHalfAndHalf;
   Chunk chunk = Chunk(pos, func);
 
-  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::chunkToQuads(chunk) };
+  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::computeChunkMesh(chunk) };
 
   std::vector<std::pair<quad, BlockType>> expected {
     std::make_pair(quad{
@@ -168,12 +168,12 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFlatHalfAndHalf) {
   BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
-BOOST_AUTO_TEST_CASE(chunkToQuadsFilled) {
+BOOST_AUTO_TEST_CASE(computeChunkMeshFilled) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
   std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::filled;
   Chunk chunk = Chunk(pos, func);
 
-  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::chunkToQuads(chunk) };
+  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::computeChunkMesh(chunk) };
 
   std::vector<std::pair<quad, BlockType>> expected {
     // Left face: X constant (-CHUNK_SIZE_HALVED), Then Y changes (-1, 0), Then Z changes (-CHUNK_SIZE_HALVED, CHUNK_SIZE_HALVED)
@@ -228,11 +228,11 @@ BOOST_AUTO_TEST_CASE(chunkToQuadsFilled) {
   BOOST_TEST(std::is_permutation(actual.begin(), actual.end(), expected.begin()));
 }
 
-BOOST_AUTO_TEST_CASE(chunkToQuadsHalfSphere) {
+BOOST_AUTO_TEST_CASE(computeChunkMeshHalfSphere) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
   std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::halfSphere;
   Chunk chunk = Chunk(pos, func);
-  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::chunkToQuads(chunk) };
+  std::vector<std::pair<quad, BlockType>> actual { MesherGreedy::computeChunkMesh(chunk) };
   std::vector<std::pair<quad, BlockType>> expected {
     std::make_pair(quad{-13, 6, -2, -13, 7, -2, -13, 6, 3, -13, 7, 3}, BlockType::DIRT),
     std::make_pair(quad{-12, 6, -5, -12, 7, -5, -12, 6, -2, -12, 7, -2}, BlockType::DIRT),

@@ -11,20 +11,3 @@
 //   lb_x { quad.at(6) }, lb_y { quad.at(7) },  lb_z { quad.at(8) },  // left bottom
 //   rb_x { quad.at(9) }, rb_y { quad.at(10) }, rb_z { quad.at(11) }, // right bottom
 typedef std::array<float, 12> quad;
-
-// This contains all the vertices needed to render the quad, which is composed
-// of 2 triangles. It also contains the texture coordinates.
-//
-// The order of the vertices used to compose each triangle can be seen as
-// follows:
-//
-// quad_mesh quadMesh {
-//   rb_x, rb_y, rb_z, rb_u, rb_v, texture layer // right bottom
-//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
-//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
-//
-//   lt_x, lt_y, lt_z, lt_u, lt_v, texture layer // left top
-//   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
-//   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
-// };
-typedef std::array<float, 36> quad_mesh;
