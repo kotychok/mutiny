@@ -15,7 +15,7 @@ MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
 
 CPPFLAGS := -std=c++17 -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(LDLIBS)
+OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) vendor/libnoise.a $(LDLIBS)
 
 all: objects mutiny test
 
