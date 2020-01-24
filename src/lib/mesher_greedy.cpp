@@ -6,8 +6,8 @@
 #include "mesher_greedy.h"
 #include "texture.h"
 
-std::vector<quad_mesh> MesherGreedy::chunkToQuads(const Chunk &chunk) {
-  std::vector<quad_mesh> quadMeshes {};
+std::vector<float> MesherGreedy::chunkToQuads(const Chunk &chunk) {
+  std::vector<float> mesh {};
 
   // Sweep over each axis (X (d = 0), Y (d = 1) and Z (d = 2))
   for (bool backFace = true, b = false; b != backFace; backFace = backFace && b, b = !b) {
@@ -98,7 +98,10 @@ std::vector<quad_mesh> MesherGreedy::chunkToQuads(const Chunk &chunk) {
                 currBlockCoords[0] + du[0] + dv[0] - CHUNK_SIZE_HALVED, currBlockCoords[1] + du[1] + dv[1] - 1, currBlockCoords[2] + du[2] + dv[2] - CHUNK_SIZE_HALVED  // Bottom right vertice position
               };
 
-              quadMeshes.push_back(quadToQuadMesh(quad, mask[n]));
+              quad_mesh quadMesh = quadToQuadMesh(quad, mask[n]);
+              for (float& f : quadMesh) {
+                mesh.push_back(f);
+              }
 
               // Clear this part of the mask, so we don't add duplicate faces
               for (l = 0; l < height; ++l) {
@@ -120,7 +123,7 @@ std::vector<quad_mesh> MesherGreedy::chunkToQuads(const Chunk &chunk) {
     }
   }
 
-  return quadMeshes;
+  return mesh;
 }
 
 quad_mesh MesherGreedy::quadToQuadMesh(const quad& quad, const BlockType& blockType) {

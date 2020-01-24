@@ -16,8 +16,8 @@ Chunk::Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()>
 Chunk::~Chunk() {
 }
 
-void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
-  this->quadMeshes = quadMeshes;
+void Chunk::setMesh(std::vector<float> mesh) {
+  this->mesh = mesh;
 
   if (!chunkVAO) {
     glGenVertexArrays(1, &chunkVAO);
@@ -26,15 +26,9 @@ void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
     glGenBuffers(1, &chunkVBO);
   }
 
-  for (quad_mesh quadMesh : quadMeshes) {
-    for (float f : quadMesh) {
-      flat.push_back(f);
-    }
-  }
-
   glBindVertexArray(chunkVAO);
   glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
-  glBufferData(GL_ARRAY_BUFFER, static_cast<float>(flat.size()) * sizeof(float), flat.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, static_cast<float>(mesh.size()) * sizeof(float), mesh.data(), GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
@@ -65,5 +59,5 @@ void Chunk::render(const Shader &myShader) {
   myShader.setMat4("model", blockModel);
 
   glBindVertexArray(chunkVAO);
-  glDrawArrays(GL_TRIANGLES, 0, flat.size() / 6);
+  glDrawArrays(GL_TRIANGLES, 0, mesh.size() / 6);
 }

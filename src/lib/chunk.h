@@ -7,7 +7,6 @@
 #include "block.h"
 #include "chunk_generator.h"
 #include "constants.h"
-#include "quad.h"
 #include "shader.h"
 
 class Chunk {
@@ -27,7 +26,7 @@ class Chunk {
     Chunk& operator=(Chunk &&) = delete; // Delete move assignment
 
     // Instance methods
-    void setMesh(std::vector<quad_mesh> quadMeshes);
+    void setMesh(std::vector<float> mesh);
     void render(const Shader &myShader);
     bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     Block blockAt(unsigned int x, unsigned int y, unsigned int z) const;
@@ -38,6 +37,5 @@ class Chunk {
 
     std::array<Block, CHUNK_SIZE_CUBED> blocks {};
 
-    std::vector<quad_mesh> quadMeshes {};
-    std::vector<float> flat {};
+    std::vector<float> mesh {};
 };

@@ -85,8 +85,8 @@ void Renderer::render(double dt) {
           // std::vector<quad_mesh> quadMeshes {};
           // transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
 
-          std::vector<quad_mesh> quadMeshes = MesherGreedy::chunkToQuads(chunk);
-          chunk.setMesh(quadMeshes);
+          std::vector<float> mesh = MesherGreedy::chunkToQuads(chunk); // TODO Rename
+          chunk.setMesh(mesh);
 
           chunk.render(blockShader);
         } else {
