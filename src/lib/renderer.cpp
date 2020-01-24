@@ -81,9 +81,11 @@ void Renderer::render(double dt) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flatRandom).first->second;
 
           // Then generate its mesh
-          std::vector<std::pair<quad, BlockType>> quads = MesherGreedy::chunkToQuads(chunk);
-          std::vector<quad_mesh> quadMeshes {};
-          transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
+          // std::vector<std::pair<quad, BlockType>> quads = MesherGreedy::chunkToQuads(chunk);
+          // std::vector<quad_mesh> quadMeshes {};
+          // transform(quads.begin(), quads.end(), back_inserter(quadMeshes), MesherGreedy::quadToQuadMesh);
+
+          std::vector<quad_mesh> quadMeshes = MesherGreedy::chunkToQuads(chunk);
           chunk.setMesh(quadMeshes);
 
           chunk.render(blockShader);
