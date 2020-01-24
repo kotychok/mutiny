@@ -48,6 +48,22 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare() 
   return blocks;
 }
 
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom() {
+  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+  unsigned int y = 0;
+  for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+    for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+      unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
+      if (rand() % 100 < 50) {
+        blocks[index] = Block { BlockType::DIRT };
+      } else {
+        blocks[index] = Block { BlockType::STONE };
+      }
+    }
+  }
+  return blocks;
+}
+
 std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half() {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {

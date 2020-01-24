@@ -39,4 +39,5 @@ class Chunk {
     std::array<Block, CHUNK_SIZE_CUBED> blocks {};
 
     std::vector<quad_mesh> quadMeshes {};
+    std::vector<float> flat {};
 };

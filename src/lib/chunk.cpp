@@ -25,6 +25,22 @@ void Chunk::setMesh(std::vector<quad_mesh> quadMeshes) {
   if (!chunkVBO) {
     glGenBuffers(1, &chunkVBO);
   }
+
+  for (quad_mesh quadMesh : quadMeshes) {
+    for (float f : quadMesh) {
+      flat.push_back(f);
+    }
+  }
+
+  glBindVertexArray(chunkVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
+  glBufferData(GL_ARRAY_BUFFER, static_cast<float>(flat.size()) * sizeof(float), flat.data(), GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 }
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
@@ -48,18 +64,6 @@ void Chunk::render(const Shader &myShader) {
   blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
   myShader.setMat4("model", blockModel);
 
-  for (quad_mesh quadMesh : quadMeshes) {
-    glBindVertexArray(chunkVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadMesh), quadMesh.data(), GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-  }
+  glBindVertexArray(chunkVAO);
+  glDrawArrays(GL_TRIANGLES, 0, flat.size() / 6);
 }
