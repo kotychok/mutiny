@@ -7,6 +7,7 @@
 * [3 - Meshing](#3---meshing)
 * [4 - GUI](#4---gui)
 * [5 - Multiple block types](#5---multiple-block-types)
+* [5a - Chunk render optimization](#5a---chunk-render-optimization)
 * [Probable/Possible Future Steps](#probablepossible-future-steps)
 
 # Creating a Voxel Engine from Scratch
@@ -197,6 +198,16 @@ The other minor changes are much more obvious. The fact that the height and widt
 Something exciting about this change is that we now have face/directional information which I believe can be used to further optimize the culling. I'm not quite sure how this would work, but it's something to consider later on if we need to start working on performance optimizations.
 
 [![multiple-block-types.gif](./README/multiple-block-types.gif)](./README/multiple-block-types.gif)
+
+# 5a - Chunk render optimization
+
+[005-multiple-block-types...005a-chunk-render-optimization](https://github.com/boatrite/mutiny/compare/005-multiple-block-types...005a-chunk-render-optimization)
+
+You might have noticed that rendering a chunk with a lot of quads is substantially slower than one with fewer. The core issue is that each frame for each chunk we are looping over all quads in the chunk, sending that data to the gpu, then rendering.
+
+The somewhat obvious fix is that we don't need separate arrays of all of the quads. Instead of reusing the same buffer with different arrays, we should just make one long array with everything and bind that.
+
+In order to do this, there is some refactoring to the texture code required. The main issue is that right now we need to execute code to change the texture, but need the GPU to do it if we want to bind a single VBO with all the data. The solution I used is to use a 2d texture array with all of the textures and use an index, which can be sent with the vertex data to the gpu, to pick the correct one out of the array to render with.
 
 # Probable/Possible Future Steps
 
