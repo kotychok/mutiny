@@ -8,7 +8,9 @@
 * [4 - GUI](#4---gui)
 * [5 - Multiple block types](#5---multiple-block-types)
 * [5a - Chunk render optimization](#5a---chunk-render-optimization)
-* [Probable/Possible Future Steps](#probablepossible-future-steps)
+* [6 - Procedural generation](#6---procedural-generation)
+* [To Do:](#to-do)
+* [Resources](#resources)
 
 # Creating a Voxel Engine from Scratch
 
@@ -209,9 +211,21 @@ The somewhat obvious fix is that we don't need separate arrays of all of the qua
 
 In order to do this, there is some refactoring to the texture code required. The main issue is that right now we need to execute code to change the texture, but need the GPU to do it if we want to bind a single VBO with all the data. The solution I used is to use a 2d texture array with all of the textures and use an index, which can be sent with the vertex data to the gpu, to pick the correct one out of the array to render with.
 
-# Probable/Possible Future Steps
+# 6 - Procedural generation
 
-NB: _This is my WIP area._
+[005a-chunk-render-optimization...006-procedural-generation](https://github.com/boatrite/mutiny/compare/005a-chunk-render-optimization...006-procedural-generation)
+
+Since I want something super basic for now, I'm going to fill chunks at y = 0 and y = 1 completely with stone, then at y = 2 generate a heightmap to fill in using mostly stone with some dirt on top, then at y \> 2 have empty chunks.
+
+One of the things that I was tricked up on is the fact that `GetNoise` will return zeroes at any integer coordinates. Apparently setting integer coords to zero and interpolating values in between somehow helps with generating coherent noise. At any rate, we can't just pass integer coordinates of our blocks into the function since the whole thing would just be flat. Even if we could get a value at integer coords, 1 is too large of a difference between coords to get smooth terrain. So instead, we line up the chunk position with the integer inputs of the noise function and subdivide the interval by the chunk size. This gives a 1/32 difference in inputs between blocks which is small enough to generate a somewhat smooth pattern which will suffice for now.
+
+Another tiny gotcha is that `GetNoise` will return values in between -1 and 1. This might be inefficient, but I transform that interval to [0, 1] first then transform that to [0, CHUNK\_SIZE] to get a height.
+
+Last note: it's pretty hard to discern the terrain since everything is evenly lit. I think I'll look into lighting somewhat soon in order to improve this.
+
+[![procgen.png](./README/procgen.png)](./README/procgen.png)
+
+# To Do:
 
 **Chunk writing/reading to/from disk**
 
@@ -223,17 +237,41 @@ Then, we'll probably need some concept of a "World". When our program is first s
 
 Building on the previous step, we'll start generating and saving new chunks when the camera moves to a spot where this isn't one yet.
 
-**Compute and use normals**
+**Get rid of lag when meshing & generating chunks**
 
-There's probably lots of things normals can be used for. I think textures is one of them, altho the code I have now is fine. When it starts to matter more:
+Maybe can do this in other threads, think I've seen that done
 
-https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixel-shader https://c0de517e.blogspot.com/2008/10/normals-without-normals.html https://bitbucket.org/volumesoffun/polyvox/wiki/Computing%20normals%20in%20a%20fragment%20shader
+**Block picker, placing blocks, destroying blocks**
 
-**Other walkthru links**
+**Blocks w/ different textures on sides**
 
-[Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
+**Lighting**
 
-**Block storage/compression**
+# Resources
+
+Ray tracing
+
+- [A Fast Voxel Traversal Algorithm for Ray Tracing](http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf)
+- [Optimised CPU Ray Marching in a Voxel World](https://vercidium.com/blog/optimised-voxel-raymarching/) and [source](https://github.com/Vercidium/voxel-ray-marching)
+- [A Ray-Box Intersection Algorithm and Efficient Dynamic Voxel Rendering](http://www.jcgt.org/published/0007/03/04/paper-lowres.pdf)
+
+Direct State Access
+
+- https://www.khronos.org/opengl/wiki/Direct\_State\_Access
+
+Automated testing
+
+- https://stackoverflow.com/questions/1586230/automated-testing-for-opengl-application
+
+Normals
+
+- https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixel-shader
+- https://c0de517e.blogspot.com/2008/10/normals-without-normals.html
+- https://bitbucket.org/volumesoffun/polyvox/wiki/Computing%20normals%20in%20a%20fragment%20shader
+
+Other walkthru links
+
+- [Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
 
 Palette Compression
 
@@ -242,7 +280,8 @@ Palette Compression
 
 Octrees
 
-- [Efficient Sparse Voxel Oxtrees - Analysis, Extensions, and Implementation](https://pdfs.semanticscholar.org/5ca0/7a56725f8ae6c74778a86a4736ebaab6add6.pdf)
+- [Efficient Sparse Voxel Octrees](https://research.nvidia.com/sites/default/files/pubs/2010-02_Efficient-Sparse-Voxel/laine2010i3d_paper.pdf)
+- [Efficient Sparse Voxel Octrees - Analysis, Extensions, and Implementation](https://pdfs.semanticscholar.org/5ca0/7a56725f8ae6c74778a86a4736ebaab6add6.pdf)
 - [Sparse voxel octree Wikipedia](https://en.wikipedia.org/wiki/Sparse_voxel_octree)
 - [The sparse tree data structure](https://yacas.readthedocs.io/en/latest/book_of_algorithms/multivar.html)
 - [Sparse Voxel Octree Raytracing based Occlusion Culling (Theory)](https://voxels.blogspot.com/2015/05/sparse-voxel-octree-raytracing-based.html)
@@ -250,3 +289,7 @@ Octrees
 Culling
 
 - [Voxel Occlusion Testing: A Shadow Determination Accelerator for Ray Tracing](http://graphicsinterface.org/wp-content/uploads/gi1990-26.pdf)
+
+Lighting
+
+- http://math.hws.edu/graphicsbook/c7/s2.html
