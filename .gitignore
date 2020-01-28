@@ -3,3 +3,4 @@ build
 core
 minimal_example/minimal
 .session-cache
+tmp

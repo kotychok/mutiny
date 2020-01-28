@@ -1,8 +1,12 @@
 #include <cmath>
 
+#include <noise/noise.h>
+
 #include "chunk_generator.h"
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flat() {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flat(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
@@ -14,7 +18,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flat() {
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
@@ -30,7 +34,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf() {
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
@@ -48,7 +52,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare() 
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
@@ -64,7 +68,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom() {
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
@@ -77,7 +81,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half() {
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::filled() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::filled(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
@@ -90,7 +94,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::filled() {
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere() {
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   int radius = CHUNK_SIZE_HALVED;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
@@ -110,3 +114,41 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere() {
   }
   return blocks;
 }
+
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::perlin(glm::vec3 position) {
+  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+  if (position.y <= 1) {
+    for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+      for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+        for (unsigned int y = 0; y < CHUNK_SIZE; y++) {
+          unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
+          blocks[index] = Block { BlockType::STONE };
+        }
+      }
+    }
+  } else if (position.y == 2) {
+    noise::module::Perlin perlinNoise;
+    const int min { 0 };
+    const int max { CHUNK_SIZE };
+
+    for (unsigned int blockX = 0; blockX < CHUNK_SIZE; ++blockX) {
+      for (unsigned int blockZ = 0; blockZ < CHUNK_SIZE; ++blockZ) {
+        double noiseX = static_cast<float>(blockX) / CHUNK_SIZE + position.x;
+        double noiseZ = static_cast<float>(blockZ) / CHUNK_SIZE + position.z;
+
+        double noise = std::clamp((1 + perlinNoise.GetValue(noiseX, 0.0, noiseZ)) / 2.0, 0.0, 1.0);
+        unsigned int height = static_cast<unsigned int>(std::clamp(static_cast<int>(min + noise * (max + 1 - min)), 0, CHUNK_SIZE));
+        for (unsigned int y = 0; y < height; y++) {
+          unsigned int index { blockZ * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + blockX };
+          if (y <= height - 3) {
+            blocks[index] = Block { BlockType::STONE };
+          } else {
+            blocks[index] = Block { BlockType::DIRT };
+          }
+        }
+      }
+    }
+  }
+  return blocks;
+}
+#pragma GCC diagnostic pop

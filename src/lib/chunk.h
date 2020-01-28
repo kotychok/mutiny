@@ -13,10 +13,10 @@ class Chunk {
   public:
     // Instance variables
     glm::vec3 pos;
-    std::function<std::array<Block, CHUNK_SIZE_CUBED>()> chunkGeneratorFunc;
+    std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc;
 
     // Constructor
-    Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>()> chunkGeneratorFunc);
+    Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc);
     ~Chunk();
 
     // Explicitly delete since these shouldn't be used
