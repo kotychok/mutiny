@@ -37,7 +37,8 @@ Renderer::Renderer() {
 void Renderer::render(double dt) {
   calculateFPS();
 
-  glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
+  // glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
+  glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -54,6 +55,12 @@ void Renderer::render(double dt) {
   blockShader.setInt("myTexture", 0);
   blockShader.setFloat("ellapsedTime", glfwGetTime());
   blockShader.setVec3("cameraPosition", camera.position);
+  blockShader.setVec3("light.position", glm::vec3(0.0f, 94.0f, 0.0f));
+  blockShader.setVec3("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
+  blockShader.setVec3("light.ambient", glm::vec3(0.2f)); // 0.2f (give or take) for Night, 1.0f for Day.
+  blockShader.setVec3("light.diffuse", glm::vec3(0.7f));
+  blockShader.setVec3("light.specular", glm::vec3(0.5f));
+  blockShader.setFloat("material.shininess", 32.0f);
 
   glm::ivec3 cameraChunkPosition {};
 

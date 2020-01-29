@@ -19,5 +19,5 @@ void main()
 
    TexCoord = aTexCoord;
 
-   Normal = aNormal;
+   Normal = normalize(aNormal);
 }
