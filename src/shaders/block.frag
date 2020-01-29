@@ -11,7 +11,8 @@ struct Material {
 };
 
 struct Light {
-  vec3 position;
+  // When the w component is 0, "position" is actually direction.
+  vec4 position;
   vec3 color;
 
   vec3 ambient;
@@ -27,9 +28,18 @@ uniform Light light;
 
 void main()
 {
+  const float DIRECTIONAL = 0.0f;
+  const float POINT = 1.0f;
+
   vec3 ambient = light.ambient * light.color;
 
-  vec3 lightDir = normalize(light.position - Position);
+  vec3 lightDir;
+  if (light.position.w == POINT) {
+    lightDir = normalize(vec3(light.position) - Position);
+  } else if (light.position.w == DIRECTIONAL) {
+    lightDir = normalize(vec3(-light.position));
+  }
+
   float diff = max(dot(Normal, lightDir), 0.0);
   vec3 diffuse = light.diffuse * (diff * light.color);
 
@@ -39,6 +49,5 @@ void main()
   vec3 specular = light.specular * (spec * light.color);
 
   vec3 result = ambient + diffuse + specular;
-
   FragColor = vec4(result, 1.0) * texture(myTexture, TexCoord);
 }

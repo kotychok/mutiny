@@ -55,11 +55,15 @@ void Renderer::render(double dt) {
   blockShader.setInt("myTexture", 0);
   blockShader.setFloat("ellapsedTime", glfwGetTime());
   blockShader.setVec3("cameraPosition", camera.position);
-  blockShader.setVec3("light.position", glm::vec3(0.0f, 94.0f, 0.0f));
+  const float DIRECTIONAL = 0.0f;
+  const float POINT = 1.0f;
+  blockShader.setVec4("light.position", glm::vec4(0.0f, 94.0f, 0.0f, POINT));
+  // blockShader.setVec4("light.position", glm::vec4(0.0f, -1.0f, 0.0f, DIRECTIONAL));
+
   blockShader.setVec3("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
   blockShader.setVec3("light.ambient", glm::vec3(0.2f)); // 0.2f (give or take) for Night, 1.0f for Day.
   blockShader.setVec3("light.diffuse", glm::vec3(0.7f));
-  blockShader.setVec3("light.specular", glm::vec3(0.5f));
+  blockShader.setVec3("light.specular", glm::vec3(1.0f));
   blockShader.setFloat("material.shininess", 32.0f);
 
   glm::ivec3 cameraChunkPosition {};
