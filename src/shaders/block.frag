@@ -11,13 +11,19 @@ struct Material {
 };
 
 struct Light {
-  // When the w component is 0, "position" is actually direction.
+  // When the w component is 0,
+  // "position" is actually direction.
   vec4 position;
   vec3 color;
 
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
+
+  // Attenuation
+  float constant;
+  float linear;
+  float quadratic;
 };
 
 uniform sampler2DArray myTexture;
@@ -47,6 +53,14 @@ void main()
   vec3 reflectDir = reflect(-lightDir, Normal);
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
   vec3 specular = light.specular * (spec * light.color);
+
+  if (light.position.w == POINT) {
+    float distance = length(vec3(light.position) - Position);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+    ambient *= attenuation;
+    diffuse *= attenuation;
+    specular *= attenuation;
+  }
 
   vec3 result = ambient + diffuse + specular;
   FragColor = vec4(result, 1.0) * texture(myTexture, TexCoord);

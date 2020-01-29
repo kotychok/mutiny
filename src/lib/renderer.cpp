@@ -64,6 +64,11 @@ void Renderer::render(double dt) {
   blockShader.setVec3("light.ambient", glm::vec3(0.2f)); // 0.2f (give or take) for Night, 1.0f for Day.
   blockShader.setVec3("light.diffuse", glm::vec3(0.7f));
   blockShader.setVec3("light.specular", glm::vec3(1.0f));
+
+  blockShader.setFloat("light.constant", 1.0f);
+  blockShader.setFloat("light.linear", 0.09f);
+  blockShader.setFloat("light.quadratic", 0.032f);
+
   blockShader.setFloat("material.shininess", 32.0f);
 
   glm::ivec3 cameraChunkPosition {};
