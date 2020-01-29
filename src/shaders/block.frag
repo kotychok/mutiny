@@ -8,6 +8,7 @@ in vec3 Normal;
 
 uniform sampler2DArray myTexture;
 uniform float ellapsedTime;
+uniform vec3 cameraPosition;
 
 void main()
 {
@@ -21,7 +22,13 @@ void main()
   float diff = max(dot(Normal, lightDir), 0.0);
   vec3 diffuse = diff * lightColor;
 
-  vec3 result = ambient + diffuse;
+  float specularStrength = 0.5;
+  vec3 viewDir = normalize(cameraPosition - Position);
+  vec3 reflectDir = reflect(-lightDir, Normal);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+  vec3 specular = specularStrength * spec * lightColor;
+
+  vec3 result = ambient + diffuse + specular;
 
   FragColor = vec4(result, 1.0) * texture(myTexture, TexCoord);
 }

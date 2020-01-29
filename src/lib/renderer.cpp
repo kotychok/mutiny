@@ -47,10 +47,13 @@ void Renderer::render(double dt) {
   }
 
   blockShader.use();
-  blockShader.setInt("myTexture", 0);
+
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
+
+  blockShader.setInt("myTexture", 0);
   blockShader.setFloat("ellapsedTime", glfwGetTime());
+  blockShader.setVec3("cameraPosition", camera.position);
 
   glm::ivec3 cameraChunkPosition {};
 
