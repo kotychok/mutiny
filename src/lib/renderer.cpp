@@ -50,6 +50,7 @@ void Renderer::render(double dt) {
   blockShader.setInt("myTexture", 0);
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
+  blockShader.setFloat("ellapsedTime", glfwGetTime());
 
   glm::ivec3 cameraChunkPosition {};
 
