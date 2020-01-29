@@ -27,7 +27,7 @@ class Chunk {
 
     // Instance methods
     void setMesh(std::vector<float> mesh);
-    void render(const Shader &myShader);
+    void render(const Shader &shader);
     bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     Block blockAt(unsigned int x, unsigned int y, unsigned int z) const;
 

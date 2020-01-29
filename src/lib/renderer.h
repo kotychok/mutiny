@@ -44,6 +44,7 @@ class Renderer {
 
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
+    Shader normalShader { Shader("./src/shaders/normal.vert", "./src/shaders/normal.frag", "./src/shaders/normal.geom") };
 
     bool wireMode { false };
 
@@ -62,6 +63,10 @@ class Renderer {
     float fpsDecay { 0.9f };
     double lastSecond { glfwGetTime() };
     void calculateFPS();
+
+    // Normals
+    bool showNormals { false };
+    void renderNormals();
 
     // Coordinate lines
     bool showCoordinateLines { true };

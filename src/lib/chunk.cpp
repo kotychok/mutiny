@@ -56,10 +56,10 @@ Block Chunk::blockAt(unsigned int x, unsigned int y, unsigned int z) const {
   return blocks.at(index);
 }
 
-void Chunk::render(const Shader &myShader) {
+void Chunk::render(const Shader &shader) {
   glm::mat4 blockModel = glm::mat4(1.0);
   blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
-  myShader.setMat4("model", blockModel);
+  shader.setMat4("model", blockModel);
 
   glBindVertexArray(chunkVAO);
   glDrawArrays(GL_TRIANGLES, 0, mesh.size() / 6);

@@ -106,8 +106,9 @@ void Renderer::render(double dt) {
     }
   }
 
-  lastCameraChunkPosition = cameraChunkPosition;
-  lastAreaOfInterest = areaOfInterest;
+  if (showNormals) {
+    renderNormals();
+  }
 
   if (showCoordinateLines) {
     renderCoordinateLines();
@@ -117,6 +118,10 @@ void Renderer::render(double dt) {
   if (showOverlay) {
     renderOverlay();
   }
+
+  // Get ready for the next frame
+  lastCameraChunkPosition = cameraChunkPosition;
+  lastAreaOfInterest = areaOfInterest;
 }
 #pragma GCC diagnostic pop
 
@@ -156,6 +161,16 @@ void Renderer::calculateFPS() {
   framesThisSecond++;
   if (diff > 0) {
     currentFPS = framesThisSecond / diff;
+  }
+}
+
+void Renderer::renderNormals() {
+  normalShader.use();
+  normalShader.setMat4("view", camera.getViewMatrix());
+  normalShader.setMat4("projection", camera.getProjectionMatrix());
+  for (std::pair<const xyz, Chunk>& kv : chunks) {
+    Chunk& chunk = kv.second;
+    chunk.render(normalShader);
   }
 }
 
@@ -240,6 +255,7 @@ void Renderer::renderOverlay() {
 
     ImGui::Text("Rendering:");
     ImGui::Checkbox("Wire mode?", &wireMode);
+    ImGui::Checkbox("Show Normals?", &showNormals);
     ImGui::Checkbox("Show Coordinate Lines?", &showCoordinateLines);
     ImGui::SliderInt("Viewing Distance", &viewingDistance, 0, 10);
     int viewingDistanceDiameter { 2 * viewingDistance + 1 };

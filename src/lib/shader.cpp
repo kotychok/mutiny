@@ -4,10 +4,15 @@
 
 #include "shader.h"
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath) {
+Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
   GLuint vertex = compileShader(vertexPath, GL_VERTEX_SHADER);
   GLuint fragment = compileShader(fragmentPath, GL_FRAGMENT_SHADER);
-  compileAndLinkProgram(vertex, fragment);
+  if (geometryPath == nullptr) {
+    compileAndLinkProgram(vertex, fragment);
+  } else {
+    GLuint geometry = compileShader(geometryPath, GL_GEOMETRY_SHADER);
+    compileAndLinkProgram(vertex, fragment, geometry);
+  }
 }
 
 void Shader::use() {
@@ -72,10 +77,13 @@ GLuint Shader::compileShader(const char* path, GLenum type) {
   return shader;
 }
 
-void Shader::compileAndLinkProgram(GLuint vertex, GLuint fragment) {
+void Shader::compileAndLinkProgram(GLuint vertex, GLuint fragment, GLuint geometry) {
   // Create Shader Program
   glAttachShader(ID, vertex);
   glAttachShader(ID, fragment);
+  if (geometry != 0) {
+    glAttachShader(ID, geometry);
+  }
   glLinkProgram(ID);
 
   int success;
@@ -89,4 +97,7 @@ void Shader::compileAndLinkProgram(GLuint vertex, GLuint fragment) {
 
   glDeleteShader(vertex);
   glDeleteShader(fragment);
+  if (geometry != 0) {
+    glDeleteShader(geometry);
+  }
 }

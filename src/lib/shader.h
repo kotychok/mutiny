@@ -11,7 +11,7 @@ class Shader {
     // The Program ID
     unsigned int ID { glCreateProgram() };
 
-    Shader(const char* vertexPath, const char* fragmentPath);
+    Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr);
 
     void use();
 
@@ -23,5 +23,5 @@ class Shader {
 
   private:
     GLuint compileShader(const char* path, GLenum type);
-    void compileAndLinkProgram(GLuint vertex, GLuint fragment);
+    void compileAndLinkProgram(GLuint vertex, GLuint fragment, GLuint geometry = 0);
 };
