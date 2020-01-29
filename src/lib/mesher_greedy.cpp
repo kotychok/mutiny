@@ -2,7 +2,6 @@
 // https://github.com/mikolalysenko/mikolalysenko.github.com/blob/gh-pages/MinecraftMeshes/js/greedy.js
 // https://gist.github.com/Vercidium/a3002bd083cce2bc854c9ff8f0118d33
 
-#include "all_equal.h"
 #include "mesher_greedy.h"
 #include "texture.h"
 
@@ -23,6 +22,11 @@ std::vector<float> MesherGreedy::computeChunkMesh(const Chunk &chunk) {
       // q determines the direction (X, Y or Z) that we are searching
       float q[3] {};
       q[sweepAxis] = 1;
+
+      Side side;
+      if (sweepAxis == 0)      { side = backFace ? Side::WEST   : Side::EAST;  }
+      else if (sweepAxis == 1) { side = backFace ? Side::BOTTOM : Side::TOP;   }
+      else if (sweepAxis == 2) { side = backFace ? Side::NORTH  : Side::SOUTH; }
 
       // Check each slice of the chunk one at a time
       for (currBlockCoords[sweepAxis] = -1; currBlockCoords[sweepAxis] < CHUNK_SIZE;) {
@@ -98,7 +102,7 @@ std::vector<float> MesherGreedy::computeChunkMesh(const Chunk &chunk) {
                 currBlockCoords[0] + du[0] + dv[0] - CHUNK_SIZE_HALVED, currBlockCoords[1] + du[1] + dv[1] - 1, currBlockCoords[2] + du[2] + dv[2] - CHUNK_SIZE_HALVED  // Bottom right vertice position
               };
 
-              loadQuadIntoMesh(quad, mask[n], mesh);
+              loadQuadIntoMesh(quad, mask[n], side, mesh);
 
               // Clear this part of the mask, so we don't add duplicate faces
               for (l = 0; l < height; ++l) {
@@ -138,7 +142,7 @@ std::vector<float> MesherGreedy::computeChunkMesh(const Chunk &chunk) {
 //   rt_x, rt_y, rt_z, rt_u, rt_v, texture layer // right top
 //   lb_x, lb_y, lb_z, lb_u, lb_v, texture layer // left bottom
 // }
-void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType, std::vector<float>& mesh) {
+void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType, const Side& side, std::vector<float>& mesh) {
   float rb_x { quad.at(9) }, rb_y { quad.at(10) }, rb_z { quad.at(11) }, // right bottom
         rt_x { quad.at(3) }, rt_y { quad.at(4) },  rt_z { quad.at(5) },  // right top
         lb_x { quad.at(6) }, lb_y { quad.at(7) },  lb_z { quad.at(8) },  // left bottom
@@ -149,7 +153,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
         lb_u, lb_v, // left bottom
         lt_u, lt_v; // left top
 
-  if (all_equal(rb_x, rt_x, lb_x, lt_x)) {
+  float normal_x, normal_y, normal_z;
+
+  if (side == Side::EAST || side == Side::WEST) {
     // If x is constant,
     // then left-to-right (u-axis) is along the z-axis
     // and top-to-bottom (v-axis) is along the y-axis.
@@ -162,7 +168,17 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
     rt_v = rt_y;
     lb_v = lb_y;
     lt_v = lt_y;
-  } else if (all_equal(rb_y, rt_y, lb_y, lt_y)) {
+
+    if (side == Side::EAST) {
+      normal_x = 1.0f;
+      normal_y = 0.0f;
+      normal_z = 0.0f;
+    } else if (side == Side::WEST) {
+      normal_x = -1.0f;
+      normal_y = 0.0f;
+      normal_z = 0.0f;
+    }
+  } else if (side == Side::TOP || side == Side::BOTTOM) {
     // If y is constant,
     // then left-to-right (u-axis) is along the x-axis
     // and top-to-bottom (v-axis) is along the z-axis.
@@ -175,7 +191,17 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
     rt_v = rt_z;
     lb_v = lb_z;
     lt_v = lt_z;
-  } else if (all_equal(rb_z, rt_z, lb_z, lt_z)) {
+
+    if (side == Side::TOP) {
+      normal_x = 0.0f;
+      normal_y = 1.0f;
+      normal_z = 0.0f;
+    } else if (side == Side::BOTTOM) {
+      normal_x = 0.0f;
+      normal_y = -1.0f;
+      normal_z = 0.0f;
+    }
+  } else if (side == Side::NORTH || side == Side::SOUTH) {
     // If z is constant,
     // then left-to-right (u-axis) is along the x-axis
     // and top-to-bottom (v-axis) is along the y-axis.
@@ -188,6 +214,16 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
     rt_v = rt_y;
     lb_v = lb_y;
     lt_v = lt_y;
+
+    if (side == Side::NORTH) {
+      normal_x = 0.0f;
+      normal_y = 0.0f;
+      normal_z = -1.0f;
+    } else if (side == Side::SOUTH) {
+      normal_x = 0.0f;
+      normal_y = 0.0f;
+      normal_z = 1.0f;
+    }
   }
 
   float textureLayer { Texture::blockTypeToTextureIndex.find(blockType)->second };
@@ -199,6 +235,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(rb_u);
   mesh.push_back(rb_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 
   // right top
   mesh.push_back(rt_x);
@@ -207,6 +246,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(rt_u);
   mesh.push_back(rt_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 
   // left bottom
   mesh.push_back(lb_x);
@@ -215,6 +257,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(lb_u);
   mesh.push_back(lb_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 
   // left top
   mesh.push_back(lt_x);
@@ -223,6 +268,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(lt_u);
   mesh.push_back(lt_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 
   // right top
   mesh.push_back(rt_x);
@@ -231,6 +279,9 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(rt_u);
   mesh.push_back(rt_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 
   // left bottom
   mesh.push_back(lb_x);
@@ -239,4 +290,7 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
   mesh.push_back(lb_u);
   mesh.push_back(lb_v);
   mesh.push_back(textureLayer);
+  mesh.push_back(normal_x);
+  mesh.push_back(normal_y);
+  mesh.push_back(normal_z);
 }
