@@ -55,47 +55,27 @@ void Renderer::render(double dt) {
   blockShader.setInt("myTexture", 0);
   blockShader.setFloat("ellapsedTime", glfwGetTime());
   blockShader.setVec3("cameraPosition", camera.position);
-  const float DIRECTIONAL = 0.0f;
-  const float POINT = 1.0f;
 
-  blockShader.setVec4("lights[0].position", glm::vec4(0.0f, -1.0f, 0.0f, DIRECTIONAL));
-  blockShader.setVec3("lights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
-  blockShader.setVec3("lights[0].ambient", glm::vec3(0.1f)); // 0.2f (give or take) for Night, 1.0f for Day.
-  blockShader.setVec3("lights[0].diffuse", glm::vec3(0.1f));
-  blockShader.setVec3("lights[0].specular", glm::vec3(0.0f));
-  blockShader.setFloat("lights[0].constant", 1.0f);
-  blockShader.setFloat("lights[0].linear", 0.09f);
-  blockShader.setFloat("lights[0].quadratic", 0.032f);
+  blockShader.setVec4("lights[0].position", sunMoon.position());
+  blockShader.setVec3("lights[0].color", sunMoon.color);
+  blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
+  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
+  blockShader.setVec3("lights[0].specular", sunMoon.specular());
+  blockShader.setFloat("lights[0].constant", 0.0f);
+  blockShader.setFloat("lights[0].linear", 0.0f);
+  blockShader.setFloat("lights[0].quadratic", 0.0f);
 
-  float torchConstant = 1.0f;
-  float torchLinear = 0.1f;
-  float torchQuadratic = 0.1f;
-  blockShader.setVec4("lights[1].position", glm::vec4(12.0f, 96.0f, -1.0f, POINT));
-  blockShader.setVec3("lights[1].color", glm::vec3(1.0f, 0.0f, 0.0f));
-  blockShader.setVec3("lights[1].ambient", glm::vec3(1.0f));
-  blockShader.setVec3("lights[1].diffuse", glm::vec3(0.0f));
-  blockShader.setVec3("lights[1].specular", glm::vec3(0.0f));
-  blockShader.setFloat("lights[1].constant", torchConstant);
-  blockShader.setFloat("lights[1].linear", torchLinear);
-  blockShader.setFloat("lights[1].quadratic", torchQuadratic);
-
-  blockShader.setVec4("lights[2].position", glm::vec4(12.0f, 96.0f, 1.0f, POINT));
-  blockShader.setVec3("lights[2].color", glm::vec3(0.0f, 1.0f, 0.0f));
-  blockShader.setVec3("lights[2].ambient", glm::vec3(1.0f));
-  blockShader.setVec3("lights[2].diffuse", glm::vec3(0.0f));
-  blockShader.setVec3("lights[2].specular", glm::vec3(0.0f));
-  blockShader.setFloat("lights[2].constant", torchConstant);
-  blockShader.setFloat("lights[2].linear", torchLinear);
-  blockShader.setFloat("lights[2].quadratic", torchQuadratic);
-
-  blockShader.setVec4("lights[3].position", glm::vec4(10.0f, 96.0f, 0.0f, POINT));
-  blockShader.setVec3("lights[3].color", glm::vec3(0.0f, 0.0f, 1.0f));
-  blockShader.setVec3("lights[3].ambient", glm::vec3(1.0f));
-  blockShader.setVec3("lights[3].diffuse", glm::vec3(0.0f));
-  blockShader.setVec3("lights[3].specular", glm::vec3(0.0f));
-  blockShader.setFloat("lights[3].constant", torchConstant);
-  blockShader.setFloat("lights[3].linear", torchLinear);
-  blockShader.setFloat("lights[3].quadratic", torchQuadratic);
+  for (unsigned int i = 1; i < 4; ++i) {
+    Light& light = lights[i-1];
+    blockShader.setVec4("lights[" + std::to_string(i) + "].position", light.position);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].color", light.color);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].ambient", light.ambient);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].diffuse", light.diffuse);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].specular", light.specular);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].constant", light.constant);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].linear", light.linear);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].quadratic", light.quadratic);
+  }
 
   blockShader.setFloat("material.shininess", 32.0f);
 
@@ -161,14 +141,14 @@ void Renderer::render(double dt) {
     renderCoordinateLines();
   }
 
+  // Get ready for the next frame and rendering the overlay.
+  lastCameraChunkPosition = cameraChunkPosition;
+  lastAreaOfInterest = areaOfInterest;
+
   // Do this at the end so that we have the most up-to-date info for this frame.
   if (showOverlay) {
     renderOverlay();
   }
-
-  // Get ready for the next frame
-  lastCameraChunkPosition = cameraChunkPosition;
-  lastAreaOfInterest = areaOfInterest;
 }
 #pragma GCC diagnostic pop
 
@@ -313,6 +293,12 @@ void Renderer::renderOverlay() {
     );
     ImGui::Text("Chunks loaded: %lu", chunks.size());
     ImGui::Text("lastAreaOfInterest size: %lu", lastAreaOfInterest.size());
+
+    ImGui::Separator();
+
+    ImGui::Text("Lighting");
+    ImGui::SliderFloat("Sun & Moon Angle", &sunMoon.angleInDegrees, 180.0f, 0.0f);
+    ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
 
     ImGui::Separator();
 
