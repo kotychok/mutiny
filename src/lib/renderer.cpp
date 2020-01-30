@@ -57,17 +57,45 @@ void Renderer::render(double dt) {
   blockShader.setVec3("cameraPosition", camera.position);
   const float DIRECTIONAL = 0.0f;
   const float POINT = 1.0f;
-  blockShader.setVec4("light.position", glm::vec4(0.0f, 94.0f, 0.0f, POINT));
-  // blockShader.setVec4("light.position", glm::vec4(0.0f, -1.0f, 0.0f, DIRECTIONAL));
 
-  blockShader.setVec3("light.color", glm::vec3(1.0f, 1.0f, 1.0f));
-  blockShader.setVec3("light.ambient", glm::vec3(0.2f)); // 0.2f (give or take) for Night, 1.0f for Day.
-  blockShader.setVec3("light.diffuse", glm::vec3(0.7f));
-  blockShader.setVec3("light.specular", glm::vec3(1.0f));
+  blockShader.setVec4("lights[0].position", glm::vec4(0.0f, -1.0f, 0.0f, DIRECTIONAL));
+  blockShader.setVec3("lights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
+  blockShader.setVec3("lights[0].ambient", glm::vec3(0.1f)); // 0.2f (give or take) for Night, 1.0f for Day.
+  blockShader.setVec3("lights[0].diffuse", glm::vec3(0.1f));
+  blockShader.setVec3("lights[0].specular", glm::vec3(0.0f));
+  blockShader.setFloat("lights[0].constant", 1.0f);
+  blockShader.setFloat("lights[0].linear", 0.09f);
+  blockShader.setFloat("lights[0].quadratic", 0.032f);
 
-  blockShader.setFloat("light.constant", 1.0f);
-  blockShader.setFloat("light.linear", 0.09f);
-  blockShader.setFloat("light.quadratic", 0.032f);
+  float torchConstant = 1.0f;
+  float torchLinear = 0.1f;
+  float torchQuadratic = 0.1f;
+  blockShader.setVec4("lights[1].position", glm::vec4(12.0f, 96.0f, -1.0f, POINT));
+  blockShader.setVec3("lights[1].color", glm::vec3(1.0f, 0.0f, 0.0f));
+  blockShader.setVec3("lights[1].ambient", glm::vec3(1.0f));
+  blockShader.setVec3("lights[1].diffuse", glm::vec3(0.0f));
+  blockShader.setVec3("lights[1].specular", glm::vec3(0.0f));
+  blockShader.setFloat("lights[1].constant", torchConstant);
+  blockShader.setFloat("lights[1].linear", torchLinear);
+  blockShader.setFloat("lights[1].quadratic", torchQuadratic);
+
+  blockShader.setVec4("lights[2].position", glm::vec4(12.0f, 96.0f, 1.0f, POINT));
+  blockShader.setVec3("lights[2].color", glm::vec3(0.0f, 1.0f, 0.0f));
+  blockShader.setVec3("lights[2].ambient", glm::vec3(1.0f));
+  blockShader.setVec3("lights[2].diffuse", glm::vec3(0.0f));
+  blockShader.setVec3("lights[2].specular", glm::vec3(0.0f));
+  blockShader.setFloat("lights[2].constant", torchConstant);
+  blockShader.setFloat("lights[2].linear", torchLinear);
+  blockShader.setFloat("lights[2].quadratic", torchQuadratic);
+
+  blockShader.setVec4("lights[3].position", glm::vec4(10.0f, 96.0f, 0.0f, POINT));
+  blockShader.setVec3("lights[3].color", glm::vec3(0.0f, 0.0f, 1.0f));
+  blockShader.setVec3("lights[3].ambient", glm::vec3(1.0f));
+  blockShader.setVec3("lights[3].diffuse", glm::vec3(0.0f));
+  blockShader.setVec3("lights[3].specular", glm::vec3(0.0f));
+  blockShader.setFloat("lights[3].constant", torchConstant);
+  blockShader.setFloat("lights[3].linear", torchLinear);
+  blockShader.setFloat("lights[3].quadratic", torchQuadratic);
 
   blockShader.setFloat("material.shininess", 32.0f);
 

@@ -30,12 +30,12 @@ uniform sampler2DArray myTexture;
 uniform float ellapsedTime;
 uniform vec3 cameraPosition;
 uniform Material material;
-uniform Light light;
+uniform Light lights[4];
 
-void main()
-{
-  const float DIRECTIONAL = 0.0f;
-  const float POINT = 1.0f;
+const float DIRECTIONAL = 0.0f;
+const float POINT = 1.0f;
+
+vec3 CalcPointLight(Light light, vec3 cameraDir) {
 
   vec3 ambient = light.ambient * light.color;
 
@@ -49,9 +49,8 @@ void main()
   float diff = max(dot(Normal, lightDir), 0.0);
   vec3 diffuse = light.diffuse * (diff * light.color);
 
-  vec3 viewDir = normalize(cameraPosition - Position);
   vec3 reflectDir = reflect(-lightDir, Normal);
-  float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+  float spec = pow(max(dot(cameraDir, reflectDir), 0.0), material.shininess);
   vec3 specular = light.specular * (spec * light.color);
 
   if (light.position.w == POINT) {
@@ -62,6 +61,16 @@ void main()
     specular *= attenuation;
   }
 
-  vec3 result = ambient + diffuse + specular;
+  return ambient + diffuse + specular;
+}
+
+void main()
+{
+  vec3 cameraDir = normalize(cameraPosition - Position);
+
+  vec3 result;
+  for (int i = 0; i < 4; i++) {
+    result += CalcPointLight(lights[i], cameraDir);
+  }
   FragColor = vec4(result, 1.0) * texture(myTexture, TexCoord);
 }
