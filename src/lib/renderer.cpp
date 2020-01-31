@@ -18,7 +18,6 @@ Renderer::Renderer() {
 
   glEnable(GL_DEPTH_TEST);
 
-  // Axes
   glGenVertexArrays(1, &xAxisVAO);
   glGenBuffers(1, &xAxisVBO);
 
@@ -34,11 +33,67 @@ Renderer::Renderer() {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+void Renderer::update(double dt) {
+  glm::ivec3 cameraChunkPosition {};
+
+  if (camera.position.x > 0) {
+    cameraChunkPosition.x = floor((camera.position.x + CHUNK_SIZE_HALVED) / CHUNK_SIZE);
+  } else {
+    cameraChunkPosition.x = ceil((camera.position.x - CHUNK_SIZE_HALVED) / CHUNK_SIZE);
+  }
+
+  if (camera.position.z > 0) {
+    cameraChunkPosition.z = floor((camera.position.z + CHUNK_SIZE_HALVED) / CHUNK_SIZE);
+  } else {
+    cameraChunkPosition.z = ceil((camera.position.z - CHUNK_SIZE_HALVED) / CHUNK_SIZE);
+  }
+
+  cameraChunkPosition.y = floor((camera.position.y) / CHUNK_SIZE);
+
+  std::unordered_set<xyz, hash_tuple::hash<xyz>> areaOfInterest {};
+
+  for (auto ix = cameraChunkPosition.x - viewingDistance; ix <= cameraChunkPosition.x + viewingDistance; ix++) {
+    for (auto iz = cameraChunkPosition.z - viewingDistance; iz <= cameraChunkPosition.z + viewingDistance; iz++) {
+      for (auto iy = std::max(0, cameraChunkPosition.y - viewingDistance); iy <= cameraChunkPosition.y + viewingDistance; iy++) {
+        xyz key = std::make_tuple(ix, iy, iz);
+
+        areaOfInterest.insert(key);
+
+        if (chunks.find(key) == chunks.end()) {
+          // If our chunk is not loaded, we need to create it
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
+
+          // Then generate its mesh
+          std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
+          chunk.setMesh(mesh);
+        }
+      }
+    }
+  }
+
+  if (cameraChunkPosition != lastCameraChunkPosition) {
+    std::cout << "\nChunk changed!!" << std::endl;
+
+    // If the current AoI doesn't have a previous AoI key, then it is outside
+    // of the AoI and we want to unload it.
+    for (xyz oldKey : lastAreaOfInterest) {
+      if (areaOfInterest.find(oldKey) == areaOfInterest.end()) {
+        chunks.erase(oldKey);
+      }
+    }
+  }
+
+  // Get ready for the next frame
+  lastCameraChunkPosition = cameraChunkPosition;
+  lastAreaOfInterest = areaOfInterest;
+}
+
 void Renderer::render(double dt) {
   calculateFPS();
 
-  // glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
-  glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
+  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
+  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
+  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -79,59 +134,7 @@ void Renderer::render(double dt) {
 
   blockShader.setFloat("material.shininess", 32.0f);
 
-  glm::ivec3 cameraChunkPosition {};
-
-  if (camera.position.x > 0) {
-    cameraChunkPosition.x = floor((camera.position.x + CHUNK_SIZE_HALVED) / CHUNK_SIZE);
-  } else {
-    cameraChunkPosition.x = ceil((camera.position.x - CHUNK_SIZE_HALVED) / CHUNK_SIZE);
-  }
-
-  if (camera.position.z > 0) {
-    cameraChunkPosition.z = floor((camera.position.z + CHUNK_SIZE_HALVED) / CHUNK_SIZE);
-  } else {
-    cameraChunkPosition.z = ceil((camera.position.z - CHUNK_SIZE_HALVED) / CHUNK_SIZE);
-  }
-
-  cameraChunkPosition.y = floor((camera.position.y) / CHUNK_SIZE);
-
-  std::unordered_set<xyz, hash_tuple::hash<xyz>> areaOfInterest {};
-
-  for (auto ix = cameraChunkPosition.x - viewingDistance; ix <= cameraChunkPosition.x + viewingDistance; ix++) {
-    for (auto iz = cameraChunkPosition.z - viewingDistance; iz <= cameraChunkPosition.z + viewingDistance; iz++) {
-      for (auto iy = std::max(0, cameraChunkPosition.y - viewingDistance); iy <= cameraChunkPosition.y + viewingDistance; iy++) {
-        xyz key = std::make_tuple(ix, iy, iz);
-
-        areaOfInterest.insert(key);
-
-        if (chunks.find(key) == chunks.end()) {
-          // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
-
-          // Then generate its mesh
-          std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
-          chunk.setMesh(mesh);
-
-          chunk.render(blockShader);
-        } else {
-          Chunk &chunk = chunks.find(key)->second;
-          chunk.render(blockShader);
-        }
-      }
-    }
-  }
-
-  if (cameraChunkPosition != lastCameraChunkPosition) {
-    std::cout << "\nChunk changed!!" << std::endl;
-
-    // If the current AoI doesn't have a previous AoI key, then it is outside
-    // of the AoI and we want to unload it.
-    for (xyz oldKey : lastAreaOfInterest) {
-      if (areaOfInterest.find(oldKey) == areaOfInterest.end()) {
-        chunks.erase(oldKey);
-      }
-    }
-  }
+  renderScene(blockShader);
 
   if (showNormals) {
     renderNormals();
@@ -141,13 +144,16 @@ void Renderer::render(double dt) {
     renderCoordinateLines();
   }
 
-  // Get ready for the next frame and rendering the overlay.
-  lastCameraChunkPosition = cameraChunkPosition;
-  lastAreaOfInterest = areaOfInterest;
-
   // Do this at the end so that we have the most up-to-date info for this frame.
   if (showOverlay) {
     renderOverlay();
+  }
+}
+
+void Renderer::renderScene(const Shader& shader) {
+  for (std::pair<const xyz, Chunk>& kv : chunks) {
+    Chunk& chunk = kv.second;
+    chunk.render(shader);
   }
 }
 #pragma GCC diagnostic pop
@@ -195,10 +201,7 @@ void Renderer::renderNormals() {
   normalShader.use();
   normalShader.setMat4("view", camera.getViewMatrix());
   normalShader.setMat4("projection", camera.getProjectionMatrix());
-  for (std::pair<const xyz, Chunk>& kv : chunks) {
-    Chunk& chunk = kv.second;
-    chunk.render(normalShader);
-  }
+  renderScene(normalShader);
 }
 
 void Renderer::renderCoordinateLines() {

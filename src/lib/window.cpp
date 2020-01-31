@@ -86,6 +86,7 @@ int Window::show() {
     if (isFocusedInGame(window)) {
       renderer.processInput(window, dt);
     }
+    renderer.update(dt);
     renderer.render(dt);
 
     ImGui::Render();

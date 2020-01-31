@@ -103,7 +103,7 @@ class Renderer {
     SunMoon sunMoon {
       90,              // angleInDegrees
       glm::vec3(1.0f), // color
-      0.1f,            // brightness - 0.2f (give or take) for Night, 1.0f for Day.
+      0.7f,            // brightness - 0.2f (give or take) for Night, 0.7f (give or take) for Day.
     };
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;
@@ -164,8 +164,12 @@ class Renderer {
     // Overlay
     bool showOverlay { true };
     void renderOverlay();
+
+    // ...
+    void renderScene(const Shader& shader);
   public:
     Renderer();
+    void update(double dt);
     void render(double dt);
     void processInput(GLFWwindow* window, float dt);
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
