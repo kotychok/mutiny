@@ -29,6 +29,27 @@ Renderer::Renderer() {
 
   glActiveTexture(GL_TEXTURE0);
   Texture::loadBlockTextures();
+
+  glActiveTexture(GL_TEXTURE1);
+  glGenFramebuffers(1, &shadowMapFBO);
+  glGenTextures(1, &shadowMap);
+  glBindTexture(GL_TEXTURE_2D, shadowMap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+      SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  // Attach depth texture as FBO's depth buffer.
+  // TODO replace with direct state call instead?
+  glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+  glDrawBuffer(GL_NONE);
+  glReadBuffer(GL_NONE);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  debugDepthShader.use();
+  debugDepthShader.setInt("depthMap", 1);
 }
 
 #pragma GCC diagnostic push
@@ -61,7 +82,7 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flatWithPlus).first->second;
 
           // Then generate its mesh
           std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
@@ -91,9 +112,38 @@ void Renderer::update(double dt) {
 void Renderer::render(double dt) {
   calculateFPS();
 
-  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
   glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
   // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  //
+  // ******* Render Shadow Map *******
+  //
+  // TODO The ortho values probs need to be set based on the loaded chunks. I think these
+  // are world position coordinates. Something like cameraPos +- visibilityDistance * chunk_size
+  // float frustrumDistance = (0.5f + visibilityDistance
+  // glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 150.0f, camera.nearPlane, camera.farPlane);
+  glm::mat4 lightProjection = glm::ortho(-17.0f, 17.0f, -17.0f, 17.0f, camera.nearPlane, camera.farPlane);
+  glm::mat4 lightView = glm::lookAt(
+    glm::vec3(-sunMoon.position()),
+    glm::vec3(0.0f, 0.0f, 0.0f),
+    glm::vec3(0.0f, 1.0f, 0.0f)
+  );
+  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+  simpleDepthShader.use();
+  simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+  glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+  glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  renderScene(simpleDepthShader);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  //
+  // ******* Render Regular Scene *******
+  //
+  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -106,10 +156,13 @@ void Renderer::render(double dt) {
 
   blockShader.setMat4("view", camera.getViewMatrix());
   blockShader.setMat4("projection", camera.getProjectionMatrix());
+  blockShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
   blockShader.setInt("myTexture", 0);
   blockShader.setFloat("ellapsedTime", glfwGetTime());
   blockShader.setVec3("cameraPosition", camera.position);
+  blockShader.setInt("shadowMap", 1);
+  blockShader.setInt("debugShadows", debugShadows);
 
   blockShader.setVec4("lights[0].position", sunMoon.position());
   blockShader.setVec3("lights[0].color", sunMoon.color);
@@ -147,6 +200,12 @@ void Renderer::render(double dt) {
   // Do this at the end so that we have the most up-to-date info for this frame.
   if (showOverlay) {
     renderOverlay();
+  }
+
+  // Other overlays happen last so as to not mess up glViewport for others
+  if (showDepthMap) {
+    glViewport(0, 0, 300, 300);
+    renderDepthmapDebug();
   }
 }
 
@@ -195,6 +254,38 @@ void Renderer::calculateFPS() {
   if (diff > 0) {
     currentFPS = framesThisSecond / diff;
   }
+}
+
+void Renderer::renderDepthmapDebug() {
+  debugDepthShader.use();
+  debugDepthShader.setFloat("near_plane", camera.nearPlane);
+  debugDepthShader.setFloat("far_plane", camera.farPlane);
+
+  static unsigned int quadVAO = 0;
+  static unsigned int quadVBO;
+  if (quadVAO == 0)
+  {
+      float quadVertices[] = {
+          // positions        // texture Coords
+          -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+          -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+           1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+           1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+      };
+      // setup plane VAO
+      glGenVertexArrays(1, &quadVAO);
+      glGenBuffers(1, &quadVBO);
+      glBindVertexArray(quadVAO);
+      glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+      glEnableVertexAttribArray(0);
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+      glEnableVertexAttribArray(1);
+      glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+  }
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
 }
 
 void Renderer::renderNormals() {
@@ -301,7 +392,11 @@ void Renderer::renderOverlay() {
 
     ImGui::Text("Lighting");
     ImGui::SliderFloat("Sun & Moon Angle", &sunMoon.angleInDegrees, 180.0f, 0.0f);
+    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.position().x, sunMoon.position().y, sunMoon.position().z);
+    ImGui::Text("Sun & Moon Position: (%.2f,%.2f, %.2f)", (-sunMoon.position()).x, (-sunMoon.position()).y, (-sunMoon.position()).z);
     ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
+    ImGui::Checkbox("Show Depth Map Debug?", &showDepthMap);
+    ImGui::Checkbox("Debug Shadows?", &debugShadows);
 
     ImGui::Separator();
 

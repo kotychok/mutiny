@@ -68,6 +68,28 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom(glm::vec3 positio
   return blocks;
 }
 
+std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 position) {
+  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+  if (position.y != 0 || position.x != 0 || position.z != 0) {
+    return blocks;
+  }
+
+  for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
+    for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
+      for (unsigned int y = 0; y < CHUNK_SIZE / 4; y++) {
+        unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
+        if (y == 0) {
+          blocks[index] = Block { BlockType::BEDROCK };
+        } else if (x == CHUNK_SIZE_HALVED || z == CHUNK_SIZE_HALVED) {
+          blocks[index] = Block { BlockType::DIRT };
+        }
+      }
+    }
+  }
+  return blocks;
+}
+
+
 std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {

@@ -5,6 +5,7 @@ out vec4 FragColor;
 in vec3 Position;
 in vec3 TexCoord;
 in vec3 Normal;
+in vec4 FragPosLightSpace;
 
 struct Material {
   float shininess;
@@ -29,11 +30,22 @@ struct Light {
 uniform sampler2DArray myTexture;
 uniform float ellapsedTime;
 uniform vec3 cameraPosition;
+uniform sampler2D shadowMap;
 uniform Material material;
 uniform Light lights[4];
+uniform bool debugShadows;
 
 const float DIRECTIONAL = 0.0f;
 const float POINT = 1.0f;
+
+float CalcShadow(vec4 fragPosLightSpace) {
+  vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+  projCoords = projCoords * 0.5 + 0.5;
+  float closestDepth = texture(shadowMap, projCoords.xy).r;
+  float currentDepth = projCoords.z;
+  float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+  return shadow;
+}
 
 vec3 CalcPointLight(Light light, vec3 cameraDir) {
 
@@ -61,7 +73,17 @@ vec3 CalcPointLight(Light light, vec3 cameraDir) {
     specular *= attenuation;
   }
 
-  return ambient + diffuse + specular;
+  if (light.position.w == DIRECTIONAL) {
+    float shadow = CalcShadow(FragPosLightSpace);
+
+    if (debugShadows) {
+      return shadow == 1.0 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+    } else {
+      return ambient + (1.0 - shadow) * (diffuse + specular);
+    }
+  } else {
+    return ambient + diffuse + specular;
+  }
 }
 
 void main()

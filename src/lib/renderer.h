@@ -35,7 +35,7 @@ struct SunMoon {
   }
 
   glm::vec3 ambient() {
-    return glm::vec3(brightness);
+    return glm::vec3(0.2);
   }
 
   glm::vec3 diffuse() {
@@ -143,6 +143,17 @@ class Renderer {
     };
 
     Light lights[3] { redLight, greenLight, blueLight };
+
+    // Shadows
+    const int SHADOW_WIDTH { 2048 };
+    const int SHADOW_HEIGHT { 2048 };
+    unsigned int shadowMapFBO {};
+    unsigned int shadowMap {};
+    Shader simpleDepthShader { Shader("./src/shaders/simple_depth_shader.vert", "./src/shaders/simple_depth_shader.frag") };
+    Shader debugDepthShader { Shader("./src/shaders/debug_depth.vert", "./src/shaders/debug_depth.frag") };
+    bool showDepthMap { true };
+    bool debugShadows { true };
+    void renderDepthmapDebug();
 
     // FPS
     // https://stackoverflow.com/a/4687507
