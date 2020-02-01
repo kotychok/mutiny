@@ -27,7 +27,7 @@ struct SunMoon {
   glm::vec3 color;
   float brightness;
 
-  glm::vec4 position() {
+  glm::vec4 direction() {
     float angleInRadians = glm::radians(angleInDegrees);
     float sunMoonX = -cos(angleInRadians);
     float sunMoonY = -sin(angleInRadians);

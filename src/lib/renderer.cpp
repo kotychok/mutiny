@@ -130,8 +130,12 @@ void Renderer::render(double dt) {
 
   // LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR
   glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
+
+  // The light position needs to be far enough way to contain the entire scene.
+  // I add + 1 at the end to make sure the camera is _just_ outside the
+  // outermost chunk. It may be unnecessary.
   glm::mat4 lightView = glm::lookAt(
-    glm::vec3(-sunMoon.position()),
+    ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction()),
     glm::vec3(0.0f, 0.0f, 0.0f),
     glm::vec3(0.0f, 1.0f, 0.0f)
   );
@@ -171,7 +175,7 @@ void Renderer::render(double dt) {
   blockShader.setInt("debugShadows", debugShadows);
   blockShader.setFloat("shadowAcneBias", shadowAcneBias);
 
-  blockShader.setVec4("lights[0].position", sunMoon.position());
+  blockShader.setVec4("lights[0].position", sunMoon.direction());
   blockShader.setVec3("lights[0].color", sunMoon.color);
   blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
   blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
@@ -399,8 +403,7 @@ void Renderer::renderOverlay() {
 
     ImGui::Text("Lighting");
     ImGui::SliderFloat("Sun & Moon Angle", &sunMoon.angleInDegrees, 180.0f, 0.0f);
-    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.position().x, sunMoon.position().y, sunMoon.position().z);
-    ImGui::Text("Sun & Moon Position: (%.2f,%.2f, %.2f)", (-sunMoon.position()).x, (-sunMoon.position()).y, (-sunMoon.position()).z);
+    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction().x, sunMoon.direction().y, sunMoon.direction().z);
     ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
 
     ImGui::Separator();
