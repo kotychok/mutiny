@@ -38,8 +38,10 @@ Renderer::Renderer() {
       SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+  glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
   // Attach depth texture as FBO's depth buffer.
   // TODO replace with direct state call instead?
   glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
@@ -119,11 +121,15 @@ void Renderer::render(double dt) {
   //
   // ******* Render Shadow Map *******
   //
-  // TODO The ortho values probs need to be set based on the loaded chunks. I think these
-  // are world position coordinates. Something like cameraPos +- visibilityDistance * chunk_size
-  // float frustrumDistance = (0.5f + visibilityDistance
-  // glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 150.0f, camera.nearPlane, camera.farPlane);
-  glm::mat4 lightProjection = glm::ortho(-17.0f, 17.0f, -17.0f, 17.0f, camera.nearPlane, camera.farPlane);
+
+  // The camera (and therefore the light projection) points to the sun.
+  //
+  // NB: "left" and "right" depend on whether it is past the 90 degree mark.
+  // If angle > 90, left is -z and right is +z
+  // If angle < 90, left is +z and right is -z
+
+  // LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR
+  glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
   glm::mat4 lightView = glm::lookAt(
     glm::vec3(-sunMoon.position()),
     glm::vec3(0.0f, 0.0f, 0.0f),
@@ -163,6 +169,7 @@ void Renderer::render(double dt) {
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setInt("shadowMap", 1);
   blockShader.setInt("debugShadows", debugShadows);
+  blockShader.setFloat("shadowAcneBias", shadowAcneBias);
 
   blockShader.setVec4("lights[0].position", sunMoon.position());
   blockShader.setVec3("lights[0].color", sunMoon.color);
@@ -204,7 +211,7 @@ void Renderer::render(double dt) {
 
   // Other overlays happen last so as to not mess up glViewport for others
   if (showDepthMap) {
-    glViewport(0, 0, 300, 300);
+    glViewport(Window::WIDTH - 300, Window::HEIGHT - 300, 300, 300);
     renderDepthmapDebug();
   }
 }
@@ -395,8 +402,19 @@ void Renderer::renderOverlay() {
     ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.position().x, sunMoon.position().y, sunMoon.position().z);
     ImGui::Text("Sun & Moon Position: (%.2f,%.2f, %.2f)", (-sunMoon.position()).x, (-sunMoon.position()).y, (-sunMoon.position()).z);
     ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
+
+    ImGui::Separator();
+
+    ImGui::Text("Shadows");
     ImGui::Checkbox("Show Depth Map Debug?", &showDepthMap);
     ImGui::Checkbox("Debug Shadows?", &debugShadows);
+    ImGui::SliderFloat("Ortho Left", &orthoLeft, -500.0f, 500.0f);
+    ImGui::SliderFloat("Ortho Right", &orthoRight, -500.0f, 500.0f);
+    ImGui::SliderFloat("Ortho Bottom", &orthoBottom, -500.0f, 500.0f);
+    ImGui::SliderFloat("Ortho Top", &orthoTop, -500.0f, 500.0f);
+    ImGui::SliderFloat("Ortho Near", &orthoNear, 0.0f, 500.0f);
+    ImGui::SliderFloat("Ortho Far", &orthoFar, 0.0f, 500.0f);
+    ImGui::InputFloat("Shadow Acne Bias", &shadowAcneBias, 0.00001f, 0.00001f, "%.5f");
 
     ImGui::Separator();
 

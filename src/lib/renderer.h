@@ -96,12 +96,12 @@ class Renderer {
     glm::ivec3 lastCameraChunkPosition {};
 
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
-    int viewingDistance { 2 };
+    int viewingDistance { 6 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
     // Lighting
     SunMoon sunMoon {
-      90,              // angleInDegrees
+      160,             // angleInDegrees
       glm::vec3(1.0f), // color
       0.7f,            // brightness - 0.2f (give or take) for Night, 0.7f (give or take) for Day.
     };
@@ -154,6 +154,13 @@ class Renderer {
     bool showDepthMap { true };
     bool debugShadows { true };
     void renderDepthmapDebug();
+    float orthoLeft { -200.0f };
+    float orthoRight { 200.0f };
+    float orthoBottom { -200.0f };
+    float orthoTop { 200.0f };
+    float orthoNear { camera.nearPlane };
+    float orthoFar { camera.farPlane };
+    float shadowAcneBias { 0.0007 };
 
     // FPS
     // https://stackoverflow.com/a/4687507

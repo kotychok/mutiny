@@ -17,8 +17,6 @@ void main() {
   float depthValue = texture(depthMap, TexCoords).r;
   if (TexCoords.x < 0.01 || TexCoords.y < 0.01 || TexCoords.x > 0.99 || TexCoords.y > 0.99) {
     FragColor = vec4(0, 1, 1, 1);
-  } else if ((TexCoords.x >= 0.49 && TexCoords.x <= 0.51) || TexCoords.y == 0.5) {
-    FragColor = vec4(1, 0, 0, 1);
   } else {
     // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective
     FragColor = vec4(vec3(depthValue), 1.0); // orthographic

@@ -34,6 +34,7 @@ uniform sampler2D shadowMap;
 uniform Material material;
 uniform Light lights[4];
 uniform bool debugShadows;
+uniform float shadowAcneBias;
 
 const float DIRECTIONAL = 0.0f;
 const float POINT = 1.0f;
@@ -41,11 +42,16 @@ const float POINT = 1.0f;
 float CalcShadow(vec4 fragPosLightSpace) {
   vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
   projCoords = projCoords * 0.5 + 0.5;
-  float closestDepth = texture(shadowMap, projCoords.xy).r;
-  float currentDepth = projCoords.z;
-  float bias = 0.00005;
-  float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-  return shadow;
+  if (projCoords.z > 1.0) {
+    // If the coordinate we are checking for shadow lies outside of the light's
+    // frustrum, force it to appear not in shadow.
+    return 0.0;
+  } else {
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float shadow = currentDepth - shadowAcneBias > closestDepth ? 1.0 : 0.0;
+    return shadow;
+  }
 }
 
 vec3 CalcPointLight(Light light, vec3 cameraDir) {
