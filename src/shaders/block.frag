@@ -5,7 +5,7 @@ out vec4 FragColor;
 in vec3 Position;
 in vec3 TexCoord;
 in vec3 Normal;
-in vec4 FragPosLightSpace;
+in vec4 PositionInLightSpace;
 
 struct Material {
   float shininess;
@@ -27,27 +27,34 @@ struct Light {
   float quadratic;
 };
 
-uniform sampler2DArray myTexture;
-uniform float ellapsedTime;
+// Block Uniforms
+uniform sampler2DArray blockTexturesArray;
+
+// Lighting Uniforms
 uniform vec3 cameraPosition;
-uniform sampler2D shadowMap;
 uniform Material material;
 uniform Light lights[4];
-uniform bool debugShadows;
+
+// Shadow Uniforms
+uniform sampler2D depthMap;
 uniform float shadowAcneBias;
+uniform bool debugShadows;
+
+// Other Uniforms
+uniform float ellapsedTime;
 
 const float DIRECTIONAL = 0.0f;
 const float POINT = 1.0f;
 
-float CalcShadow(vec4 fragPosLightSpace) {
-  vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+float CalcShadow() {
+  vec3 projCoords = PositionInLightSpace.xyz / PositionInLightSpace.w;
   projCoords = projCoords * 0.5 + 0.5;
   if (projCoords.z > 1.0) {
     // If the coordinate we are checking for shadow lies outside of the light's
     // frustrum, force it to appear not in shadow.
     return 0.0;
   } else {
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float closestDepth = texture(depthMap, projCoords.xy).r;
     float currentDepth = projCoords.z;
     float shadow = currentDepth - shadowAcneBias > closestDepth ? 1.0 : 0.0;
     return shadow;
@@ -81,7 +88,7 @@ vec3 CalcPointLight(Light light, vec3 cameraDir) {
   }
 
   if (light.position.w == DIRECTIONAL) {
-    float shadow = CalcShadow(FragPosLightSpace);
+    float shadow = CalcShadow();
 
     if (debugShadows) {
       return shadow == 1.0 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
@@ -101,5 +108,5 @@ void main()
   for (int i = 0; i < 4; i++) {
     result += CalcPointLight(lights[i], cameraDir);
   }
-  FragColor = vec4(result, 1.0) * texture(myTexture, TexCoord);
+  FragColor = vec4(result, 1.0) * texture(blockTexturesArray, TexCoord);
 }

@@ -65,27 +65,6 @@ struct Light {
 
 class Renderer {
   private:
-    float xAxisVertices[6] {
-      -512.0f, 0.0f, 0.0f,
-      512.0f, 0.0f, 0.0f,
-    };
-    unsigned int xAxisVAO {};
-    unsigned int xAxisVBO {};
-
-    float yAxisVertices[6] {
-      0.0f, -512.0f, 0.0f,
-      0.0f, 512.0f, 0.0f
-    };
-    unsigned int yAxisVAO {};
-    unsigned int yAxisVBO {};
-
-    float zAxisVertices[6] {
-      0.0f, 0.0f, -512.0f,
-      0.0f, 0.0f, 512.0f,
-    };
-    unsigned int zAxisVAO {};
-    unsigned int zAxisVBO {};
-
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
     Shader normalShader { Shader("./src/shaders/normal.vert", "./src/shaders/normal.frag", "./src/shaders/normal.geom") };
@@ -144,32 +123,23 @@ class Renderer {
 
     Light lights[3] { redLight, greenLight, blueLight };
 
-    // Shadows
+    // *** Depth Map & Shadows ***
+    unsigned int depthMapFBO {};
+    unsigned int depthMap {};
+
+    Shader simpleDepthShader { Shader("./src/shaders/simple_depth_shader.vert", "./src/shaders/simple_depth_shader.frag") };
+    Shader debugDepthShader { Shader("./src/shaders/debug_depth.vert", "./src/shaders/debug_depth.frag") };
 
     // For a viewingDistance of 3. To have a larger viewingDistance or a
     // smaller shadow texture size, we'll need CSM.
     const int SHADOW_WIDTH { 16384 };
     const int SHADOW_HEIGHT { 16384 };
-    unsigned int shadowMapFBO {};
-    unsigned int shadowMap {};
-    Shader simpleDepthShader { Shader("./src/shaders/simple_depth_shader.vert", "./src/shaders/simple_depth_shader.frag") };
-    Shader debugDepthShader { Shader("./src/shaders/debug_depth.vert", "./src/shaders/debug_depth.frag") };
-    bool showDepthMap { true };
-    bool debugShadows { true };
-    void renderDepthmapDebug();
-    // TODO Move or remove.
-    float sceneSize() {
-      return (2 * viewingDistance + 1) * CHUNK_SIZE;
-    };
-    float orthoRight { sceneSize() / 2 };
-    float orthoLeft { -1 * orthoRight };
-    float orthoTop { sceneSize() / static_cast<float>(sqrt(2)) };
-    float orthoBottom { -1 * orthoTop };
-    float orthoNear { 0.001f };
-    float orthoFar { sceneSize() * static_cast<float>(sqrt(2)) };
-    float shadowAcneBias { 0.0007 };
 
-    // FPS
+    glm::mat4 lightSpaceMatrix {};
+    float shadowAcneBias { 0.0007 };
+    bool debugShadows { false };
+
+    // *** FPS ***
     // https://stackoverflow.com/a/4687507
     int framesThisSecond { -1 };
     float currentFPS { 0 };
@@ -178,25 +148,29 @@ class Renderer {
     double lastSecond { glfwGetTime() };
     void calculateFPS();
 
-    // Normals
+    // *** Rendering ***
     bool showNormals { false };
     void renderNormals();
 
-    // Coordinate lines
     bool showCoordinateLines { true };
     void renderCoordinateLines();
 
-    // Overlay
     bool showOverlay { true };
     void renderOverlay();
 
-    // ...
+    bool showDepthMap { true };
+    void renderDepthMap();
+
+    void renderSceneToDepthMap();
+    void renderSceneToScreen();
     void renderScene(const Shader& shader);
   public:
     Renderer();
+
+    void processInput(GLFWwindow* window, float dt);
     void update(double dt);
     void render(double dt);
-    void processInput(GLFWwindow* window, float dt);
+
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
     void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     void windowSizeCallback(GLFWwindow* window, int width, int height);

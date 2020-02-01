@@ -18,22 +18,13 @@ Renderer::Renderer() {
 
   glEnable(GL_DEPTH_TEST);
 
-  glGenVertexArrays(1, &xAxisVAO);
-  glGenBuffers(1, &xAxisVBO);
-
-  glGenVertexArrays(1, &yAxisVAO);
-  glGenBuffers(1, &yAxisVBO);
-
-  glGenVertexArrays(1, &zAxisVAO);
-  glGenBuffers(1, &zAxisVBO);
-
   glActiveTexture(GL_TEXTURE0);
   Texture::loadBlockTextures();
 
   glActiveTexture(GL_TEXTURE1);
-  glGenFramebuffers(1, &shadowMapFBO);
-  glGenTextures(1, &shadowMap);
-  glBindTexture(GL_TEXTURE_2D, shadowMap);
+  glGenFramebuffers(1, &depthMapFBO);
+  glGenTextures(1, &depthMap);
+  glBindTexture(GL_TEXTURE_2D, depthMap);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
       SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -42,16 +33,13 @@ Renderer::Renderer() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
   glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
   // Attach depth texture as FBO's depth buffer.
-  // TODO replace with direct state call instead?
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  debugDepthShader.use();
-  debugDepthShader.setInt("depthMap", 1);
 }
 
 #pragma GCC diagnostic push
@@ -114,95 +102,9 @@ void Renderer::update(double dt) {
 void Renderer::render(double dt) {
   calculateFPS();
 
-  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
-  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  renderSceneToDepthMap();
 
-  //
-  // ******* Render Shadow Map *******
-  //
-
-  // The camera (and therefore the light projection) points to the sun.
-  //
-  // NB: "left" and "right" depend on whether it is past the 90 degree mark.
-  // If angle > 90, left is -z and right is +z
-  // If angle < 90, left is +z and right is -z
-
-  // LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR
-  glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
-
-  glm::mat4 lightView = glm::lookAt(
-    // The light position needs to be far enough way to contain the entire scene.
-    // I add + 1 at the end to make sure the camera is _just_ outside the
-    // outermost chunk. It may be unnecessary.
-    ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction()) + glm::vec3(lastCameraChunkPosition.x * CHUNK_SIZE, 0.0f, lastCameraChunkPosition.z * CHUNK_SIZE),
-
-    // We need to translated the point we are looking at along x and z so that
-    // we are looking at the center x and center z of the loaded chunks.
-    glm::vec3(lastCameraChunkPosition.x * CHUNK_SIZE, 0.0f, lastCameraChunkPosition.z * CHUNK_SIZE),
-
-    glm::vec3(0.0f, 1.0f, 0.0f)
-  );
-  glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-
-  simpleDepthShader.use();
-  simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-  glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-  glBindFramebuffer(GL_FRAMEBUFFER, shadowMapFBO);
-  glClear(GL_DEPTH_BUFFER_BIT);
-  renderScene(simpleDepthShader);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  //
-  // ******* Render Regular Scene *******
-  //
-  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  if (wireMode) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  } else {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  }
-
-  blockShader.use();
-
-  blockShader.setMat4("view", camera.getViewMatrix());
-  blockShader.setMat4("projection", camera.getProjectionMatrix());
-  blockShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-  blockShader.setInt("myTexture", 0);
-  blockShader.setFloat("ellapsedTime", glfwGetTime());
-  blockShader.setVec3("cameraPosition", camera.position);
-  blockShader.setInt("shadowMap", 1);
-  blockShader.setInt("debugShadows", debugShadows);
-  blockShader.setFloat("shadowAcneBias", shadowAcneBias);
-
-  blockShader.setVec4("lights[0].position", sunMoon.direction());
-  blockShader.setVec3("lights[0].color", sunMoon.color);
-  blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
-  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
-  blockShader.setVec3("lights[0].specular", sunMoon.specular());
-  blockShader.setFloat("lights[0].constant", 0.0f);
-  blockShader.setFloat("lights[0].linear", 0.0f);
-  blockShader.setFloat("lights[0].quadratic", 0.0f);
-
-  for (unsigned int i = 1; i < 4; ++i) {
-    Light& light = lights[i-1];
-    blockShader.setVec4("lights[" + std::to_string(i) + "].position", light.position);
-    blockShader.setVec3("lights[" + std::to_string(i) + "].color", light.color);
-    blockShader.setVec3("lights[" + std::to_string(i) + "].ambient", light.ambient);
-    blockShader.setVec3("lights[" + std::to_string(i) + "].diffuse", light.diffuse);
-    blockShader.setVec3("lights[" + std::to_string(i) + "].specular", light.specular);
-    blockShader.setFloat("lights[" + std::to_string(i) + "].constant", light.constant);
-    blockShader.setFloat("lights[" + std::to_string(i) + "].linear", light.linear);
-    blockShader.setFloat("lights[" + std::to_string(i) + "].quadratic", light.quadratic);
-  }
-
-  blockShader.setFloat("material.shininess", 32.0f);
-
-  renderScene(blockShader);
+  renderSceneToScreen();
 
   if (showNormals) {
     renderNormals();
@@ -219,9 +121,111 @@ void Renderer::render(double dt) {
 
   // Other overlays happen last so as to not mess up glViewport for others
   if (showDepthMap) {
-    glViewport(Window::WIDTH - 300, Window::HEIGHT - 300, 300, 300);
-    renderDepthmapDebug();
+    renderDepthMap();
   }
+}
+#pragma GCC diagnostic pop
+
+void Renderer::renderSceneToDepthMap() {
+  float sceneSize = (2 * viewingDistance + 1) * CHUNK_SIZE;
+
+  // The light frustrum is at its largest size when the angle between the light
+  // and the x-axis is 45 or 135 degrees.
+  //
+  // We calculate this largest size so that at any angle the entire scene is
+  // captured to generate shadows.
+  float orthoRight { sceneSize / 2 };
+  float orthoLeft { -1 * orthoRight };
+  float orthoTop { sceneSize / static_cast<float>(sqrt(2)) };
+  float orthoBottom { -1 * orthoTop };
+  float orthoNear { 0.001f };
+  float orthoFar { sceneSize * static_cast<float>(sqrt(2)) };
+  glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
+
+  // The light position needs to be far enough way to contain the entire scene.
+  // I add + 1 at the end to make sure the camera is _just_ outside the
+  // outermost chunk. It may be unnecessary.
+  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction());
+
+  // We need to translate the point we are looking at along x and z so that
+  // we are looking at the center x and center z of the loaded chunks.
+  glm::vec3 sceneCenter = glm::vec3(lastCameraChunkPosition.x * CHUNK_SIZE, 0.0f, lastCameraChunkPosition.z * CHUNK_SIZE);
+
+  glm::mat4 lightView = glm::lookAt(
+    // The light frustrum needs to move with the scene.
+    lightPosition + sceneCenter,
+
+    // The center of the scene, i.e. the light target
+    sceneCenter,
+
+    glm::vec3(0.0f, 1.0f, 0.0f)
+  );
+  lightSpaceMatrix = lightProjection * lightView;
+
+  simpleDepthShader.use();
+  simpleDepthShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+  glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+  glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+  glClear(GL_DEPTH_BUFFER_BIT);
+  renderScene(simpleDepthShader);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Renderer::renderSceneToScreen() {
+  glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
+  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
+  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  if (wireMode) {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  } else {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
+
+  blockShader.use();
+
+  // Vertex Shader Uniforms
+  blockShader.setMat4("view", camera.getViewMatrix());
+  blockShader.setMat4("projection", camera.getProjectionMatrix());
+  blockShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
+
+  // Fragment Block Uniforms
+  blockShader.setInt("blockTexturesArray", 0);
+
+  // Fragment Lighting Uniforms
+  blockShader.setVec3("cameraPosition", camera.position);
+  blockShader.setFloat("material.shininess", 32.0f);
+  blockShader.setVec4("lights[0].position", sunMoon.direction());
+  blockShader.setVec3("lights[0].color", sunMoon.color);
+  blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
+  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
+  blockShader.setVec3("lights[0].specular", sunMoon.specular());
+  blockShader.setFloat("lights[0].constant", 0.0f);
+  blockShader.setFloat("lights[0].linear", 0.0f);
+  blockShader.setFloat("lights[0].quadratic", 0.0f);
+  for (unsigned int i = 1; i < 4; ++i) {
+    Light& light = lights[i-1];
+    blockShader.setVec4("lights[" + std::to_string(i) + "].position", light.position);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].color", light.color);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].ambient", light.ambient);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].diffuse", light.diffuse);
+    blockShader.setVec3("lights[" + std::to_string(i) + "].specular", light.specular);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].constant", light.constant);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].linear", light.linear);
+    blockShader.setFloat("lights[" + std::to_string(i) + "].quadratic", light.quadratic);
+  }
+
+  // Fragment Shadow Uniforms
+  blockShader.setInt("depthMap", 1);
+  blockShader.setFloat("shadowAcneBias", shadowAcneBias);
+  blockShader.setInt("debugShadows", debugShadows);
+
+  // Fragment Other Uniforms
+  blockShader.setFloat("ellapsedTime", glfwGetTime());
+
+  renderScene(blockShader);
 }
 
 void Renderer::renderScene(const Shader& shader) {
@@ -230,7 +234,6 @@ void Renderer::renderScene(const Shader& shader) {
     chunk.render(shader);
   }
 }
-#pragma GCC diagnostic pop
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
   camera.processInput(window, dt);
@@ -271,34 +274,48 @@ void Renderer::calculateFPS() {
   }
 }
 
-void Renderer::renderDepthmapDebug() {
-  debugDepthShader.use();
-  debugDepthShader.setFloat("near_plane", camera.nearPlane);
-  debugDepthShader.setFloat("far_plane", camera.farPlane);
+void Renderer::renderDepthMap() {
+  const int depthMapSize = 300;
+  glViewport(Window::WIDTH - depthMapSize, Window::HEIGHT - depthMapSize, depthMapSize, depthMapSize);
 
-  static unsigned int quadVAO = 0;
-  static unsigned int quadVBO;
-  if (quadVAO == 0)
+  debugDepthShader.use();
+  debugDepthShader.setInt("depthMap", 1);
+
+  // These aren't actually used since I use the orthographic view, and they are
+  // only used for the perspective view.
+  // I'm really not sure what the perspective view in this shader would be for.
+  debugDepthShader.setFloat("nearPlane", camera.nearPlane);
+  debugDepthShader.setFloat("farPlane", camera.farPlane);
+
+  static unsigned int depthVAO { 0 };
+  static unsigned int depthVBO;
+  if (depthVAO == 0)
   {
-      float quadVertices[] = {
+      float vertices[] = {
           // positions        // texture Coords
           -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
           -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
            1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
       };
+
       // setup plane VAO
-      glGenVertexArrays(1, &quadVAO);
-      glGenBuffers(1, &quadVBO);
-      glBindVertexArray(quadVAO);
-      glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+      glGenVertexArrays(1, &depthVAO);
+      glGenBuffers(1, &depthVBO);
+
+      glBindVertexArray(depthVAO);
+      glBindBuffer(GL_ARRAY_BUFFER, depthVBO);
+
+      glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+
       glEnableVertexAttribArray(0);
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
       glEnableVertexAttribArray(1);
       glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
   }
-  glBindVertexArray(quadVAO);
+
+  glBindVertexArray(depthVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);
 }
@@ -311,41 +328,78 @@ void Renderer::renderNormals() {
 }
 
 void Renderer::renderCoordinateLines() {
-  glm::mat4 axisModel = glm::mat4(1.0f);
   lineShader.use();
+
+  static unsigned int xAxisVAO {};
+  static unsigned int xAxisVBO {};
+  static unsigned int yAxisVAO {};
+  static unsigned int yAxisVBO {};
+  static unsigned int zAxisVAO {};
+  static unsigned int zAxisVBO {};
+
+  // We only need to check one
+  if (xAxisVAO == 0) {
+    lineShader.setMat4("model", glm::mat4(1.0f));
+
+    float xAxisVertices[6] {
+      -512.0f, 0.0f, 0.0f,
+      512.0f, 0.0f, 0.0f,
+    };
+
+    float yAxisVertices[6] {
+      0.0f, -512.0f, 0.0f,
+      0.0f, 512.0f, 0.0f
+    };
+
+    float zAxisVertices[6] {
+      0.0f, 0.0f, -512.0f,
+      0.0f, 0.0f, 512.0f,
+    };
+
+    glGenVertexArrays(1, &xAxisVAO);
+    glGenBuffers(1, &xAxisVBO);
+
+    glGenVertexArrays(1, &yAxisVAO);
+    glGenBuffers(1, &yAxisVBO);
+
+    glGenVertexArrays(1, &zAxisVAO);
+    glGenBuffers(1, &zAxisVBO);
+
+    glBindVertexArray(xAxisVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, xAxisVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertices), xAxisVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(yAxisVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, yAxisVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertices), yAxisVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(zAxisVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, zAxisVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertices), zAxisVertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+  }
+
   lineShader.setMat4("view", camera.getViewMatrix());
   lineShader.setMat4("projection", camera.getProjectionMatrix());
-  lineShader.setMat4("model", axisModel);
 
   glBindVertexArray(xAxisVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, xAxisVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(xAxisVertices), xAxisVertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
   lineShader.setVec3("color", glm::vec3(1.0f, 0.0f, 0.0f));
   glDrawArrays(GL_LINES, 0, 2);
-  glDrawArrays(GL_POINTS, 0, 2);
 
   glBindVertexArray(yAxisVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, yAxisVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(yAxisVertices), yAxisVertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
   lineShader.setVec3("color", glm::vec3(0.0f, 1.0f, 0.0f));
   glDrawArrays(GL_LINES, 0, 2);
-  glDrawArrays(GL_POINTS, 0, 2);
 
   glBindVertexArray(zAxisVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, zAxisVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(zAxisVertices), zAxisVertices, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
   lineShader.setVec3("color", glm::vec3(0.0f, 0.0f, 1.0f));
   glDrawArrays(GL_LINES, 0, 2);
-  glDrawArrays(GL_POINTS, 0, 2);
+
+  glBindVertexArray(0);
 }
 
 void Renderer::renderOverlay() {
@@ -415,12 +469,6 @@ void Renderer::renderOverlay() {
     ImGui::Text("Shadows");
     ImGui::Checkbox("Show Depth Map Debug?", &showDepthMap);
     ImGui::Checkbox("Debug Shadows?", &debugShadows);
-    ImGui::SliderFloat("Ortho Left", &orthoLeft, -500.0f, 500.0f);
-    ImGui::SliderFloat("Ortho Right", &orthoRight, -500.0f, 500.0f);
-    ImGui::SliderFloat("Ortho Bottom", &orthoBottom, -500.0f, 500.0f);
-    ImGui::SliderFloat("Ortho Top", &orthoTop, -500.0f, 500.0f);
-    ImGui::SliderFloat("Ortho Near", &orthoNear, 0.0f, 500.0f);
-    ImGui::SliderFloat("Ortho Far", &orthoFar, 0.0f, 500.0f);
     ImGui::InputFloat("Shadow Acne Bias", &shadowAcneBias, 0.00001f, 0.00001f, "%.5f");
 
     ImGui::Separator();
