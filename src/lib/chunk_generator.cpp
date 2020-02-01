@@ -70,7 +70,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom(glm::vec3 positio
 
 std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 position) {
   std::array<Block, CHUNK_SIZE_CUBED> blocks {};
-  if (position.y != 0 || position.x > 2 || position.x < -2 || position.z > 2 || position.z < -2) {
+  if (position.y != 0) {
     return blocks;
   }
 

@@ -84,7 +84,7 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flatWithPlus).first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
 
           // Then generate its mesh
           std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
@@ -131,12 +131,16 @@ void Renderer::render(double dt) {
   // LEFT, RIGHT, BOTTOM, TOP, NEAR, FAR
   glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
 
-  // The light position needs to be far enough way to contain the entire scene.
-  // I add + 1 at the end to make sure the camera is _just_ outside the
-  // outermost chunk. It may be unnecessary.
   glm::mat4 lightView = glm::lookAt(
-    ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction()),
-    glm::vec3(0.0f, 0.0f, 0.0f),
+    // The light position needs to be far enough way to contain the entire scene.
+    // I add + 1 at the end to make sure the camera is _just_ outside the
+    // outermost chunk. It may be unnecessary.
+    ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction()) + glm::vec3(lastCameraChunkPosition.x * CHUNK_SIZE, 0.0f, lastCameraChunkPosition.z * CHUNK_SIZE),
+
+    // We need to translated the point we are looking at along x and z so that
+    // we are looking at the center x and center z of the loaded chunks.
+    glm::vec3(lastCameraChunkPosition.x * CHUNK_SIZE, 0.0f, lastCameraChunkPosition.z * CHUNK_SIZE),
+
     glm::vec3(0.0f, 1.0f, 0.0f)
   );
   glm::mat4 lightSpaceMatrix = lightProjection * lightView;

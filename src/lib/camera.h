@@ -38,7 +38,7 @@ class Camera {
     float speed { 24.0f };
     float sensitivity { 0.05f };
 
-    glm::vec3 position { glm::vec3(0.0f, 150.0f, 125.0f) };
+    glm::vec3 position { glm::vec3(0.0f, 94.0f, 0.0f) };
 
     glm::vec3 computeCameraFront();
 

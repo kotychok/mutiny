@@ -96,7 +96,7 @@ class Renderer {
     glm::ivec3 lastCameraChunkPosition {};
 
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
-    int viewingDistance { 6 };
+    int viewingDistance { 3 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
     // Lighting
@@ -145,8 +145,11 @@ class Renderer {
     Light lights[3] { redLight, greenLight, blueLight };
 
     // Shadows
-    const int SHADOW_WIDTH { 2048 };
-    const int SHADOW_HEIGHT { 2048 };
+
+    // For a viewingDistance of 3. To have a larger viewingDistance or a
+    // smaller shadow texture size, we'll need CSM.
+    const int SHADOW_WIDTH { 16384 };
+    const int SHADOW_HEIGHT { 16384 };
     unsigned int shadowMapFBO {};
     unsigned int shadowMap {};
     Shader simpleDepthShader { Shader("./src/shaders/simple_depth_shader.vert", "./src/shaders/simple_depth_shader.frag") };
@@ -154,12 +157,16 @@ class Renderer {
     bool showDepthMap { true };
     bool debugShadows { true };
     void renderDepthmapDebug();
-    float orthoLeft { -200.0f };
-    float orthoRight { 200.0f };
-    float orthoBottom { -200.0f };
-    float orthoTop { 200.0f };
-    float orthoNear { camera.nearPlane };
-    float orthoFar { camera.farPlane };
+    // TODO Move or remove.
+    float sceneSize() {
+      return (2 * viewingDistance + 1) * CHUNK_SIZE;
+    };
+    float orthoRight { sceneSize() / 2 };
+    float orthoLeft { -1 * orthoRight };
+    float orthoTop { sceneSize() / static_cast<float>(sqrt(2)) };
+    float orthoBottom { -1 * orthoTop };
+    float orthoNear { 0.001f };
+    float orthoFar { sceneSize() * static_cast<float>(sqrt(2)) };
     float shadowAcneBias { 0.0007 };
 
     // FPS
