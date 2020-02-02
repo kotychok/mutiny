@@ -37,6 +37,7 @@ uniform Light lights[4];
 
 // Shadow Uniforms
 uniform sampler2D depthMap;
+uniform float shadowMultiplier;
 uniform float shadowAcneBias;
 uniform bool debugShadows;
 
@@ -93,7 +94,11 @@ vec3 CalcPointLight(Light light, vec3 cameraDir) {
     if (debugShadows) {
       return shadow == 1.0 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
     } else {
-      return ambient + (1.0 - shadow) * (diffuse + specular);
+      if (shadow == 1.0) {
+        return ambient + shadowMultiplier * (diffuse + specular);
+      } else {
+        return ambient + diffuse + specular;
+      }
     }
   } else {
     return ambient + diffuse + specular;

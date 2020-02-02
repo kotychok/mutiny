@@ -139,6 +139,7 @@ class Renderer {
     const int SHADOW_HEIGHT { 16384 };
 
     glm::mat4 lightSpaceMatrix {};
+    float shadowMultiplier { 0.4 };
     float shadowAcneBias { 0.0007 };
     bool debugShadows { false };
 

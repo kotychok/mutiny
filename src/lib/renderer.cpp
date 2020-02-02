@@ -222,6 +222,7 @@ void Renderer::renderSceneToScreen() {
 
   // Fragment Shadow Uniforms
   blockShader.setInt("depthMap", depthMapTextureUnitIndex);
+  blockShader.setFloat("shadowMultiplier", shadowMultiplier);
   blockShader.setFloat("shadowAcneBias", shadowAcneBias);
   blockShader.setBool("debugShadows", debugShadows);
 
@@ -472,6 +473,7 @@ void Renderer::renderOverlay() {
     ImGui::Text("Shadows");
     ImGui::Checkbox("Show Depth Map Debug?", &showDepthMap);
     ImGui::Checkbox("Debug Shadows?", &debugShadows);
+    ImGui::SliderFloat("Shadow Multiplier", &shadowMultiplier, 0.0f, 1.0f);
     ImGui::InputFloat("Shadow Acne Bias", &shadowAcneBias, 0.00001f, 0.00001f, "%.5f");
 
     ImGui::Separator();
