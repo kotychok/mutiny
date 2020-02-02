@@ -10,6 +10,7 @@
 #include "renderer.h"
 #include "shader.h"
 #include "texture.h"
+#include "texture_unit.h"
 
 Renderer::Renderer() {
   std::cout << "Renderer created" << std::endl;
@@ -18,10 +19,12 @@ Renderer::Renderer() {
 
   glEnable(GL_DEPTH_TEST);
 
-  glActiveTexture(GL_TEXTURE0);
+  blocksTextureUnitIndex = TextureUnit::reserveTextureUnit();
+  TextureUnit::activate(blocksTextureUnitIndex);
   Texture::loadBlockTextures();
 
-  glActiveTexture(GL_TEXTURE1);
+  depthMapTextureUnitIndex = TextureUnit::reserveTextureUnit();
+  TextureUnit::activate(depthMapTextureUnitIndex);
   glGenFramebuffers(1, &depthMapFBO);
   glGenTextures(1, &depthMap);
   glBindTexture(GL_TEXTURE_2D, depthMap);
@@ -192,7 +195,7 @@ void Renderer::renderSceneToScreen() {
   blockShader.setMat4("lightSpaceMatrix", lightSpaceMatrix);
 
   // Fragment Block Uniforms
-  blockShader.setInt("blockTexturesArray", 0);
+  blockShader.setInt("blockTexturesArray", blocksTextureUnitIndex);
 
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
@@ -218,9 +221,9 @@ void Renderer::renderSceneToScreen() {
   }
 
   // Fragment Shadow Uniforms
-  blockShader.setInt("depthMap", 1);
+  blockShader.setInt("depthMap", depthMapTextureUnitIndex);
   blockShader.setFloat("shadowAcneBias", shadowAcneBias);
-  blockShader.setInt("debugShadows", debugShadows);
+  blockShader.setBool("debugShadows", debugShadows);
 
   // Fragment Other Uniforms
   blockShader.setFloat("ellapsedTime", glfwGetTime());

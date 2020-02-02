@@ -65,6 +65,8 @@ struct Light {
 
 class Renderer {
   private:
+    int blocksTextureUnitIndex {};
+
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
     Shader normalShader { Shader("./src/shaders/normal.vert", "./src/shaders/normal.frag", "./src/shaders/normal.geom") };
@@ -124,6 +126,7 @@ class Renderer {
     Light lights[3] { redLight, greenLight, blueLight };
 
     // *** Depth Map & Shadows ***
+    int depthMapTextureUnitIndex {};
     unsigned int depthMapFBO {};
     unsigned int depthMap {};
 
