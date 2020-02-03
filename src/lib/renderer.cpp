@@ -45,6 +45,10 @@ Renderer::Renderer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Renderer::processInput(GLFWwindow* window, float dt) {
+  camera.processInput(window, dt);
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void Renderer::update(double dt) {
@@ -148,7 +152,7 @@ void Renderer::renderSceneToDepthMap() {
   // The light position needs to be far enough way to contain the entire scene.
   // I add + 1 at the end to make sure the camera is _just_ outside the
   // outermost chunk. It may be unnecessary.
-  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction());
+  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction(timeOfDay));
 
   // We need to translate the point we are looking at along x and z so that
   // we are looking at the center x and center z of the loaded chunks.
@@ -177,8 +181,8 @@ void Renderer::renderSceneToDepthMap() {
 
 void Renderer::renderSceneToScreen() {
   glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
-  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Day
-  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Night
+  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Midday
+  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Midnight
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -200,7 +204,7 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  blockShader.setVec4("lights[0].position", sunMoon.direction());
+  blockShader.setVec4("lights[0].position", sunMoon.direction(timeOfDay));
   blockShader.setVec3("lights[0].color", sunMoon.color);
   blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
   blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
@@ -236,45 +240,6 @@ void Renderer::renderScene(const Shader& shader) {
   for (std::pair<const xyz, Chunk>& kv : chunks) {
     Chunk& chunk = kv.second;
     chunk.render(shader);
-  }
-}
-
-void Renderer::processInput(GLFWwindow* window, float dt) {
-  camera.processInput(window, dt);
-}
-
-void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-  camera.cursorPosCallback(window, xpos, ypos);
-}
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-void Renderer::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  if (action == GLFW_PRESS) {
-    switch (key) {
-      case GLFW_KEY_F3:
-        showOverlay = !showOverlay;
-        break;
-    }
-  }
-}
-#pragma GCC diagnostic pop
-
-void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
-  camera.windowSizeCallback(window, width, height);
-}
-
-void Renderer::calculateFPS() {
-  double now = glfwGetTime();
-  double diff = now - lastSecond;
-  if (diff > 1) {
-    lastSecond = now;
-    avgFPS = fpsDecay * avgFPS + (1.0 - fpsDecay) * framesThisSecond;
-    framesThisSecond = -1;
-  }
-  framesThisSecond++;
-  if (diff > 0) {
-    currentFPS = framesThisSecond / diff;
   }
 }
 
@@ -463,9 +428,33 @@ void Renderer::renderOverlay() {
 
     ImGui::Separator();
 
+    ImGui::Text("Time");
+    int hours = static_cast<int>(timeOfDay);
+    int minutes = static_cast<int>(timeOfDay * 60) % 60;
+    std::string timeDisplay = std::to_string(hours) + "h " + std::to_string(minutes) + "m";
+    ImGui::SliderFloat("Time of Day", &timeOfDay, 0.0f, 24.0f, timeDisplay.c_str());
+
+    if (ImGui::Button("Midnight")) {
+      timeOfDay = 0.0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Dawn")) {
+      timeOfDay = 6.0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Midday")) {
+      timeOfDay = 12.0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Dusk")) {
+      timeOfDay = 18.0;
+    }
+
+    ImGui::Separator();
+
     ImGui::Text("Lighting");
-    ImGui::SliderFloat("Sun & Moon Angle", &sunMoon.angleInDegrees, 180.0f, 0.0f);
-    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction().x, sunMoon.direction().y, sunMoon.direction().z);
+    ImGui::Text("Sun & Moon Angle %.0f", sunMoon.angleInDegrees(timeOfDay));
+    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction(timeOfDay).x, sunMoon.direction(timeOfDay).y, sunMoon.direction(timeOfDay).z);
     ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
 
     ImGui::Separator();
@@ -487,3 +476,38 @@ void Renderer::renderOverlay() {
   }
   ImGui::End();
 }
+
+void Renderer::calculateFPS() {
+  double now = glfwGetTime();
+  double diff = now - lastSecond;
+  if (diff > 1) {
+    lastSecond = now;
+    avgFPS = fpsDecay * avgFPS + (1.0 - fpsDecay) * framesThisSecond;
+    framesThisSecond = -1;
+  }
+  framesThisSecond++;
+  if (diff > 0) {
+    currentFPS = framesThisSecond / diff;
+  }
+}
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void Renderer::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
+  camera.cursorPosCallback(window, xpos, ypos);
+}
+
+void Renderer::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  if (action == GLFW_PRESS) {
+    switch (key) {
+      case GLFW_KEY_F3:
+        showOverlay = !showOverlay;
+        break;
+    }
+  }
+}
+
+void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
+  camera.windowSizeCallback(window, width, height);
+}
+#pragma GCC diagnostic pop

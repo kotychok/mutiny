@@ -23,12 +23,15 @@ const float DIRECTIONAL_LIGHT = 0.0f;
 const float POINT_LIGHT = 1.0f;
 
 struct SunMoon {
-  float angleInDegrees;
   glm::vec3 color;
   float brightness;
 
-  glm::vec4 direction() {
-    float angleInRadians = glm::radians(angleInDegrees);
+  float angleInDegrees(float timeOfDay) {
+    return 180 * (timeOfDay / 24.0);
+  }
+
+  glm::vec4 direction(float timeOfDay) {
+    float angleInRadians = glm::radians(angleInDegrees(timeOfDay));
     float sunMoonX = -cos(angleInRadians);
     float sunMoonY = -sin(angleInRadians);
     return glm::vec4(sunMoonX, sunMoonY, 0.0f, DIRECTIONAL_LIGHT);
@@ -71,8 +74,6 @@ class Renderer {
     Shader lineShader { Shader("./src/shaders/line.vert", "./src/shaders/line.frag") };
     Shader normalShader { Shader("./src/shaders/normal.vert", "./src/shaders/normal.frag", "./src/shaders/normal.geom") };
 
-    bool wireMode { false };
-
     Camera camera { Camera() };
     glm::ivec3 lastCameraChunkPosition {};
 
@@ -80,9 +81,11 @@ class Renderer {
     int viewingDistance { 3 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
-    // Lighting
+    // *** Time ***
+    float timeOfDay { 12 };
+
+    // *** Lighting ***
     SunMoon sunMoon {
-      160,             // angleInDegrees
       glm::vec3(1.0f), // color
       0.7f,            // brightness - 0.2f (give or take) for Night, 0.7f (give or take) for Day.
     };
@@ -164,6 +167,8 @@ class Renderer {
 
     bool showDepthMap { true };
     void renderDepthMap();
+
+    bool wireMode { false };
 
     void renderSceneToDepthMap();
     void renderSceneToScreen();
