@@ -181,8 +181,8 @@ void Renderer::renderSceneToDepthMap() {
 
 void Renderer::renderSceneToScreen() {
   glViewport(0, 0, Window::WIDTH, Window::HEIGHT);
-  glClearColor(0.53f, 0.81f, 0.92f, 1.0f); // Midday
-  // glClearColor(0.1f, 0.1f, 0.12f, 1.0f); // Midnight
+  glm::vec3 currentSkyColor = skyColor();
+  glClearColor(currentSkyColor.r, currentSkyColor.g, currentSkyColor.b, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (wireMode) {
@@ -491,6 +491,13 @@ void Renderer::calculateFPS() {
   if (diff > 0) {
     currentFPS = framesThisSecond / diff;
   }
+}
+
+glm::vec3 Renderer::skyColor() {
+  float interpolation = abs((timeOfDay - 12) / 12);
+  glm::vec3 middayColor = glm::vec3(0.53f, 0.81f, 0.92f);
+  glm::vec3 midnightColor = glm::vec3(0.1f, 0.1f, 0.12f);
+  return middayColor + (midnightColor - middayColor) * interpolation;
 }
 
 #pragma GCC diagnostic push

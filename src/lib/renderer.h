@@ -85,6 +85,7 @@ class Renderer {
 
     // *** Time ***
     float timeOfDay { 12 };
+    glm::vec3 skyColor();
 
     // *** Lighting ***
     SunMoon sunMoon {
