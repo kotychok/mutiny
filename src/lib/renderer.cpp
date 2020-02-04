@@ -455,7 +455,9 @@ void Renderer::renderOverlay() {
     ImGui::Text("Lighting");
     ImGui::Text("Sun & Moon Angle %.0f", sunMoon.angleInDegrees(timeOfDay));
     ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction(timeOfDay).x, sunMoon.direction(timeOfDay).y, sunMoon.direction(timeOfDay).z);
-    ImGui::SliderFloat("Sun & Moon Brightness", &sunMoon.brightness, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun & Moon Ambient", &sunMoon.ambientStrength, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun & Moon Diffuse", &sunMoon.diffuseStrength, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun & Moon Specular", &sunMoon.specularStrength, 0.0f, 1.0f);
 
     ImGui::Separator();
 

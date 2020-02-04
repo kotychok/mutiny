@@ -24,7 +24,9 @@ const float POINT_LIGHT = 1.0f;
 
 struct SunMoon {
   glm::vec3 color;
-  float brightness;
+  float ambientStrength;
+  float diffuseStrength;
+  float specularStrength;
 
   float angleInDegrees(float timeOfDay) {
     return 180 * (timeOfDay / 24.0);
@@ -38,15 +40,15 @@ struct SunMoon {
   }
 
   glm::vec3 ambient() {
-    return glm::vec3(0.2);
+    return glm::vec3(ambientStrength);
   }
 
   glm::vec3 diffuse() {
-    return glm::vec3(brightness);
+    return glm::vec3(diffuseStrength);
   }
 
   glm::vec3 specular() {
-    return glm::vec3(brightness);
+    return glm::vec3(specularStrength);
   }
 };
 
@@ -87,7 +89,9 @@ class Renderer {
     // *** Lighting ***
     SunMoon sunMoon {
       glm::vec3(1.0f), // color
-      0.7f,            // brightness - 0.2f (give or take) for Night, 0.7f (give or take) for Day.
+      1.0f, // ambientStrength
+      1.0f, // diffuseStrength
+      1.0f, // specularStrength
     };
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;
