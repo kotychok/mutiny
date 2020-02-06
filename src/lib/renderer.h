@@ -29,7 +29,7 @@ struct SunMoon {
   float specularStrength;
 
   float angleInDegrees(float timeOfDay) {
-    return 180 * (timeOfDay / 24.0);
+    return 360 * (timeOfDay / 24.0) - 90;
   }
 
   glm::vec4 direction(float timeOfDay) {
