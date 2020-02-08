@@ -16,6 +16,7 @@
 #include "camera.h"
 #include "chunk.h"
 #include "shader.h"
+#include "lerp.h"
 
 typedef std::tuple<int, int, int> xyz;
 
@@ -24,9 +25,10 @@ const float POINT_LIGHT = 1.0f;
 
 struct SunMoon {
   glm::vec3 color;
-  float ambientStrength;
-  float diffuseStrength;
-  float specularStrength;
+  float ambientStrengthOverride;
+  float diffuseStrengthOverride;
+  float specularStrengthOverride;
+  bool useOverrides;
 
   float angleInDegrees(float timeOfDay) {
     return 360 * (timeOfDay / 24.0) - 90;
@@ -39,16 +41,39 @@ struct SunMoon {
     return glm::vec4(sunMoonX, sunMoonY, 0.0f, DIRECTIONAL_LIGHT);
   }
 
-  glm::vec3 ambient() {
+  glm::vec3 ambient(float timeOfDay) {
+    if (useOverrides) {
+      return glm::vec3(ambientStrengthOverride);
+    }
+
+    float minAmbientStrength = 0.2f;
+    float maxAmbientStrength = 0.5f;
+
+    float interpolation = 1 - abs(timeOfDay - 12) / 12;
+    float ambientStrength = 1 - lerp(minAmbientStrength, maxAmbientStrength, interpolation);
     return glm::vec3(ambientStrength);
   }
 
-  glm::vec3 diffuse() {
+  glm::vec3 diffuse(float timeOfDay) {
+    if (useOverrides) {
+      return glm::vec3(diffuseStrengthOverride);
+    }
+
+    float minDiffuseStrength = 0.2f;
+    float maxDiffuseStrength = 0.5f;
+
+    float interpolation = 1 - abs(timeOfDay - 12) / 12;
+    float diffuseStrength = 1 - lerp(minDiffuseStrength, maxDiffuseStrength, interpolation);
     return glm::vec3(diffuseStrength);
   }
 
-  glm::vec3 specular() {
-    return glm::vec3(specularStrength);
+  glm::vec3 specular(float timeOfDay) {
+    if (useOverrides) {
+      return glm::vec3(specularStrengthOverride);
+    }
+
+    // Disable specular for now
+    return glm::vec3(0.0f * timeOfDay);
   }
 };
 
@@ -90,9 +115,10 @@ class Renderer {
     // *** Lighting ***
     SunMoon sunMoon {
       glm::vec3(1.0f), // color
-      1.0f, // ambientStrength
-      1.0f, // diffuseStrength
-      1.0f, // specularStrength
+      0.5f, // ambientStrengthOverride
+      0.5f, // diffuseStrengthOverride
+      0.0f, // specularStrengthOverride
+      false, // useOverrides
     };
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;

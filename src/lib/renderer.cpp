@@ -206,9 +206,9 @@ void Renderer::renderSceneToScreen() {
   blockShader.setFloat("material.shininess", 32.0f);
   blockShader.setVec4("lights[0].position", sunMoon.direction(timeOfDay));
   blockShader.setVec3("lights[0].color", sunMoon.color);
-  blockShader.setVec3("lights[0].ambient", sunMoon.ambient());
-  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse());
-  blockShader.setVec3("lights[0].specular", sunMoon.specular());
+  blockShader.setVec3("lights[0].ambient", sunMoon.ambient(timeOfDay));
+  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse(timeOfDay));
+  blockShader.setVec3("lights[0].specular", sunMoon.specular(timeOfDay));
   blockShader.setFloat("lights[0].constant", 0.0f);
   blockShader.setFloat("lights[0].linear", 0.0f);
   blockShader.setFloat("lights[0].quadratic", 0.0f);
@@ -456,9 +456,11 @@ void Renderer::renderOverlay() {
     ImGui::Text("Lighting");
     ImGui::Text("Sun & Moon Angle %.0f", sunMoon.angleInDegrees(timeOfDay));
     ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction(timeOfDay).x, sunMoon.direction(timeOfDay).y, sunMoon.direction(timeOfDay).z);
-    ImGui::SliderFloat("Sun & Moon Ambient", &sunMoon.ambientStrength, 0.0f, 1.0f);
-    ImGui::SliderFloat("Sun & Moon Diffuse", &sunMoon.diffuseStrength, 0.0f, 1.0f);
-    ImGui::SliderFloat("Sun & Moon Specular", &sunMoon.specularStrength, 0.0f, 1.0f);
+
+    ImGui::Checkbox("Use Sun & Moon Overrides?", &sunMoon.useOverrides);
+    ImGui::SliderFloat("Sun & Moon Ambient Override", &sunMoon.ambientStrengthOverride, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun & Moon Diffuse Override", &sunMoon.diffuseStrengthOverride, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun & Moon Specular Override", &sunMoon.specularStrengthOverride, 0.0f, 1.0f);
 
     ImGui::Separator();
 
