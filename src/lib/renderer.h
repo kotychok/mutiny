@@ -23,7 +23,7 @@ typedef std::tuple<int, int, int> xyz;
 const float DIRECTIONAL_LIGHT = 0.0f;
 const float POINT_LIGHT = 1.0f;
 
-struct SunMoon {
+struct Sun {
   glm::vec3 color;
   float ambientStrengthOverride;
   float diffuseStrengthOverride;
@@ -113,7 +113,7 @@ class Renderer {
     glm::vec3 skyColor();
 
     // *** Lighting ***
-    SunMoon sunMoon {
+    Sun sun {
       glm::vec3(1.0f), // color
       0.5f, // ambientStrengthOverride
       0.5f, // diffuseStrengthOverride

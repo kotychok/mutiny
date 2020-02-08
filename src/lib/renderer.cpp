@@ -152,7 +152,7 @@ void Renderer::renderSceneToDepthMap() {
   // The light position needs to be far enough way to contain the entire scene.
   // I add + 1 at the end to make sure the camera is _just_ outside the
   // outermost chunk. It may be unnecessary.
-  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sunMoon.direction(timeOfDay));
+  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sun.direction(timeOfDay));
 
   // We need to translate the point we are looking at along x and z so that
   // we are looking at the center x and center z of the loaded chunks.
@@ -204,11 +204,11 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  blockShader.setVec4("lights[0].position", sunMoon.direction(timeOfDay));
-  blockShader.setVec3("lights[0].color", sunMoon.color);
-  blockShader.setVec3("lights[0].ambient", sunMoon.ambient(timeOfDay));
-  blockShader.setVec3("lights[0].diffuse", sunMoon.diffuse(timeOfDay));
-  blockShader.setVec3("lights[0].specular", sunMoon.specular(timeOfDay));
+  blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
+  blockShader.setVec3("lights[0].color", sun.color);
+  blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
+  blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
+  blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
   blockShader.setFloat("lights[0].constant", 0.0f);
   blockShader.setFloat("lights[0].linear", 0.0f);
   blockShader.setFloat("lights[0].quadratic", 0.0f);
@@ -453,14 +453,14 @@ void Renderer::renderOverlay() {
 
     ImGui::Separator();
 
-    ImGui::Text("Lighting");
-    ImGui::Text("Sun & Moon Angle %.0f", sunMoon.angleInDegrees(timeOfDay));
-    ImGui::Text("Sun & Moon Direction: (%.2f,%.2f, %.2f)", sunMoon.direction(timeOfDay).x, sunMoon.direction(timeOfDay).y, sunMoon.direction(timeOfDay).z);
+    ImGui::Text("Sun");
+    ImGui::Text("Sun Angle %.0f", sun.angleInDegrees(timeOfDay));
+    ImGui::Text("Sun Direction: (%.2f,%.2f, %.2f)", sun.direction(timeOfDay).x, sun.direction(timeOfDay).y, sun.direction(timeOfDay).z);
 
-    ImGui::Checkbox("Use Sun & Moon Overrides?", &sunMoon.useOverrides);
-    ImGui::SliderFloat("Sun & Moon Ambient Override", &sunMoon.ambientStrengthOverride, 0.0f, 1.0f);
-    ImGui::SliderFloat("Sun & Moon Diffuse Override", &sunMoon.diffuseStrengthOverride, 0.0f, 1.0f);
-    ImGui::SliderFloat("Sun & Moon Specular Override", &sunMoon.specularStrengthOverride, 0.0f, 1.0f);
+    ImGui::Checkbox("Use Sun Overrides?", &sun.useOverrides);
+    ImGui::SliderFloat("Sun Ambient Override", &sun.ambientStrengthOverride, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun Diffuse Override", &sun.diffuseStrengthOverride, 0.0f, 1.0f);
+    ImGui::SliderFloat("Sun Specular Override", &sun.specularStrengthOverride, 0.0f, 1.0f);
 
     ImGui::Separator();
 
