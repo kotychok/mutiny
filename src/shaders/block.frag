@@ -36,6 +36,7 @@ uniform Material material;
 uniform Light lights[4];
 
 // Shadow Uniforms
+uniform bool enableShadows;
 uniform sampler2D depthMap;
 uniform float shadowMultiplier;
 uniform float shadowAcneBias;
@@ -88,7 +89,7 @@ vec3 CalcPointLight(Light light, vec3 cameraDir) {
     specular *= attenuation;
   }
 
-  if (light.position.w == DIRECTIONAL) {
+  if (light.position.w == DIRECTIONAL && enableShadows) {
     float shadow = CalcShadow();
 
     if (debugShadows) {

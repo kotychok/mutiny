@@ -134,6 +134,7 @@ class Renderer {
     Light lights[3] { redLight, greenLight, blueLight };
 
     // *** Depth Map & Shadows ***
+    bool enableShadows { true };
     int depthMapTextureUnitIndex {};
     unsigned int depthMapFBO {};
     unsigned int depthMap {};
