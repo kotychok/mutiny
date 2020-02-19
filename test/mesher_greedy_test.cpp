@@ -16,7 +16,7 @@
 
 BOOST_AUTO_TEST_CASE(computeChunkMeshFlat) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-  std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::flat;
+  std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> func = ChunkGenerator::flat;
   Chunk chunk = Chunk(pos, func);
 
   std::vector<float> actual { MesherGreedy::computeChunkMesh(chunk) };
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(computeChunkMeshFlat) {
 
 BOOST_AUTO_TEST_CASE(computeChunkMeshFlatHalfAndHalf) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-  std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::flatHalfAndHalf;
+  std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> func = ChunkGenerator::flatHalfAndHalf;
   Chunk chunk = Chunk(pos, func);
 
   std::vector<float> actual { MesherGreedy::computeChunkMesh(chunk) };
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(computeChunkMeshFlatHalfAndHalf) {
 
 BOOST_AUTO_TEST_CASE(computeChunkMeshFilled) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-  std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::filled;
+  std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> func = ChunkGenerator::filled;
   Chunk chunk = Chunk(pos, func);
 
   std::vector<float> actual { MesherGreedy::computeChunkMesh(chunk) };
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(computeChunkMeshFilled) {
 
 BOOST_AUTO_TEST_CASE(computeChunkMeshHalfSphere) {
   glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
-  std::function<std::array<Block, CHUNK_SIZE_CUBED>()> func = ChunkGenerator::halfSphere;
+  std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> func = ChunkGenerator::halfSphere;
   Chunk chunk = Chunk(pos, func);
   std::vector<float> actual { MesherGreedy::computeChunkMesh(chunk) };
   std::vector<float> expected {

@@ -15,67 +15,10 @@
 
 #include "camera.h"
 #include "chunk.h"
+#include "directional_light.h"
 #include "shader.h"
-#include "lerp.h"
 
 typedef std::tuple<int, int, int> xyz;
-
-const float DIRECTIONAL_LIGHT = 0.0f;
-const float POINT_LIGHT = 1.0f;
-
-struct Sun {
-  glm::vec3 color;
-  float ambientStrengthOverride;
-  float diffuseStrengthOverride;
-  float specularStrengthOverride;
-  bool useOverrides;
-
-  float angleInDegrees(float timeOfDay) {
-    return 360 * (timeOfDay / 24.0) - 90;
-  }
-
-  glm::vec4 direction(float timeOfDay) {
-    float angleInRadians = glm::radians(angleInDegrees(timeOfDay));
-    float sunMoonX = -cos(angleInRadians);
-    float sunMoonY = -sin(angleInRadians);
-    return glm::vec4(sunMoonX, sunMoonY, 0.0f, DIRECTIONAL_LIGHT);
-  }
-
-  glm::vec3 ambient(float timeOfDay) {
-    if (useOverrides) {
-      return glm::vec3(ambientStrengthOverride);
-    }
-
-    float minAmbientStrength = 0.2f;
-    float maxAmbientStrength = 0.5f;
-
-    float interpolation = 1 - abs(timeOfDay - 12) / 12;
-    float ambientStrength = 1 - lerp(minAmbientStrength, maxAmbientStrength, interpolation);
-    return glm::vec3(ambientStrength);
-  }
-
-  glm::vec3 diffuse(float timeOfDay) {
-    if (useOverrides) {
-      return glm::vec3(diffuseStrengthOverride);
-    }
-
-    float minDiffuseStrength = 0.2f;
-    float maxDiffuseStrength = 0.5f;
-
-    float interpolation = 1 - abs(timeOfDay - 12) / 12;
-    float diffuseStrength = 1 - lerp(minDiffuseStrength, maxDiffuseStrength, interpolation);
-    return glm::vec3(diffuseStrength);
-  }
-
-  glm::vec3 specular(float timeOfDay) {
-    if (useOverrides) {
-      return glm::vec3(specularStrengthOverride);
-    }
-
-    // Disable specular for now
-    return glm::vec3(0.0f * timeOfDay);
-  }
-};
 
 struct Light {
   // When the w component is 0,
@@ -113,12 +56,15 @@ class Renderer {
     glm::vec3 skyColor();
 
     // *** Lighting ***
-    Sun sun {
-      glm::vec3(1.0f), // color
-      0.5f, // ambientStrengthOverride
-      0.5f, // diffuseStrengthOverride
-      0.0f, // specularStrengthOverride
-      false, // useOverrides
+    DirectionalLight sun {
+        glm::vec3(1.0f, 1.0f, 1.0f), // color
+        0.5f, // maxAmbientStrength
+        -108.0f, // illuminationStartAngle
+        108.0f, // illuminationEndAngle
+        1.0f,  // ambientOverride
+        1.0f,  // diffuseOverride
+        1.0f,  // specularOverride
+        false, // useOverrides
     };
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;

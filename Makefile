@@ -61,7 +61,7 @@ endef
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 
 ./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
-	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) $(LDLIBS) -o $@
+	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) vendor/libnoise.a $(LDLIBS) -o $@
 
 watch_tests:
 	find test -type f | entr -scr "make test"
