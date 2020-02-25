@@ -12,6 +12,9 @@
 #include "texture.h"
 #include "texture_unit.h"
 
+// Debugging
+#include <glm/gtx/string_cast.hpp>
+
 Renderer::Renderer() {
   std::cout << "Renderer created" << std::endl;
 
@@ -19,10 +22,17 @@ Renderer::Renderer() {
 
   glEnable(GL_DEPTH_TEST);
 
+  //
+  // Block textures
+  //
   blocksTextureUnitIndex = TextureUnit::reserveTextureUnit();
   TextureUnit::activate(blocksTextureUnitIndex);
+  // TODO Thinking of moving to a service oriented design. LoadsBlockTextures::call();
   Texture::loadBlockTextures();
 
+  //
+  // Depthmap texture
+  //
   depthMapTextureUnitIndex = TextureUnit::reserveTextureUnit();
   TextureUnit::activate(depthMapTextureUnitIndex);
   glGenFramebuffers(1, &depthMapFBO);
@@ -43,6 +53,14 @@ Renderer::Renderer() {
   glDrawBuffer(GL_NONE);
   glReadBuffer(GL_NONE);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  //
+  // Astronomical bodies textures
+  //
+  astronomicalBodiesTextureUnitIndex = TextureUnit::reserveTextureUnit();
+  TextureUnit::activate(astronomicalBodiesTextureUnitIndex);
+  // TODO Thinking of moving to a service oriented design. LoadsAstronomicalBodiesTextures::call();
+  Texture::loadAstronomicalBodiesTextures();
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
@@ -112,6 +130,8 @@ void Renderer::render(double dt) {
   renderSceneToDepthMap();
 
   renderSceneToScreen();
+
+  renderAstronomicalBodies();
 
   if (showNormals) {
     renderNormals();
@@ -235,6 +255,64 @@ void Renderer::renderSceneToScreen() {
   blockShader.setFloat("ellapsedTime", glfwGetTime());
 
   renderScene(blockShader);
+}
+
+void Renderer::renderAstronomicalBodies() {
+  astronomicalBodiesShader.use();
+
+  astronomicalBodiesShader.setInt("astronomicalBodiesTexturesArray", astronomicalBodiesTextureUnitIndex);
+  glm::mat4 model = glm::mat4(1);
+  model = glm::translate(model, camera.position); // Astronomical bodies should stay put w/r/t the camera to give the appearance that they are very far away.
+  model = glm::rotate(model, glm::radians(DirectionalLight::symmetricalAngleInDegrees(timeOfDay)), glm::vec3(0.0f, 0.0f, 1.0f)); // Orient correctly in the sky depending on the time of day.
+  model = glm::translate(model, glm::vec3(0.0f, 100.0f, 0.0f)); // Put it in the sky instead of at the origin.
+  model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Make texture face the correct direction, the y-axis.
+  astronomicalBodiesShader.setMat4("model", model);
+  astronomicalBodiesShader.setMat4("view", camera.getViewMatrix());
+  astronomicalBodiesShader.setMat4("projection", camera.getProjectionMatrix());
+
+  static unsigned int vao {};
+  static unsigned int vbo {};
+  static unsigned int ebo {};
+
+  if (vao == 0) {
+    static float vertices[] = {
+      // positions        // colors         // texture coords // texture layer
+       0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,       0.0f, // top right
+       0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,       0.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,       0.0f, // bottom left
+      -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,       0.0f, // top left
+    };
+    static int indices[] = {
+      0, 1, 3, // first triangle
+      1, 2, 3, // second triangle
+    };
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+  }
+
+  glBindVertexArray(vao);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+  glBindVertexArray(0);
 }
 
 void Renderer::renderScene(const Shader& shader) {

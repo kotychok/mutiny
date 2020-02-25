@@ -12,4 +12,5 @@ class Texture {
     static const int BLOCK_COUNT;
 
     static void loadBlockTextures();
+    static void loadAstronomicalBodiesTextures();
 };

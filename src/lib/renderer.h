@@ -124,6 +124,10 @@ class Renderer {
     float shadowAcneBias { 0.0007 };
     bool debugShadows { false };
 
+    // *** Astronomical Bodies ***
+    int astronomicalBodiesTextureUnitIndex {};
+    Shader astronomicalBodiesShader { Shader("./src/shaders/astronomical_bodies.vert", "./src/shaders/astronomical_bodies.frag") };
+
     // *** FPS ***
     // https://stackoverflow.com/a/4687507
     int framesThisSecond { -1 };
@@ -150,6 +154,7 @@ class Renderer {
 
     void renderSceneToDepthMap();
     void renderSceneToScreen();
+    void renderAstronomicalBodies();
     void renderScene(const Shader& shader);
   public:
     Renderer();
