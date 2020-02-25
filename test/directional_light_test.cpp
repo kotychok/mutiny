@@ -83,9 +83,9 @@ BOOST_AUTO_TEST_CASE(ambientStrength) {
   // It returns maxStrength at 0 degrees (overhead)
   BOOST_TEST(sun.ambientStrength(0) == maxAmbientStrength);
 
-  // It lerps between those two points
-  BOOST_TEST(sun.ambientStrength(illuminationStartAngle / 2) == 0.25f);
-  BOOST_TEST(sun.ambientStrength(illuminationEndAngle / 2) == 0.25f);
+  // It slides between those two points
+  BOOST_TEST(sun.ambientStrength(illuminationStartAngle / 2) == 0.46875f);
+  BOOST_TEST(sun.ambientStrength(illuminationEndAngle / 2) == 0.46875f);
 }
 
 BOOST_AUTO_TEST_CASE(diffuseStrength) {
@@ -114,9 +114,9 @@ BOOST_AUTO_TEST_CASE(diffuseStrength) {
   // It returns maxStrength at 0 degrees (overhead)
   BOOST_TEST(sun.diffuseStrength(0) == maxAmbientStrength);
 
-  // It lerps between those two points
-  BOOST_TEST(sun.diffuseStrength(illuminationStartAngle / 2) == 0.25f);
-  BOOST_TEST(sun.diffuseStrength(illuminationEndAngle / 2) == 0.25f);
+  // It slides between those two points
+  BOOST_TEST(sun.diffuseStrength(illuminationStartAngle / 2) == 0.46875f);
+  BOOST_TEST(sun.diffuseStrength(illuminationEndAngle / 2) == 0.46875f);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

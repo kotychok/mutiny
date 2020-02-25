@@ -46,10 +46,9 @@ float DirectionalLight::ambientStrength(float angle) {
     return 0.0f;
   }
 
-  float interpolation = std::abs(angle / illuminationStartAngle);
+  float x = angle / illuminationStartAngle;
+  float ambientStrength = maxAmbientStrength * (1 - pow(x, 4));
 
-  // FIXME Instead of linear, I think I want something more like a bell curve here
-  float ambientStrength = maxAmbientStrength - lerp(0.0f, maxAmbientStrength, interpolation);
   return ambientStrength;
 }
 
@@ -62,16 +61,7 @@ float DirectionalLight::diffuseStrength(float angle) {
     return diffuseStrengthOverride;
   }
 
-  if (angle <= illuminationStartAngle) {
-    return 0.0f;
-  }
-  if (angle >= illuminationEndAngle) {
-    return 0.0f;
-  }
-
-  float interpolation = std::abs(angle / illuminationStartAngle);
-  float diffuseStrength = maxAmbientStrength - lerp(0.0f, maxAmbientStrength, interpolation);
-  return diffuseStrength;
+  return ambientStrength(angle);
 }
 
 glm::vec3 DirectionalLight::diffuse(float angle) {
