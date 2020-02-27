@@ -233,22 +233,25 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  if (sun.angle(timeOfDay) <= sun.illuminationEndAngle) {
-    blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
-    blockShader.setVec3("lights[0].color", sun.color);
-    blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
-    blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
-    blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
-  } else {
-    blockShader.setVec4("lights[0].position", moon.direction(timeOfDay));
-    blockShader.setVec3("lights[0].color", moon.color);
-    blockShader.setVec3("lights[0].ambient", moon.ambient(timeOfDay));
-    blockShader.setVec3("lights[0].diffuse", moon.diffuse(timeOfDay));
-    blockShader.setVec3("lights[0].specular", moon.specular(timeOfDay));
-  }
+
+  blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
+  blockShader.setVec3("lights[0].color", sun.color);
+  blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
+  blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
+  blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
   blockShader.setFloat("lights[0].constant", 0.0f);
   blockShader.setFloat("lights[0].linear", 0.0f);
   blockShader.setFloat("lights[0].quadratic", 0.0f);
+
+  blockShader.setVec4("lights[4].position", moon.direction(timeOfDay));
+  blockShader.setVec3("lights[4].color", moon.color);
+  blockShader.setVec3("lights[4].ambient", moon.ambient(timeOfDay));
+  blockShader.setVec3("lights[4].diffuse", moon.diffuse(timeOfDay));
+  blockShader.setVec3("lights[4].specular", moon.specular(timeOfDay));
+  blockShader.setFloat("lights[4].constant", 0.0f);
+  blockShader.setFloat("lights[4].linear", 0.0f);
+  blockShader.setFloat("lights[4].quadratic", 0.0f);
+
   for (unsigned int i = 1; i < 4; ++i) {
     Light& light = lights[i-1];
     blockShader.setVec4("lights[" + std::to_string(i) + "].position", light.position);

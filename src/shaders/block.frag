@@ -33,7 +33,8 @@ uniform sampler2DArray blockTexturesArray;
 // Lighting Uniforms
 uniform vec3 cameraPosition;
 uniform Material material;
-uniform Light lights[4];
+const int numberOfLights = 5;
+uniform Light lights[numberOfLights];
 
 // Shadow Uniforms
 uniform bool enableShadows;
@@ -111,7 +112,7 @@ void main()
   vec3 cameraDir = normalize(cameraPosition - Position);
 
   vec3 result;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < numberOfLights; i++) {
     result += CalcPointLight(lights[i], cameraDir);
   }
   FragColor = vec4(result, 1.0) * texture(blockTexturesArray, TexCoord);
