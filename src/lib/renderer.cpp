@@ -4,6 +4,7 @@
 
 #include <imgui/imgui.h>
 #include <stb/stb_image.h>
+#include <glm/gtx/vector_angle.hpp>
 
 #include "memory_helper.h"
 #include "mesher_greedy.h"
@@ -172,7 +173,7 @@ void Renderer::renderSceneToDepthMap() {
   // The light position needs to be far enough way to contain the entire scene.
   // I add + 1 at the end to make sure the camera is _just_ outside the
   // outermost chunk. It may be unnecessary.
-  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-DirectionalLight::direction(timeOfDay));
+  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sun.direction(timeOfDay));
 
   // We need to translate the point we are looking at along x and z so that
   // we are looking at the center x and center z of the loaded chunks.
@@ -224,11 +225,11 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  blockShader.setVec4("lights[0].position", DirectionalLight::direction(timeOfDay));
+  blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
   blockShader.setVec3("lights[0].color", sun.color);
-  blockShader.setVec3("lights[0].ambient", sun.ambient(sun.symmetricalAngleInDegrees(timeOfDay)));
-  blockShader.setVec3("lights[0].diffuse", sun.diffuse(sun.symmetricalAngleInDegrees(timeOfDay)));
-  blockShader.setVec3("lights[0].specular", sun.specular(sun.symmetricalAngleInDegrees(timeOfDay)));
+  blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
+  blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
+  blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
   blockShader.setFloat("lights[0].constant", 0.0f);
   blockShader.setFloat("lights[0].linear", 0.0f);
   blockShader.setFloat("lights[0].quadratic", 0.0f);
@@ -261,11 +262,23 @@ void Renderer::renderAstronomicalBodies() {
   astronomicalBodiesShader.use();
 
   astronomicalBodiesShader.setInt("astronomicalBodiesTexturesArray", astronomicalBodiesTextureUnitIndex);
+  glm::vec4 direction = sun.direction(timeOfDay);
   glm::mat4 model = glm::mat4(1);
-  model = glm::translate(model, camera.position); // Astronomical bodies should stay put w/r/t the camera to give the appearance that they are very far away.
-  model = glm::rotate(model, glm::radians(DirectionalLight::symmetricalAngleInDegrees(timeOfDay)), glm::vec3(0.0f, 0.0f, 1.0f)); // Orient correctly in the sky depending on the time of day.
-  model = glm::translate(model, glm::vec3(0.0f, 100.0f, 0.0f)); // Put it in the sky instead of at the origin.
-  model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Make texture face the correct direction, the y-axis.
+
+  // Astronomical bodies should stay put w/r/t the camera to give the
+  // appearance that they are very far away.
+  model = glm::translate(model, camera.position);
+
+  // Put it in the sky instead of at the origin.
+  model = glm::translate(model, -100.0 * glm::vec3(direction));
+
+  // Angle the texture so that when it's translated by the direction, it's
+  // facing the origin.
+  model = glm::rotate(model, glm::angle(glm::vec3(direction), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
+
+  // Make texture face the y-axis.
+  model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
   astronomicalBodiesShader.setMat4("model", model);
   astronomicalBodiesShader.setMat4("view", camera.getViewMatrix());
   astronomicalBodiesShader.setMat4("projection", camera.getProjectionMatrix());
@@ -536,7 +549,7 @@ void Renderer::renderOverlay() {
     ImGui::Separator();
 
     ImGui::Text("Sun");
-    ImGui::Text("Sun Angle %.0f", sun.symmetricalAngleInDegrees(timeOfDay));
+    ImGui::Text("Sun Angle %.0f", sun.angle(timeOfDay));
     ImGui::Text("Sun Direction: (%.2f,%.2f, %.2f)", sun.direction(timeOfDay).x, sun.direction(timeOfDay).y, sun.direction(timeOfDay).z);
 
     ImGui::Checkbox("Use Sun Overrides?", &sun.useOverrides);
@@ -544,9 +557,10 @@ void Renderer::renderOverlay() {
     ImGui::SliderFloat("Sun Diffuse Override", &sun.diffuseStrengthOverride, 0.0f, 1.0f);
     ImGui::SliderFloat("Sun Specular Override", &sun.specularStrengthOverride, 0.0f, 1.0f);
 
-    ImGui::Text("Ambient Str %.2f", sun.ambientStrength(sun.symmetricalAngleInDegrees(timeOfDay)));
-    ImGui::Text("Diffuse Str %.2f", sun.diffuseStrength(sun.symmetricalAngleInDegrees(timeOfDay)));
-    ImGui::Text("Specular Str %.2f", glm::length(sun.specular(sun.symmetricalAngleInDegrees(timeOfDay))));
+    ImGui::Text("Ambient Str %.2f", sun.ambientStrength(timeOfDay));
+    ImGui::Text("Diffuse Str %.2f", sun.diffuseStrength(timeOfDay));
+    // TODO For consistency I should make this like the others even if it's 0.
+    ImGui::Text("Specular Str %.2f", glm::length(sun.specular(timeOfDay)));
 
     ImGui::Separator();
 

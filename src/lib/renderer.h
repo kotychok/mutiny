@@ -65,6 +65,7 @@ class Renderer {
         1.0f,  // diffuseOverride
         1.0f,  // specularOverride
         false, // useOverrides
+        0,     // offset
     };
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;
