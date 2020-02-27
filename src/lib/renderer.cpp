@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <experimental/filesystem>
 #include <iostream>
 
@@ -259,44 +260,21 @@ void Renderer::renderSceneToScreen() {
 }
 
 void Renderer::renderAstronomicalBodies() {
-  astronomicalBodiesShader.use();
-
-  astronomicalBodiesShader.setInt("astronomicalBodiesTexturesArray", astronomicalBodiesTextureUnitIndex);
-  // auto list { &sun, &moon };
-  glm::vec4 direction = sun.direction(timeOfDay);
-  glm::mat4 model = glm::mat4(1);
-
-  // Astronomical bodies should stay put w/r/t the camera to give the
-  // appearance that they are very far away.
-  model = glm::translate(model, camera.position);
-
-  // Put it in the sky instead of at the origin.
-  model = glm::translate(model, -100.0 * glm::vec3(direction));
-
-  // Angle the texture so that when it's translated by the direction, it's
-  // facing the origin.
-  model = glm::rotate(model, glm::angle(glm::vec3(direction), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
-
-  // Make texture face the y-axis.
-  model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-  astronomicalBodiesShader.setMat4("model", model);
-  astronomicalBodiesShader.setMat4("view", camera.getViewMatrix());
-  astronomicalBodiesShader.setMat4("projection", camera.getProjectionMatrix());
-
+  // We only need a single vao for the vertices since they're shared between
+  // sun and moon.
   static unsigned int vao {};
   static unsigned int vbo {};
   static unsigned int ebo {};
 
   if (vao == 0) {
-    static float vertices[] = {
-      // positions        // colors         // texture coords // texture layer
-       0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,       1.0f, // top right
-       0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,       1.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,       1.0f, // bottom left
-      -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,       1.0f, // top left
+    float vertices[] = {
+      // positions        // colors         // texture coords
+       0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+       0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+      -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
     };
-    static int indices[] = {
+    int indices[] = {
       0, 1, 3, // first triangle
       1, 2, 3, // second triangle
     };
@@ -314,17 +292,48 @@ void Renderer::renderAstronomicalBodies() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
   }
 
-  glBindVertexArray(vao);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  astronomicalBodiesShader.use();
+  astronomicalBodiesShader.setInt("astronomicalBodiesTexturesArray", astronomicalBodiesTextureUnitIndex);
+  astronomicalBodiesShader.setMat4("view", camera.getViewMatrix());
+  astronomicalBodiesShader.setMat4("projection", camera.getProjectionMatrix());
+
+  std::array<DirectionalLight*, 2> bodies { &sun, &moon };
+  for (unsigned int textureIndex = 0; textureIndex < bodies.size(); ++textureIndex) {
+    astronomicalBodiesShader.setFloat("textureIndex", static_cast<float>(textureIndex));
+
+    DirectionalLight* bodyPtr = bodies.at(textureIndex);
+
+    glm::vec4 direction = bodyPtr->direction(timeOfDay);
+    glm::mat4 model = glm::mat4(1);
+
+    // Astronomical bodies should stay put w/r/t the camera to give the
+    // appearance that they are very far away.
+    model = glm::translate(model, camera.position);
+
+    // Put it in the sky instead of at the origin.
+    model = glm::translate(model, -100.0 * glm::vec3(direction));
+
+    // Angle the texture so that when it's translated by the direction, it's
+    // facing the origin.
+    model = glm::rotate(model, glm::angle(glm::vec3(direction), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // Make texture face the y-axis.
+    model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    astronomicalBodiesShader.setMat4("model", model);
+
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+  }
 
   glBindVertexArray(0);
 }
