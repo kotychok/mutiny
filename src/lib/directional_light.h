@@ -42,19 +42,6 @@ class DirectionalLight {
     DirectionalLight& operator=(DirectionalLight &&) = delete; // Delete move assignment
 
     float angleToTime(float angle);
-
-    // Returns the angle to the east/west from the up direction.
-    //
-    // @param timeOfDay [0, 24]
-    // @return angle [-180, 180]
-    //
-    // name     | timeOfDay (deg) | angle
-    // -------------------------------------------------------
-    // Midnight |  0h             | -180
-    // Dawn     |  6h             | -90
-    // Midday   | 12h             |  0
-    // Dusk     | 18h             |  90
-    // Midnight | 24h             |  180
     float angle(float timeOfDay);
 
     // Returns a vector pointing from the light source to the scene.

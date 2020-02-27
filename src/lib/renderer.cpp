@@ -171,10 +171,17 @@ void Renderer::renderSceneToDepthMap() {
   float orthoFar { sceneSize * static_cast<float>(sqrt(2)) };
   glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
 
+  glm::vec3 direction {};
+  if (sun.angle(timeOfDay) <= sun.illuminationEndAngle) {
+    direction = sun.direction(timeOfDay);
+  } else {
+    direction = moon.direction(timeOfDay);
+  }
+
   // The light position needs to be far enough way to contain the entire scene.
   // I add + 1 at the end to make sure the camera is _just_ outside the
   // outermost chunk. It may be unnecessary.
-  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-sun.direction(timeOfDay));
+  glm::vec3 lightPosition = ((viewingDistance + 1) * CHUNK_SIZE + 1) * glm::vec3(-direction);
 
   // We need to translate the point we are looking at along x and z so that
   // we are looking at the center x and center z of the loaded chunks.
@@ -226,11 +233,19 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
-  blockShader.setVec3("lights[0].color", sun.color);
-  blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
-  blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
-  blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
+  if (sun.angle(timeOfDay) <= sun.illuminationEndAngle) {
+    blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
+    blockShader.setVec3("lights[0].color", sun.color);
+    blockShader.setVec3("lights[0].ambient", sun.ambient(timeOfDay));
+    blockShader.setVec3("lights[0].diffuse", sun.diffuse(timeOfDay));
+    blockShader.setVec3("lights[0].specular", sun.specular(timeOfDay));
+  } else {
+    blockShader.setVec4("lights[0].position", moon.direction(timeOfDay));
+    blockShader.setVec3("lights[0].color", moon.color);
+    blockShader.setVec3("lights[0].ambient", moon.ambient(timeOfDay));
+    blockShader.setVec3("lights[0].diffuse", moon.diffuse(timeOfDay));
+    blockShader.setVec3("lights[0].specular", moon.specular(timeOfDay));
+  }
   blockShader.setFloat("lights[0].constant", 0.0f);
   blockShader.setFloat("lights[0].linear", 0.0f);
   blockShader.setFloat("lights[0].quadratic", 0.0f);
