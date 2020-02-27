@@ -7,12 +7,10 @@
 #include "print_vector.h"
 
 float maxAmbientStrength = 0.5f;
-float illuminationStartAngle = -108.0f;
 float illuminationEndAngle = 108.0f;
 DirectionalLight sun {
   glm::vec3(1.0f, 1.0f, 1.0f), // color
   maxAmbientStrength,
-  illuminationStartAngle,
   illuminationEndAngle,
   1.0f,  // ambientOverride
   1.0f,  // diffuseOverride
@@ -24,7 +22,6 @@ DirectionalLight sun {
 DirectionalLight moon {
   glm::vec3(1.0f, 1.0f, 1.0f), // color
   maxAmbientStrength,
-  illuminationStartAngle,
   illuminationEndAngle,
   1.0f,  // ambientOverride
   1.0f,  // diffuseOverride
@@ -143,10 +140,7 @@ BOOST_AUTO_TEST_CASE(direction) {
 
 BOOST_AUTO_TEST_CASE(ambientStrength) {
   // It returns 0:
-  // * before and at illuminationStart
   // * after and at illuminationEnd
-  BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationStartAngle - 10)) == 0.0f);
-  BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationStartAngle)) == 0.0f, boost::test_tools::tolerance(0.01f));
   BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationEndAngle)) == 0.0f);
   BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationEndAngle + 10)) == 0.0f);
 
@@ -154,7 +148,6 @@ BOOST_AUTO_TEST_CASE(ambientStrength) {
   BOOST_TEST(sun.ambientStrength(sun.angleToTime(0)) == maxAmbientStrength);
 
   // It slides between those two points
-  BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationStartAngle / 2)) == 0.46875f, boost::test_tools::tolerance(0.00001f));
   BOOST_TEST(sun.ambientStrength(sun.angleToTime(illuminationEndAngle / 2)) == 0.46875f, boost::test_tools::tolerance(0.00001f));
 }
 

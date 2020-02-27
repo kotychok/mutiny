@@ -15,7 +15,6 @@ const glm::vec4 DirectionalLight::baseOrigin { glm::vec4(0.0f, 1.0f, 0.0f, 0.0f)
 DirectionalLight::DirectionalLight(
     glm::vec3 color,
     float maxAmbientStrength,
-    float illuminationStartAngle,
     float illuminationEndAngle,
     float ambientStrengthOverride,
     float diffuseStrengthOverride,
@@ -25,7 +24,6 @@ DirectionalLight::DirectionalLight(
     ) :
   color{color},
   maxAmbientStrength{maxAmbientStrength},
-  illuminationStartAngle{illuminationStartAngle},
   illuminationEndAngle{illuminationEndAngle},
   ambientStrengthOverride{ambientStrengthOverride},
   diffuseStrengthOverride{diffuseStrengthOverride},
@@ -72,14 +70,11 @@ float DirectionalLight::ambientStrength(float timeOfDay) {
 
   float a = angle(timeOfDay);
 
-  if (a <= illuminationStartAngle) {
-    return 0.0f;
-  }
   if (a >= illuminationEndAngle) {
     return 0.0f;
   }
 
-  float x = a / illuminationStartAngle;
+  float x = a / illuminationEndAngle;
   float ambientStrength = maxAmbientStrength * (1 - pow(x, 4));
 
   return ambientStrength;

@@ -59,7 +59,6 @@ class Renderer {
     DirectionalLight sun {
         glm::vec3(1.0f, 1.0f, 1.0f), // color
         0.5f, // maxAmbientStrength
-        -108.0f, // illuminationStartAngle
         108.0f, // illuminationEndAngle
         1.0f,  // ambientOverride
         1.0f,  // diffuseOverride
@@ -67,6 +66,17 @@ class Renderer {
         false, // useOverrides
         0,     // offset
     };
+    DirectionalLight moon {
+      glm::vec3(1.0f, 1.0f, 1.0f), // color
+      0.2f,
+      108.0f,
+      1.0f,  // ambientOverride
+      1.0f,  // diffuseOverride
+      1.0f,  // specularOverride
+      false, // useOverrides
+      180    // offset
+    };
+
     float torchConstant = 1.0f;
     float torchLinear = 0.1f;
     float torchQuadratic = 0.1f;

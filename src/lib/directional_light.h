@@ -17,7 +17,6 @@ class DirectionalLight {
 
     glm::vec3 color;
     float maxAmbientStrength;
-    float illuminationStartAngle {};
     float illuminationEndAngle {};
     float ambientStrengthOverride;
     float diffuseStrengthOverride;
@@ -28,7 +27,6 @@ class DirectionalLight {
     DirectionalLight(
       glm::vec3 color,
       float maxAmbientStrength,
-      float illuminationStartAngle,
       float illuminationEndAngle,
       float ambientStrengthOverride,
       float diffuseStrengthOverride,
