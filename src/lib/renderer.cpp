@@ -262,6 +262,7 @@ void Renderer::renderAstronomicalBodies() {
   astronomicalBodiesShader.use();
 
   astronomicalBodiesShader.setInt("astronomicalBodiesTexturesArray", astronomicalBodiesTextureUnitIndex);
+  // auto list { &sun, &moon };
   glm::vec4 direction = sun.direction(timeOfDay);
   glm::mat4 model = glm::mat4(1);
 
@@ -290,10 +291,10 @@ void Renderer::renderAstronomicalBodies() {
   if (vao == 0) {
     static float vertices[] = {
       // positions        // colors         // texture coords // texture layer
-       0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,       0.0f, // top right
-       0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,       0.0f, // bottom right
-      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,       0.0f, // bottom left
-      -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,       0.0f, // top left
+       0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,       1.0f, // top right
+       0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,       1.0f, // bottom right
+      -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,       1.0f, // bottom left
+      -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,       1.0f, // top left
     };
     static int indices[] = {
       0, 1, 3, // first triangle

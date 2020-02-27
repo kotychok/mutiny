@@ -76,14 +76,33 @@ void Texture::loadAstronomicalBodiesTextures() {
   glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
 
   int imageSize = 8;
-  int numberOfImages = 1;
+  int numberOfImages = 2;
   glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGB8, imageSize, imageSize, numberOfImages);
 
   float textureIndex = 0;
   std::string path = "./assets/sun.png";
   int width, height, nrChannels;
   unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-  std::cout << nrChannels << std::endl;
+  // std::cout << nrChannels << std::endl;
+  glTexSubImage3D(
+    GL_TEXTURE_2D_ARRAY,
+    0,                 // mipmap level
+    0,                 // xoffset
+    0,                 // yoffset
+    textureIndex,      // zoffset, i.e. index in texture array
+    width,             // width
+    height,            // height
+    1,                 // depth
+    GL_RGB,           // cpu pixel format
+    GL_UNSIGNED_BYTE,  // cpu pixel coord type
+    data               // pixel data
+  );
+  stbi_image_free(data);
+
+  textureIndex = 1;
+  path = "./assets/moon.png";
+  data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+  // std::cout << nrChannels << std::endl;
   glTexSubImage3D(
     GL_TEXTURE_2D_ARRAY,
     0,                 // mipmap level

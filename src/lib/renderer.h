@@ -68,8 +68,8 @@ class Renderer {
     };
     DirectionalLight moon {
       glm::vec3(1.0f, 1.0f, 1.0f), // color
-      0.2f,
-      108.0f,
+      0.2f, // maxAmbientStrength
+      108.0f, // illuminationEndAngle
       1.0f,  // ambientOverride
       1.0f,  // diffuseOverride
       1.0f,  // specularOverride
