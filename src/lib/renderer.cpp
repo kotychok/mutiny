@@ -172,7 +172,10 @@ void Renderer::renderSceneToDepthMap() {
   glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
 
   glm::vec3 direction {};
-  if (sun.angle(timeOfDay) <= sun.illuminationEndAngle) {
+  // Switch which light source causes shadows at dawn/dusk.
+  // This is the best way to transition that I've found so that shadows don't
+  // suddenly appear out of nowhere.
+  if (sun.angle(timeOfDay) <= 90) {
     direction = sun.direction(timeOfDay);
   } else {
     direction = moon.direction(timeOfDay);
