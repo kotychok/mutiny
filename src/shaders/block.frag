@@ -35,7 +35,6 @@ uniform vec3 cameraPosition;
 uniform Material material;
 const int numberOfLights = 5;
 uniform Light lights[numberOfLights];
-uniform vec3 normalAmbientStrengths;
 
 // Shadow Uniforms
 uniform bool enableShadows;
@@ -66,6 +65,7 @@ float CalcShadow() {
 }
 
 vec3 CalcPointLight(Light light, vec3 cameraDir) {
+
   vec3 ambient = light.ambient * light.color;
 
   vec3 lightDir;
@@ -111,8 +111,7 @@ void main()
 {
   vec3 cameraDir = normalize(cameraPosition - Position);
 
-  vec3 normalAmbient = length(Normal * normalAmbientStrengths) * vec3(1.0, 1.0, 1.0);
-  vec3 result = normalAmbient;
+  vec3 result;
   for (int i = 0; i < numberOfLights; i++) {
     result += CalcPointLight(lights[i], cameraDir);
   }

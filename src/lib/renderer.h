@@ -56,10 +56,9 @@ class Renderer {
     glm::vec3 skyColor();
 
     // *** Lighting ***
-    glm::vec3 normalAmbientStrengths { glm::vec3(0.05f, 0.1f, 0.0f) };
     DirectionalLight sun {
         glm::vec3(1.0f, 1.0f, 1.0f), // color
-        0.5f - 0.1f, // maxAmbientStrength
+        0.5f, // maxAmbientStrength
         108.0f, // illuminationEndAngle
         1.0f,  // ambientOverride
         1.0f,  // diffuseOverride
@@ -69,7 +68,7 @@ class Renderer {
     };
     DirectionalLight moon {
       glm::vec3(1.0f, 1.0f, 1.0f), // color
-      0.2f - 0.1f, // maxAmbientStrength
+      0.2f, // maxAmbientStrength
       108.0f, // illuminationEndAngle
       1.0f,  // ambientOverride
       1.0f,  // diffuseOverride

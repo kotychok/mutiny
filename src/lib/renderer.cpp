@@ -236,7 +236,6 @@ void Renderer::renderSceneToScreen() {
   // Fragment Lighting Uniforms
   blockShader.setVec3("cameraPosition", camera.position);
   blockShader.setFloat("material.shininess", 32.0f);
-  blockShader.setVec3("normalAmbientStrengths", normalAmbientStrengths);
 
   blockShader.setVec4("lights[0].position", sun.direction(timeOfDay));
   blockShader.setVec3("lights[0].color", sun.color);
@@ -589,7 +588,6 @@ void Renderer::renderOverlay() {
     ImGui::SliderFloat("Sun Diffuse Override", &sun.diffuseStrengthOverride, 0.0f, 1.0f);
     ImGui::SliderFloat("Sun Specular Override", &sun.specularStrengthOverride, 0.0f, 1.0f);
 
-    ImGui::SliderFloat3("Constant, Normal-based Ambient", (float *)&normalAmbientStrengths, -0.1f, 0.1f);
     ImGui::Text("Ambient Str %.2f", sun.ambientStrength(timeOfDay));
     ImGui::Text("Diffuse Str %.2f", sun.diffuseStrength(timeOfDay));
     // TODO For consistency I should make this like the others even if it's 0.
