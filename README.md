@@ -9,6 +9,9 @@
 * [5 - Multiple block types](#5---multiple-block-types)
 * [5a - Chunk render optimization](#5a---chunk-render-optimization)
 * [6 - Procedural generation](#6---procedural-generation)
+* [7 - Lighting](#7---lighting)
+* [8 - Shadows](#8---shadows)
+* [9 - Day and Night](#9---day-and-night)
 * [To Do:](#to-do)
 * [Resources](#resources)
 
@@ -225,6 +228,42 @@ Last note: it's pretty hard to discern the terrain since everything is evenly li
 
 [![procgen.png](./README/procgen.png)](./README/procgen.png)
 
+# 7 - Lighting
+
+[006-procedural-generation...007-lighting](https://github.com/boatrite/mutiny/compare/006-procedural-generation...007-lighting)
+
+I followed the [LearnOpenGL tutorials](https://learnopengl.com/Lighting/Colors). It was very straightforward. I ended up implementing ambient, diffuse and specular lighting for directional and point lights. I'll probably add in spotlights at some point in the maybe near future, but didn't feel a big need to right now. I don't have anything to add to what the tutorial offered.
+
+[![diffuse.png](./README/diffuse.png)](./README/diffuse.png)[![attenuation.png](./README/attenuation.png)](./README/attenuation.png)[![directional_and_point_lights.png](./README/directional_and_point_lights.png)](./README/directional_and_point_lights.png)
+
+# 8 - Shadows
+
+[007-lighting...008-shadows](https://github.com/boatrite/mutiny/compare/007-lighting...008-shadows)
+
+This, on the other hand, was not as straightforward as lighting. Again, the [LearnOpenGL tutorial](https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping) was the the primary source I used to learn how to do this.
+
+The most difficult thing to grok was the purpose of the orthographic projection (called `lightProjection` in the tutorial). One of the primary things to understand is that the cube created by the orthographic projection needs to contain basically the entire scene. Remember, what's in that cube is what the light "sees" and is what gets used in the shader later to determine whether something is in shadow. If an object is not in the ortho projection, it won't cast a shadow. I took the lazy route here and calculated the largest size the ortho would need to be based on the viewing distance. It's also important to calculate the light position correctly, which also depends on the viewing distance.
+
+Furthermore, my use-case is complicated by the fact that the camera can move. That means we also need to move the light position as well with respect to the camera. Since the scene stays the same until a chunk boundary is crossed, all we need is the camera chunk position as opposed to the camera position by which we translate the light position to keep in centered on the scene. If we don't do this, as we move to chunks farther away from the center, we are going to start getting shadows with increasing angles.
+
+Finally, the last weird thing I did was to fix shadow acne, and I fixed it by increasing the resolution of the shadow buffer to an absurd amount (16384 by 16384). The larger the render distance, the larger this needs to be. I tried some other values and I believe I started getting lag as soon as I doubled it to 32k by 32k. A more efficient solution which I _think_ would work is to use a cascaded shadow map (CSM) to render shadows accurately around the player (where we actually care about shadows) but less accurately far away.
+
+To get this done, I added some debugging tools. One of them is rendering the depth map in the corner of the screen. This is based off of what the tutorial did, although in the tutorial it was eventually replaced instead of put into the corner and rendered simultaneously like I do.
+
+I also added a sharper contrast mode using red and green to indicate shadows and no shadows respectively. This made it far easier to see what was going on since the shadows could blend in with the textures a bit, especially when there was shadow acne.
+
+[![shadows_with_acne.png](./README/shadows_with_acne.png)](./README/shadows_with_acne.png)[![shadows.gif](./README/shadows.gif)](./README/shadows.gif)
+
+# 9 - Day and Night
+
+[008-shadows...009-day-night](https://github.com/boatrite/mutiny/compare/008-shadows...009-day-night)
+
+Since I did all this work on lighting, I kinda figured I should try to get a proper day-night cycle going. I had pretty meh success. I learned some things, but the final result is kinda meh, and I don't feel like sinking more time into it.
+
+Anyways, I did a simple interpolation of the sky color to change it from light to dark. I added both a sun and moon directional light to provide lighting in both the day and night. I render a texture for both sun and moon in the sky. Eh, that's about it.
+
+I think what's more interesting is the problem I ran into where as light strength decreases, there is a point at which the ambient value for 2/3 of the faces become the same which effectively makes them indistinguishable which makes the whole scene appear flat and lose that 3d aspect. It's been a little bit now since I've actively thought about this, so I don't really have the entire context in my brain, but my instinct says this has got to be a simple fix for this. I tried a few things but no dice. I think I need to take a step back and think about it to figure it out.
+
 # To Do:
 
 **Chunk writing/reading to/from disk**
@@ -293,3 +332,12 @@ Culling
 Lighting
 
 - http://math.hws.edu/graphicsbook/c7/s2.html
+- https://www.khronos.org/opengl/wiki/Shader\_Storage\_Buffer\_Object (for variable number of things passed to the shaders, e.g. lights)
+- https://forum.beyond3d.com/threads/modern-textureless-deferred-rendering-techniques.57611/
+
+Vulkan
+
+- https://developer.nvidia.com/rtx/raytracing/vkray
+- https://nvpro-samples.github.io/vk\_raytracing\_tutorial/
+- https://github.com/nvpro-samples/vk\_raytracing\_tutorial
+- https://github.com/PacktPublishing/Vulkan-Cookbook
