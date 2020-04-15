@@ -103,14 +103,13 @@ void Renderer::update(double dt) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
 
           // Then generate its mesh
-          std::thread computeMeshThread(
-            [](Chunk& chunk) {
+          threadPool.push(
+            [](int i, Chunk& chunk) {
               std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
               chunk.setMesh(mesh);
             },
             std::ref(chunk)
           );
-          computeMeshThread.detach();
         }
       }
     }

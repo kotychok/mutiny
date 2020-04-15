@@ -12,6 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include <ctpl/ctpl_stl.h>
 
 #include "camera.h"
 #include "chunk.h"
@@ -38,6 +39,8 @@ struct Light {
 
 class Renderer {
   private:
+    ctpl::thread_pool threadPool { ctpl::thread_pool(9) };
+
     int blocksTextureUnitIndex {};
 
     Shader blockShader { Shader("./src/shaders/block.vert", "./src/shaders/block.frag") };
