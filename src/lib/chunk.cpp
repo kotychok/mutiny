@@ -18,26 +18,7 @@ Chunk::~Chunk() {
 
 void Chunk::setMesh(std::vector<float> mesh) {
   this->mesh = mesh;
-
-  if (!chunkVAO) {
-    glGenVertexArrays(1, &chunkVAO);
-  }
-  if (!chunkVBO) {
-    glGenBuffers(1, &chunkVBO);
-  }
-
-  glBindVertexArray(chunkVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
-  glBufferData(GL_ARRAY_BUFFER, static_cast<float>(mesh.size()) * sizeof(float), mesh.data(), GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
+  this->isMeshDirty = true;
 }
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
@@ -57,10 +38,40 @@ Block Chunk::blockAt(unsigned int x, unsigned int y, unsigned int z) const {
 }
 
 void Chunk::render(const Shader &shader) {
-  glm::mat4 blockModel = glm::mat4(1.0);
-  blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
-  shader.setMat4("model", blockModel);
+  if (!chunkVAO) {
+    glGenVertexArrays(1, &chunkVAO);
+  }
+  if (!chunkVBO) {
+    glGenBuffers(1, &chunkVBO);
+  }
 
-  glBindVertexArray(chunkVAO);
-  glDrawArrays(GL_TRIANGLES, 0, mesh.size() / 6);
+  if (isMeshDirty) {
+    glBindVertexArray(chunkVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, chunkVBO);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<float>(mesh.size()) * sizeof(float), mesh.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    isMeshDirty = false;
+  }
+
+  // Only render the chunk if the mesh is up to date. I'm not sure how
+  // necessary this is, but it just seems like a pretty good idea to not render
+  // the old mesh if we know it's not correct anymore. My hunch is that this
+  // probably doesn't matter most of the time but I'm not sure.
+  if (!isMeshDirty) {
+    glm::mat4 blockModel = glm::mat4(1.0);
+    blockModel = glm::translate(blockModel, pos * CHUNK_SIZE);
+    shader.setMat4("model", blockModel);
+
+    glBindVertexArray(chunkVAO);
+    glDrawArrays(GL_TRIANGLES, 0, mesh.size() / 6);
+  }
 }

@@ -38,4 +38,5 @@ class Chunk {
     std::array<Block, CHUNK_SIZE_CUBED> blocks {};
 
     std::vector<float> mesh {};
+    bool isMeshDirty { false };
 };

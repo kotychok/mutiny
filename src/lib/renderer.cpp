@@ -2,6 +2,7 @@
 #include <array>
 #include <experimental/filesystem>
 #include <iostream>
+#include <thread>
 
 #include <imgui/imgui.h>
 #include <stb/stb_image.h>
@@ -102,8 +103,14 @@ void Renderer::update(double dt) {
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
 
           // Then generate its mesh
-          std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
-          chunk.setMesh(mesh);
+          std::thread computeMeshThread(
+            [](Chunk& chunk) {
+              std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
+              chunk.setMesh(mesh);
+            },
+            std::ref(chunk)
+          );
+          computeMeshThread.detach();
         }
       }
     }
