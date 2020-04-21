@@ -19,6 +19,7 @@ Chunk::~Chunk() {
 void Chunk::setMesh(std::vector<float> mesh) {
   this->mesh = mesh;
   this->isMeshDirty = true;
+  this->canBeUnloaded = true;
 }
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {

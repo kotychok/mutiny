@@ -14,6 +14,8 @@
 #include "shader.h"
 #include "texture.h"
 #include "texture_unit.h"
+#include "print_tuple.h"
+#include "print_vector.h"
 
 // Debugging
 #include <glm/gtx/string_cast.hpp>
@@ -102,9 +104,18 @@ void Renderer::update(double dt) {
           // If our chunk is not loaded, we need to create it
           Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::perlin).first->second;
 
+          // This is implicitly set when the object is created, but I want to
+          // be explicit here about the fact that the chunk cannot be deleted
+          // if there is going to be a thread that needs it.
+          //
+          // Since the setMesh method sets canBeUnloaded to true, after the
+          // thread is done, we'll be able to delete it.
+          chunk.canBeUnloaded = false;
+
           // Then generate its mesh
           threadPool.push(
             [](int i, Chunk& chunk) {
+              // std::cout << "Meshing: " << chunk.pos << std::endl;
               std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
               chunk.setMesh(mesh);
             },
@@ -115,17 +126,40 @@ void Renderer::update(double dt) {
     }
   }
 
-  if (cameraChunkPosition != lastCameraChunkPosition) {
-    std::cout << "\nChunk changed!!" << std::endl;
-
-    // If the current AoI doesn't have a previous AoI key, then it is outside
-    // of the AoI and we want to unload it.
-    for (xyz oldKey : lastAreaOfInterest) {
-      if (areaOfInterest.find(oldKey) == areaOfInterest.end()) {
-        chunks.erase(oldKey);
-      }
+  // FIXME This detection doesn't work super well anymore.
+  // Since the chunk might not be ready to be unloaded yet, it's possible to
+  // have orphaned chunks remain around forever (or until you go back up to
+  // them and they get unloaded the time time)
+  //
+  // I wonder if there is a mathy way to be able to do this. I should be able
+  // to compute the list of keys to delete based off of viewing distance and then
+  // erase all those chunks.
+  //
+  // FIXME 2 Also, I might be able to change or remove the other bookkeeping
+  // methods like lastAreaOfInterest idk.
+  //
+  // ---
+  //
+  // Actually, to fix this, instead of using lastAreaOfInterest, can I get rid of it entirely and just use chunk.keys?
+  // ---
+  //
+  // If the current AoI doesn't have a previous AoI key, then it is outside
+  // of the AoI and we want to unload it.
+  for (const auto& c : chunks) {
+    xyz chunkKey = c.first;
+    if (areaOfInterest.find(chunkKey) == areaOfInterest.end()) {
+      chunksToBeUnloaded.insert(chunkKey);
     }
   }
+
+  for (xyz chunkKey : chunksToBeUnloaded) {
+    Chunk& chunk = chunks[chunkKey];
+    if (chunk.canBeUnloaded) {
+      chunks.erase(chunkKey);
+    }
+  }
+
+  chunksToBeUnloaded.clear();
 
   // Get ready for the next frame
   lastCameraChunkPosition = cameraChunkPosition;

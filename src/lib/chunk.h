@@ -14,6 +14,7 @@ class Chunk {
     // Instance variables
     glm::vec3 pos;
     std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc;
+    bool canBeUnloaded { false };
 
     // Constructor
     Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc);
@@ -30,7 +31,6 @@ class Chunk {
     void render(const Shader &shader);
     bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;
     Block blockAt(unsigned int x, unsigned int y, unsigned int z) const;
-
   private:
     unsigned int chunkVAO {};
     unsigned int chunkVBO {};

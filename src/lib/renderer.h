@@ -39,7 +39,7 @@ struct Light {
 
 class Renderer {
   private:
-    ctpl::thread_pool threadPool { ctpl::thread_pool(9) };
+    ctpl::thread_pool threadPool { ctpl::thread_pool(5) };
 
     int blocksTextureUnitIndex {};
 
@@ -53,6 +53,7 @@ class Renderer {
     std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
     int viewingDistance { 3 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
+    std::unordered_set<xyz, hash_tuple::hash<xyz>> chunksToBeUnloaded {};
 
     // *** Time ***
     float timeOfDay { 12 };

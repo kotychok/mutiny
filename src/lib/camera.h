@@ -27,7 +27,7 @@ class Camera {
     static constexpr float MAX_FAR_PLANE { 1000.0f };
 
     static constexpr float MIN_SPEED { 1.0f };
-    static constexpr float MAX_SPEED { 32.0f };
+    static constexpr float MAX_SPEED { 100.0f };
 
     static constexpr float MIN_SENSITIVITY { 0.01f };
     static constexpr float MAX_SENSITIVITY { 1.0f };
