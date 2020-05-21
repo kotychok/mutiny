@@ -70,6 +70,10 @@ void Texture::loadBlockTextures() {
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
+float Texture::getTextureIndexFromBlockType(BlockType blockType) {
+  return Texture::blockTypeToTextureIndex.find(blockType)->second;
+}
+
 void Texture::loadAstronomicalBodiesTextures() {
   GLuint textureID;
   glGenTextures(1, &textureID);

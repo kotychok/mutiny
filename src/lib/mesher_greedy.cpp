@@ -226,7 +226,7 @@ void MesherGreedy::loadQuadIntoMesh(const quad& quad, const BlockType& blockType
     }
   }
 
-  float textureLayer { Texture::blockTypeToTextureIndex.find(blockType)->second };
+  float textureLayer { Texture::getTextureIndexFromBlockType(blockType) };
 
   // right bottom
   mesh.push_back(rb_x);

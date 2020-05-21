@@ -11,6 +11,7 @@ class Texture {
     static const std::unordered_map<BlockType, float> blockTypeToTextureIndex;
     static const int BLOCK_COUNT;
 
+    static float getTextureIndexFromBlockType(BlockType blockType);
     static void loadBlockTextures();
     static void loadAstronomicalBodiesTextures();
 };
