@@ -660,4 +660,8 @@ void Renderer::keyCallback(GLFWwindow* window, int key, int scancode, int action
 void Renderer::windowSizeCallback(GLFWwindow* window, int width, int height) {
   camera.windowSizeCallback(window, width, height);
 }
+
+void Renderer::focusCallback(bool focusedInGame) {
+  camera.focusCallback(focusedInGame);
+}
 #pragma GCC diagnostic pop

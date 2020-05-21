@@ -64,10 +64,10 @@ int Window::show() {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
   }
 
-  focusInGame(window);
-
   Renderer renderer;
   glfwSetWindowUserPointer(window, &renderer);
+
+  focusInGame(window);
 
   glfwSetTime(0.0);
   double lastTime = 0.0;
@@ -221,17 +221,27 @@ bool Window::isFocusedInGUI(GLFWwindow* window) {
 }
 
 void Window::focusInGame(GLFWwindow* window) {
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide cursor
+  if (!isFocusedInGame(window)) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Hide cursor
 
-  ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NoMouse;            // Disable Mouse
-  io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // Disable Keyboard
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NoMouse;            // Disable Mouse
+    io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // Disable Keyboard
+
+    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    rendererPtr->focusCallback(true); // focus == true -> focused in game
+  }
 }
 
 void Window::focusInGUI(GLFWwindow* window) {
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // Show cursor
+  if (!isFocusedInGUI(window)) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // Show cursor
 
-  ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;          // Enable Mouse
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;          // Enable Mouse
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard
+
+    Renderer* rendererPtr = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    rendererPtr->focusCallback(false); // focus == false -> focused in GUI
+  }
 }

@@ -15,6 +15,8 @@ class Camera {
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
     int width { Window::WIDTH };
     int height { Window::HEIGHT };
+    double lastX {};
+    double lastY {};
 
   public:
     static constexpr float MIN_FOV { 22.5f };
@@ -48,4 +50,5 @@ class Camera {
     void processInput(GLFWwindow* window, float dt);
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
     void windowSizeCallback(GLFWwindow* window, int width, int height);
+    void focusCallback(bool focusedInGame);
 };

@@ -46,8 +46,12 @@ void Camera::processInput(GLFWwindow* window, float dt) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void Camera::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
-  static double lastX { xpos };
-  static double lastY { ypos };
+  if (!lastX) {
+    lastX = xpos;
+  }
+  if (!lastY) {
+    lastY = ypos;
+  }
   float xoffset = xpos - lastX;
   float yoffset = lastY - ypos;
   lastX = xpos;
@@ -71,5 +75,15 @@ void Camera::cursorPosCallback(GLFWwindow* window, double xpos, double ypos) {
 void Camera::windowSizeCallback(GLFWwindow* window, int width, int height) {
   this->width = width;
   this->height = height;
+}
+
+void Camera::focusCallback(bool focusedInGame) {
+  if (focusedInGame) {
+    // Clear out lastX and lastY so that they are re-initialized to the new
+    // initial xpos and ypos in cursorPosCallback when going from GUI focus
+    // mode to game focus mode.
+    lastX = 0;
+    lastY = 0;
+  }
 }
 #pragma GCC diagnostic pop

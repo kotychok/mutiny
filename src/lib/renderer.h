@@ -180,4 +180,5 @@ class Renderer {
     void cursorPosCallback(GLFWwindow* window, double xpos, double ypos);
     void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     void windowSizeCallback(GLFWwindow* window, int width, int height);
+    void focusCallback(bool focusedInGame);
 };
