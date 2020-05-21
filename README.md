@@ -12,6 +12,8 @@
 * [7 - Lighting](#7---lighting)
 * [8 - Shadows](#8---shadows)
 * [9 - Day and Night](#9---day-and-night)
+* [10 - Async Chunk Loading](#10---async-chunk-loading)
+* [10a - Camera jump bug](#10a---camera-jump-bug)
 * [To Do:](#to-do)
 * [Resources](#resources)
 
@@ -264,27 +266,127 @@ Anyways, I did a simple interpolation of the sky color to change it from light t
 
 I think what's more interesting is the problem I ran into where as light strength decreases, there is a point at which the ambient value for 2/3 of the faces become the same which effectively makes them indistinguishable which makes the whole scene appear flat and lose that 3d aspect. It's been a little bit now since I've actively thought about this, so I don't really have the entire context in my brain, but my instinct says this has got to be a simple fix for this. I tried a few things but no dice. I think I need to take a step back and think about it to figure it out.
 
+[![day-night-1.gif](./README/day-night-1.gif)](./README/day-night-1.gif)[![day-night-2.gif](./README/day-night-2.gif)](./README/day-night-2.gif)
+
+# 10 - Async Chunk Loading
+
+[009-day-night...010-async-chunk-loading](https://github.com/boatrite/mutiny/compare/009-day-night...010-async-chunk-loading)
+
+Finally, I have async chunk loading. It was very easy to get a simple implementation working, but I did hit a few snags that are obvious in hindsight but missed on my first attempt.
+
+That first attempt was to create a new thread every time we detected a new chunk needed to be loaded -- this logic already existed -- and inside of that thread generate and set the mesh.
+
+I ran into two issues here. The first was more of a warning -- the code still compiled and executed but I got console errors -- caused by the fact that my Chunk render code assumed the VAO would be set already. Adding a simple check for the VAO being initialized solved that.
+
+The more pernicious error was that my Chunk's `setMesh` function made OpenGL calls. It had been a while since I last worked on this, and I didn't immediately realize that my threads would attempting to make these calls. This doesn't work since the thread does not have the OpenGL context, so these calls segfault. There are apparently some ways to share an OpenGL context between threads and maybe even transfer a context between threads, but this just didn't seem like a path I wanted to go down, so I didn't research it further. Instead, I decided to keep all my OpenGL calls on the main thread and only generate the meshes and set that data on the Chunk object on the threads I spawn. I did this by adding a dirty flag that would also be set in the thread which the main thread would check to know whether it needed to re-send the data to the GPU. This worked out very well ([commit](https://github.com/boatrite/mutiny/commit/3ec013ddf2d2544bf3f84944e68a46ed5001f75c)).
+
+However, while this worked well for small viewing distances (max of 4 is what worked for me), I started getting lag again when I had a viewing distance of 5+. This made sense to me since I now had thread creation/destruction overhead (which from what I read could possibly be non-trivial), as well as many threads trying to execute which would take resources away from the main thread, as well as the fact that in a single frame I would have many more dirty Chunks that would send their data to the GPU in a single frame. I didn't benchmark any of this, so I don't know the exact culprit, but I figured I would play with it and see what I learned.
+
+At this time someone had suggested I look into thread pools and linked me [this library](https://github.com/vit-vit/ctpl). This seemed like a plausible way to solve all those problems at once. I would no longer have thread overhead (if that ever mattered). By limiting the number of threads available to a sane number, a larger viewing distance would no longer cause more threads to be created at once. And because of _that_, I would be limiting how many chunks become dirty at once, therefore limiting how many chunks have to send their data to the GPU in a single frame. To choose the number of threads I just experimented until I found a number that let me move with a viewing distance of 10 comfortably. After doing the very minor change of introducing and using the thread pooling library, I was able to move with my max viewing distance of 10 across chunk boundaries with zero pausing. Success!
+
+Well, almost :P Having tested it out a bit, I will sometimes get a segfault. It _appears_ to happen when I cross a chunk boundary when there are other chunks loading. An easy way to reproduce is to make sure the available threads is somewhat lower (I found 5 worked well), run the binary, move viewing distance up to 10, and while the chunks are still loading to move forward across the chunk. This segfaults 100% of the time for me. More investigation needed!
+
+Update: It turns out it is caused by the following sequence of events:
+
+1. Move into a new chunk and get a ton of generate chunk threads queued up.
+2. Keep moving and go into another new chunk
+3. This causes some chunks to be deleted, which may include chunks that still have chunk generation threads that haven't been processed yet.
+4. The chunk generation thread for a removed chunk is now ran, and this causes a segfault because the chunk no longer exists and the reference the thread has is invalid.
+
+I brainstormed some solutions and tried some out, but it was a while ago now, and at any rate didn't come up with a perfect solution for this. I sort of had a solution that prevented the segfaults but would fail to remove chunks sometimes -- chunks would be loaded but not removed when moving out of range. I have some work in a branch [`wip-fix-orphaned-loaded-chunks-bug`](https://github.com/boatrite/mutiny/compare/010-async-chunk-loading...wip-fix-orphaned-loaded-chunks-bug).
+
+At any rate, I don't really need to care about this edge case right now and am going to move on to more interesting things.
+
+_These gifs are garbage but I think it's still possible to tell the difference. Sorry about that._
+
+Before:
+
+[![boundary-lag.gif](./README/boundary-lag.gif)](./README/boundary-lag.gif)
+
+After:
+
+[![boundary-lag-fixed.gif](./README/boundary-lag-fixed.gif)](./README/boundary-lag-fixed.gif)
+
+# 10a - Camera jump bug
+
+[010-async-chunk-loading...010a-camera-jump-bug](https://github.com/boatrite/mutiny/compare/010-async-chunk-loading...010a-camera-jump-bug)
+
+This is another quality of life thing I'd been putting off and decided to do know before moving onto other things.
+
+Basically, what happens is that when switching between the two control modes (one with mouse for interacting with GUI, another without mouse for controlling the camera in-game), the cursor calculations get wonked up. This is similar to an issue fixed when I first introduced the camera and the solution will be similar in that we need to treat the first movement in a particular way to make sure the math checks out.
+
 # To Do:
+
+- 
+
+**Blocks w/ different textures on sides**
+
+- 
+
+**Advanced voxel rendering**
+
+The idea here is that I want to be able to render 1/16, 1/8, 1/4, and 1/2 block-sized voxels for various reasons.
+
+Some things I might want to procedurally render at 1/16 scale: Flowers, trees (limbs), leaves, string and wires?, ...
+
+At 1/8: ... not sure, but since I definitely want 1/6 and 1/2 and 1/4, no reason not to do 1/8.
+
+At 1/2 and 1/4: Fence posts, bars, poles, tree (limbs), ...
+
+It should be possible to render multiple objects within a single block sized space. If I wanted to get fancy, there might need to be some sort of z-index to in case there is overlap?
+
+- **Investigate small FPS drop across chunk boundaries when viewing distance is 10**
+
+See end of Part 10 for notes.
+
+- **Creation & Destruction**
+
+This is highly related to the previous. Once I can render various scales of voxels, I'll want to consider things like place blocks, placing voxel models at various scales, deleting them, how explosions would work.
+
+In particular I want to call out this idea of "hunks" of voxels. e.g. Imagine blowing apart a large rock. That won't break up into nice cubes, you're going to get mostly jagged hunks, some large, some small. But the thing is, you'll want those separate bits to be treated like a single object you can interact it. So if you try to throw, pick up, destroy a large chunk of rock, it should be possible. Physics should also work sensibly for these hunks.
+
+As I dive into this, I might split this up more, like how my next bullet is for having a block picker to place and destroy a block. After that, I think voxel models would be good as well
+
+- 
+
+**Block picker, placing blocks, destroying blocks**
+
+- 
+
+**Portals**
+
+- 
+
+**Vehicles**
+
+Inspiration: [Teardown](https://store.steampowered.com/app/1167630/Teardown/)
+
+- **Movability, Push, Pull**
+
+Think Minecraft pistons. This is going to get a bit into mechanics a bit, but I think rendering will still have to support it. Need to be able to animate a block between a start state and an end state. Maybe can take some inspiration from how css animations are specified. i.e. duration, interpolation style.
+
+Anyways, I want to be able to move blocks, probably want to be able to specify whether an object should move with another object or not. e.g. a torch on a block, if the block is pushed up, the torch should move with it. Some things should be able to prevent movement
+
+- **Voxel partical animations**
+
+Flames, smoke, water droplets, rain, steam. Basically just normal particles but I'd want to render them all as cubes for the aesthetic.
+
+- 
+
+**Lighting Updates**
+
+  - Shadows with transparent objects
+  - Point shadow map
+  - Blending - e.g. colored glass/stained glass.
+  - Deferred shading
+  - Render some sort of light or torch object model at point light position.
+- 
 
 **Chunk writing/reading to/from disk**
 
 I think maybe start by optimizing how we store blocks in the Chunk, since that's what we'll serialize to disk. By optimizing that, we'll make it use less memory per chunk as well as less disk space per chunk.
 
 Then, we'll probably need some concept of a "World". When our program is first started, we'll need to create a world with some default chunks. I think the easiest thing to do is not do generation now, so we'll generate a rather large world from the start, but only a few of those chunks will be loaded right away. As the camera moves, we'll handle the reading and writing to save/load the existing chunks.
-
-**Chunk generation**
-
-Building on the previous step, we'll start generating and saving new chunks when the camera moves to a spot where this isn't one yet.
-
-**Get rid of lag when meshing & generating chunks**
-
-Maybe can do this in other threads, think I've seen that done
-
-**Block picker, placing blocks, destroying blocks**
-
-**Blocks w/ different textures on sides**
-
-**Lighting**
 
 # Resources
 
