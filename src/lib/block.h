@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_map>
 
 #include <mini-yaml/yaml.hpp>
 
@@ -33,8 +34,12 @@ class Block {
 
     static Yaml::Node blocksDataCache;
     static bool blocksDataCacheLoaded;
-
     static Yaml::Node& blocksData();
+
+    static std::unordered_map<std::string, BlockType> blockIdToBlockTypeCache;
+    static bool blockIdToBlockTypeCacheLoaded;
+    static std::unordered_map<std::string, BlockType>& blockIdToBlockType();
+
     static WorldBlock createWorldBlock(std::string blockId);
 };
 
