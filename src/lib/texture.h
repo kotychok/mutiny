@@ -4,14 +4,15 @@
 #include <unordered_map>
 
 #include "block.h"
+#include "side.h"
 
 class Texture {
   public:
-    static const std::unordered_map<BlockType, std::string> blockTypeToString;
-    static const std::unordered_map<BlockType, float> blockTypeToTextureIndex;
-    static const int BLOCK_COUNT;
-
-    static float getTextureIndexFromBlockType(BlockType blockType);
+    static float getTextureIndexFromBlockType(BlockType blockType, Side side);
     static void loadBlockTextures();
     static void loadAstronomicalBodiesTextures();
+
+  private:
+    static std::unordered_map<BlockType, std::unordered_map<Side, float>> blockTypeToSideToTextureIndex;
+    static void loadBlockImageIntoTexture(std::string path, float textureIndex);
 };

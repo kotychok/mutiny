@@ -1,65 +1,78 @@
 #include <iostream>
-
 #include <unordered_map>
 
 #include <glad/glad.h>
 #include <stb/stb_image.h>
+#include <mini-yaml/yaml.hpp>
 
 #include "texture.h"
 
-const std::unordered_map<BlockType, std::string> Texture::blockTypeToString {
-  {
-    { BlockType::BEDROCK, "bedrock" },
-    { BlockType::COBBLESTONE, "cobblestone" },
-    { BlockType::DIRT, "dirt" },
-    { BlockType::STONE, "stone" },
-  }
-};
+std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
 
-const int Texture::BLOCK_COUNT = blockTypeToString.size();
-
-const std::unordered_map<BlockType, float> Texture::blockTypeToTextureIndex {
-  {
-    { BlockType::BEDROCK, 0 },
-    { BlockType::COBBLESTONE, 1 },
-    { BlockType::DIRT, 2 },
-    { BlockType::STONE, 3 },
-  }
-};
+// Loop over blocks [x]
+//   Loop over texture info [x]
+//     Normalize the representation to make it easy to find image for any side.
+//       Instead of the image path, map the block id and side to the texture layer index
+//         Store that and use it in the getTextureIndexFromBlockType
+//         e.g.:
+//         {
+//           Block::BEDROCK => {
+//             Side::NORTH => 0,
+//             Side::SOUTH => 0,
+//             Side::EAST => 0,
+//             Side::WEST => 0,
+//             Side::TOP => 0,
+//             Side::BOTTOM => 0,
+//           },
+//           Block::GRASS => {
+//             Side::NORTH => 1,
+//             Side::SOUTH => 1,
+//             Side::EAST => 1,
+//             Side::WEST => 1,
+//             Side::TOP => 2,
+//             Side::BOTTOM => 3,
+//           }
+//         }
 
 void Texture::loadBlockTextures() {
+  // Create a new texture array
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
 
+  // Configure how many images in the array and the size of each image.
+  Yaml::Node& blocksData = Block::blocksData();
   int imageSize = 16;
-  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, imageSize, imageSize, BLOCK_COUNT);
+  int blockCount = blocksData.Size() * 6; // We are being inefficient now and storing duplicates (1 layer for each side per block)
+  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, imageSize, imageSize, blockCount);
 
-  for(auto it : blockTypeToString) {
-    const BlockType& blockType = it.first;
-    const std::string& blockName = it.second;
-    float textureIndex { blockTypeToTextureIndex.find(blockType)->second };
+  // Loop over the blocks data and save it in a form we can use later for rendering.
+  // This involves creating a map similar to the blocks data except instead of
+  // using strings to identify the block and the textures, we use the floats.
+  float currentBlockType = 1;
+  float currentTextureIndex = 0;
+  for (auto it = blocksData.Begin(); it != blocksData.End(); it++) {
+    Yaml::Node& blockNode = (*it).second;
+    Yaml::Node& textureNode = blockNode["texture"];
+    std::unordered_map<Side, float> sideToTextureIndex;
+    for (auto textureIt = textureNode.Begin(); textureIt != textureNode.End(); textureIt++) {
+      std::string sideString = (*textureIt).first;
+      Side side;
+      if (sideString == "north") side = Side::NORTH;
+      else if (sideString == "south") side = Side::SOUTH;
+      else if (sideString == "east") side = Side::EAST;
+      else if (sideString == "west") side = Side::WEST;
+      else if (sideString == "top") side = Side::TOP;
+      else if (sideString == "bottom") side = Side::BOTTOM;
+      std::string texturePath = (*textureIt).second.As<std::string>();
+      // std::cout << "texturePath: " << texturePath << ", textureIndex: " << currentTextureIndex << ", side: " << side << std::endl;
+      loadBlockImageIntoTexture(texturePath, currentTextureIndex);
+      sideToTextureIndex[side] = currentTextureIndex;
+      currentTextureIndex++;
+    }
 
-    std::string path = "./assets/" + blockName + ".png";
-
-    int width, height, nrChannels;
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
-
-    glTexSubImage3D(
-      GL_TEXTURE_2D_ARRAY,
-      0,                 // mipmap level
-      0,                 // xoffset
-      0,                 // yoffset
-      textureIndex,      // zoffset, i.e. index in texture array
-      width,             // width
-      height,            // height
-      1,                 // depth
-      GL_RGBA,           // cpu pixel format
-      GL_UNSIGNED_BYTE,  // cpu pixel coord type
-      data               // pixel data
-    );
-
-    stbi_image_free(data);
+    blockTypeToSideToTextureIndex[currentBlockType] = sideToTextureIndex;
+    currentBlockType++;
   }
 
   glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
@@ -70,8 +83,30 @@ void Texture::loadBlockTextures() {
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-float Texture::getTextureIndexFromBlockType(BlockType blockType) {
-  return Texture::blockTypeToTextureIndex.find(blockType)->second;
+void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
+  int width, height, nrChannels;
+  unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+
+  glTexSubImage3D(
+    GL_TEXTURE_2D_ARRAY,
+    0,                 // mipmap level
+    0,                 // xoffset
+    0,                 // yoffset
+    textureIndex,      // zoffset, i.e. index in texture array
+    width,             // width
+    height,            // height
+    1,                 // depth
+    GL_RGBA,           // cpu pixel format
+    GL_UNSIGNED_BYTE,  // cpu pixel coord type
+    data               // pixel data
+  );
+
+  stbi_image_free(data);
+}
+
+
+float Texture::getTextureIndexFromBlockType(BlockType blockType, Side side) {
+  return Texture::blockTypeToSideToTextureIndex.find(blockType)->second.find(side)->second;
 }
 
 void Texture::loadAstronomicalBodiesTextures() {

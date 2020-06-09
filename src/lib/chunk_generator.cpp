@@ -6,70 +6,70 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flat(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::flat(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-      blocks[index] = Block { BlockType::DIRT };
+      blocks[index] = Block::createWorldBlock("dirt");
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalf(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
       if (x < CHUNK_SIZE_HALVED) {
-        blocks[index] = Block { BlockType::DIRT };
+        blocks[index] = Block::createWorldBlock("dirt");
       } else {
-        blocks[index] = Block { BlockType::STONE };
+        blocks[index] = Block::createWorldBlock("stone");
       }
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::flatHalfAndHalfWithSquare(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
       if (x > CHUNK_SIZE / 4 && x < 3 * CHUNK_SIZE / 4 && z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4) {
-        blocks[index] = Block { BlockType::BEDROCK };
+        blocks[index] = Block::createWorldBlock("bedrock");
       } else if (x < CHUNK_SIZE_HALVED) {
-        blocks[index] = Block { BlockType::DIRT };
+        blocks[index] = Block::createWorldBlock("dirt");
       } else {
-        blocks[index] = Block { BlockType::STONE };
+        blocks[index] = Block::createWorldBlock("stone");
       }
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::flatRandom(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   unsigned int y = 0;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
       if (rand() % 100 < 50) {
-        blocks[index] = Block { BlockType::DIRT };
+        blocks[index] = Block::createWorldBlock("dirt");
       } else {
-        blocks[index] = Block { BlockType::STONE };
+        blocks[index] = Block::createWorldBlock("stone");
       }
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   if (position.y != 0) {
     return blocks;
   }
@@ -79,9 +79,9 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 posit
       for (unsigned int y = 0; y < CHUNK_SIZE / 4; y++) {
         unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
         if (y == 0) {
-          blocks[index] = Block { BlockType::BEDROCK };
+          blocks[index] = Block::createWorldBlock("bedrock");
         } else if (x == CHUNK_SIZE_HALVED || z == CHUNK_SIZE_HALVED) {
-          blocks[index] = Block { BlockType::DIRT };
+          blocks[index] = Block::createWorldBlock("dirt");
         }
       }
     }
@@ -90,34 +90,34 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::flatWithPlus(glm::vec3 posit
 }
 
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::half(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::half(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       for (unsigned int y = 0; y < CHUNK_SIZE_HALVED; y++) {
         unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-        blocks[index] = Block { BlockType::DIRT };
+        blocks[index] = Block::createWorldBlock("dirt");
       }
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::filled(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::filled(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
       for (unsigned int y = 0; y < CHUNK_SIZE; y++) {
         unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-        blocks[index] = Block { BlockType::DIRT };
+        blocks[index] = Block::createWorldBlock("dirt");
       }
     }
   }
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   int radius = CHUNK_SIZE_HALVED;
   for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
     for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
@@ -128,7 +128,7 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere(glm::vec3 positio
           unsigned int blockZ = z - CHUNK_SIZE / 2;
           if (sqrt(blockX * blockX + blockY * blockY + blockZ * blockZ) < radius) {
             unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-            blocks[index] = Block { BlockType::DIRT };
+            blocks[index] = Block::createWorldBlock("dirt");
           }
         }
       }
@@ -137,14 +137,14 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::halfSphere(glm::vec3 positio
   return blocks;
 }
 
-std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::perlin(glm::vec3 position) {
-  std::array<Block, CHUNK_SIZE_CUBED> blocks {};
+std::array<WorldBlock, CHUNK_SIZE_CUBED> ChunkGenerator::perlin(glm::vec3 position) {
+  std::array<WorldBlock, CHUNK_SIZE_CUBED> blocks {};
   if (position.y <= 1) {
     for (unsigned int x = 0; x < CHUNK_SIZE; x++) {
       for (unsigned int z = 0; z < CHUNK_SIZE; z++) {
         for (unsigned int y = 0; y < CHUNK_SIZE; y++) {
           unsigned int index { z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x };
-          blocks[index] = Block { BlockType::STONE };
+          blocks[index] = Block::createWorldBlock("stone");
         }
       }
     }
@@ -163,9 +163,9 @@ std::array<Block, CHUNK_SIZE_CUBED> ChunkGenerator::perlin(glm::vec3 position) {
         for (unsigned int y = 0; y < height; y++) {
           unsigned int index { blockZ * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + blockX };
           if (y <= height - 3) {
-            blocks[index] = Block { BlockType::STONE };
+            blocks[index] = Block::createWorldBlock("stone");
           } else {
-            blocks[index] = Block { BlockType::DIRT };
+            blocks[index] = Block::createWorldBlock("grass");
           }
         }
       }

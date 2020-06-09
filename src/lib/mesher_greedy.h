@@ -4,15 +4,7 @@
 
 #include "chunk.h"
 #include "quad.h"
-
-enum class Side {
-  NORTH,
-  SOUTH,
-  EAST,
-  WEST,
-  TOP,
-  BOTTOM,
-};
+#include "side.h"
 
 class MesherGreedy {
   public:

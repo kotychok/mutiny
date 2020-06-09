@@ -9,7 +9,7 @@
 #include "chunk_generator.h"
 #include "texture.h"
 
-Chunk::Chunk(glm::vec3 pos, std::function<std::array<Block, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
+Chunk::Chunk(glm::vec3 pos, std::function<std::array<WorldBlock, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
   blocks = chunkGeneratorFunc(pos);
 }
 
@@ -22,10 +22,10 @@ void Chunk::setMesh(std::vector<float> mesh) {
 }
 
 bool Chunk::isBlockAt(unsigned int x, unsigned int y, unsigned int z) const {
-  return blockAt(x, y, z).type != BlockType::EMPTY;
+  return blockAt(x, y, z) != Block::EMPTY_BLOCK;
 }
 
-Block Chunk::blockAt(unsigned int x, unsigned int y, unsigned int z) const {
+WorldBlock Chunk::blockAt(unsigned int x, unsigned int y, unsigned int z) const {
   if (x > CHUNK_SIZE - 1)
     throw std::invalid_argument("X is larger than CHUNK_SIZE - 1");
   if (y > CHUNK_SIZE - 1)

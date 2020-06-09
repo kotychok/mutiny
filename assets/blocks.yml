@@ -1,0 +1,78 @@
+# -------------------------
+# Ways to specify textures:
+# -------------------------
+# In order to support not only the simple, single-texture use-case but also
+# arbitrary texturing of sides when needed, the system has two conventions to
+# specify block texture information:
+#
+# All sides have the same texture (e.g. dirt, stone)
+#
+#   texture: ./path/to/asset.png
+#
+# OR
+#
+# Different sides have different textures
+#
+#   texture
+#     top: ./path/to/texture-top.png
+#     bottom: ./path/to/texture-bottom.png
+#     nsew: ./path/to/texture-nsew.png
+#
+# When a single side has its own texture, the key is the full side spelling.
+#
+# When multiple sides share a texture, the key is the combined first characters
+# of the sides in the order NSEWTB (North South East West Top Bottom).
+#
+# UPDATE:
+# Since I'm eventually going to move reading block data into ruby (at least
+# that's the plan...), I'm going to make this file much more verbose for now in
+# order to simplify the C++ code that parses it.
+#
+# Once I do it in ruby, I can go back to my preferred format since it'll be way
+# easier to parse in ruby than C++.
+#
+- id: bedrock
+  name: Bedrock
+  texture:
+    north: ./assets/bedrock.png
+    south: ./assets/bedrock.png
+    east: ./assets/bedrock.png
+    west: ./assets/bedrock.png
+    top: ./assets/bedrock.png
+    bottom: ./assets/bedrock.png
+- id: dirt
+  name: Dirt
+  texture:
+    north: ./assets/dirt.png
+    south: ./assets/dirt.png
+    east: ./assets/dirt.png
+    west: ./assets/dirt.png
+    top: ./assets/dirt.png
+    bottom: ./assets/dirt.png
+- id: grass
+  name: Grass
+  texture:
+    top: ./assets/grass-top.png
+    bottom: ./assets/grass-bottom.png
+    north: ./assets/grass-nsew.png
+    south: ./assets/grass-nsew.png
+    east: ./assets/grass-nsew.png
+    west: ./assets/grass-nsew.png
+- id: cobblestone
+  name: Cobblestone
+  texture:
+    north: ./assets/cobblestone.png
+    south: ./assets/cobblestone.png
+    east: ./assets/cobblestone.png
+    west: ./assets/cobblestone.png
+    top: ./assets/cobblestone.png
+    bottom: ./assets/cobblestone.png
+- id: stone
+  name: Stone
+  texture:
+    north: ./assets/stone.png
+    south: ./assets/stone.png
+    east: ./assets/stone.png
+    west: ./assets/stone.png
+    top: ./assets/stone.png
+    bottom: ./assets/stone.png
