@@ -14,6 +14,7 @@
 * [9 - Day and Night](#9---day-and-night)
 * [10 - Async Chunk Loading](#10---async-chunk-loading)
 * [10a - Camera jump bug](#10a---camera-jump-bug)
+* [11 - Multitexture Blocks](#11---multitexture-blocks)
 * [To Do:](#to-do)
 * [Resources](#resources)
 
@@ -315,15 +316,25 @@ This is another quality of life thing I'd been putting off and decided to do kno
 
 Basically, what happens is that when switching between the two control modes (one with mouse for interacting with GUI, another without mouse for controlling the camera in-game), the cursor calculations get wonked up. This is similar to an issue fixed when I first introduced the camera and the solution will be similar in that we need to treat the first movement in a particular way to make sure the math checks out.
 
+# 11 - Multitexture Blocks
+
+[010a-camera-jump-bug...011-multitexture-blocks](https://github.com/boatrite/mutiny/compare/010a-camera-jump-bug...011-multitexture-blocks)
+
+Finally turning my dirt wasteland into something more green. Conceptually, this was very easy. I already have a function that takes a block type and turns it into a texture index to render. I already know what side I'm on when meshing. All I had to do was load up some more textures, look them up by both block type and side, and there we go.
+
+Of course, I did make it more complicated for myself which may or may not have been a good idea. I decided to stop hardcoding block data in source code and move it to a yaml file instead. This really shouldn't have been that difficult or taken as long as it did, but for me who is not efficient at writing C++ code it took a bit of effort.
+
+I also got sloppy with git and so my rename refactoring is just in the same commit where I load the block data from file which is in the same commit I add in multiple texture support. It is what it is, and I eventually got it working (with way more effort than if I had proceeded more mindfully).
+
+[![multitexture_blocks.png](./README/multitexture_blocks.png)](./README/multitexture_blocks.png)
+
 # To Do:
 
-- 
+- **Scripting support**
 
-**Blocks w/ different textures on sides**
+I want to add in mruby asap and get as much C++ code converted over as I think is reasonable. Definitely chunk generator (i.e. world gen) code. Definitely block definitions. Probably not much else at the current moment? We'll see.
 
-- 
-
-**Advanced voxel rendering**
+- **Advanced voxel rendering**
 
 The idea here is that I want to be able to render 1/16, 1/8, 1/4, and 1/2 block-sized voxels for various reasons.
 
