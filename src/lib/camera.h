@@ -29,7 +29,7 @@ class Camera {
     static constexpr float MAX_FAR_PLANE { 1000.0f };
 
     static constexpr float MIN_SPEED { 1.0f };
-    static constexpr float MAX_SPEED { 32.0f };
+    static constexpr float MAX_SPEED { 100.0f };
 
     static constexpr float MIN_SENSITIVITY { 0.01f };
     static constexpr float MAX_SENSITIVITY { 1.0f };
@@ -37,7 +37,7 @@ class Camera {
     float fov { 45.0f };
     float nearPlane { 0.1f };
     float farPlane { 400.0f }; // This is a tiny bit over enough to see 10 chunks out.
-    float speed { 24.0f };
+    float speed { 40.0f };
     float sensitivity { 0.05f };
 
     glm::vec3 position { glm::vec3(0.0f, 94.0f, 0.0f) };
