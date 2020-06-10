@@ -35,7 +35,7 @@ mutiny: ./build/mutiny
 	@echo ./build/mutiny
 
 ./build/mutiny: $(MUTINY_PREREQS)
-	g++ $(OPTIONS) -o ./build/mutiny
+	g++ $(OPTIONS) -O3 -o ./build/mutiny
 
 debug: ./build/debug
 	@echo ./build/debug

@@ -4,3 +4,4 @@ core
 minimal_example/minimal
 .session-cache
 tmp
+*perf.data*
