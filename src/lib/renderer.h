@@ -39,7 +39,7 @@ struct Light {
 
 class Renderer {
   private:
-    ctpl::thread_pool threadPool { ctpl::thread_pool(20) };
+    ctpl::thread_pool threadPool { ctpl::thread_pool(9) };
 
     int blocksTextureUnitIndex {};
 
