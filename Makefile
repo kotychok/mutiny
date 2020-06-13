@@ -15,7 +15,8 @@ MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
 
 CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) vendor/libnoise.a $(LDLIBS)
+ARCHIVES := vendor/libnoise.a vendor/libmruby.a
+OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 
 all: objects mutiny test
 
@@ -61,7 +62,7 @@ endef
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 
 ./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
-	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) vendor/libnoise.a $(LDLIBS) -o $@
+	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
 
 watch_tests:
 	find test -type f | entr -scr "make test"
