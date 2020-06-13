@@ -14,16 +14,14 @@
 #include "texture.h"
 
 Chunk::Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc) : pos{pos}, m_mrb{mrb}, chunkGeneratorFunc{chunkGeneratorFunc} {
-  // blocks = chunkGeneratorFunc(pos);
-
-  mrb_value testValue = mrb_load_string(m_mrb.get(), "ChunkGenerator.flat");
-  RArray* myArray = RARRAY(testValue);
-  std::cout << myArray->as.heap.len << std::endl;
-  mrb_value firstElement = mrb_ary_ref(m_mrb.get(), testValue, 0);
-  std::cout << mrb_string_p(firstElement) << std::endl;
-  mrb_p(m_mrb.get(), firstElement);
-  const char* myCStr = mrb_string_cstr(m_mrb.get(), firstElement);
-  std::cout << myCStr << std::endl;
+  mrb_value mrbBlocks = mrb_load_string(m_mrb.get(), chunkGeneratorFunc.c_str());
+  for (unsigned int i = 0; i < RARRAY_LEN(mrbBlocks); ++i) {
+    mrb_value element = mrb_ary_ref(m_mrb.get(), mrbBlocks, i);
+    if (mrb_string_p(element)) {
+      std::string blockId = mrb_string_cstr(m_mrb.get(), element);
+      blocks[i] = Block::createWorldBlock(blockId);
+    }
+  }
 }
 
 Chunk::~Chunk() {
