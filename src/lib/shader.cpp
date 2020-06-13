@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "shader.h"
+#include "file.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
   GLuint vertex = compileShader(vertexPath, GL_VERTEX_SHADER);
@@ -48,24 +49,8 @@ void Shader::setVec4(const std::string &name, glm::vec4 value) const {
 }
 
 GLuint Shader::compileShader(const char* path, GLenum type) {
-  // 1. Read shader file
-  std::string shaderCode;
-  std::ifstream shaderFile;
-
-  // Ensure ifstream objects can throw exceptions
-  shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-  try {
-    shaderFile.open(path);
-    std::stringstream shaderStream;
-    shaderStream << shaderFile.rdbuf();
-    shaderFile.close();
-    shaderCode = shaderStream.str();
-  } catch (std::ifstream::failure e) {
-    std::cerr << "ERROR: Shader file not successfully read. Path: " << path << std::endl;
-  }
-
-  const char* code = shaderCode.c_str();
+  std::string codeString = File::read(path);
+  const char* code = codeString.c_str();
 
   // 2. Compile shader code
   GLuint shader;
