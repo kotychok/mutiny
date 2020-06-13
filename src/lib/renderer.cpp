@@ -7,7 +7,9 @@
 #include <imgui/imgui.h>
 #include <stb/stb_image.h>
 #include <glm/gtx/vector_angle.hpp>
+#include <mruby/compile.h>
 
+#include "file.h"
 #include "memory_helper.h"
 #include "mesher_greedy.h"
 #include "renderer.h"
@@ -19,8 +21,18 @@
 #include <glm/gtx/string_cast.hpp>
 
 Renderer::Renderer() {
-  std::cout << "Renderer created" << std::endl;
+  // Initialize the mruby VM
+  mrb_state *mrb = mrb_open();
+  m_mrb = std::shared_ptr<mrb_state>(mrb);
 
+  // Load in our ruby application environment into the VM
+  std::string fileContents = File::read("./src/scripts/environment.rb");
+  const char* rubyCode = fileContents.c_str();
+  mrb_load_string(m_mrb.get(), rubyCode);
+
+  // Make sure images get loaded with the correct orientation.
+  // TODO I think I want to have an Image::load method which
+  // can call this itself and not need to care about it here.
   stbi_set_flip_vertically_on_load(true);
 
   glEnable(GL_DEPTH_TEST);
@@ -64,6 +76,8 @@ Renderer::Renderer() {
   TextureUnit::activate(astronomicalBodiesTextureUnitIndex);
   // TODO Thinking of moving to a service oriented design. LoadsAstronomicalBodiesTextures::call();
   Texture::loadAstronomicalBodiesTextures();
+
+  std::cout << "Renderer created" << std::endl;
 }
 
 void Renderer::processInput(GLFWwindow* window, float dt) {
@@ -100,7 +114,7 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), ChunkGenerator::flat).first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.flat").first->second;
 
           // Then generate its mesh
           threadPool.push(

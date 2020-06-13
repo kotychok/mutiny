@@ -3,6 +3,9 @@
 #include <array>
 #include <functional>
 #include <vector>
+#include <memory>
+
+#include <mruby.h>
 
 #include "block.h"
 #include "chunk_generator.h"
@@ -13,10 +16,11 @@ class Chunk {
   public:
     // Instance variables
     glm::vec3 pos;
-    std::function<std::array<WorldBlock, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc;
+    std::shared_ptr<mrb_state> m_mrb;
+    std::string chunkGeneratorFunc;
 
     // Constructor
-    Chunk(glm::vec3 pos, std::function<std::array<WorldBlock, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc);
+    Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc);
     ~Chunk();
 
     // Explicitly delete since these shouldn't be used

@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <ctpl/ctpl_stl.h>
+#include <mruby.h>
 
 #include "camera.h"
 #include "chunk.h"
@@ -39,6 +40,8 @@ struct Light {
 
 class Renderer {
   private:
+    std::shared_ptr<mrb_state> m_mrb { nullptr };
+
     ctpl::thread_pool threadPool { ctpl::thread_pool(9) };
 
     int blocksTextureUnitIndex {};

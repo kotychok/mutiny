@@ -3,14 +3,27 @@
 #include <vector>
 
 #include <glm/gtx/scalar_multiplication.hpp>
+#include <mruby.h>
+#include <mruby/compile.h>
+#include <mruby/array.h>
+#include <mruby/string.h>
 
 #include "block.h"
 #include "chunk.h"
 #include "chunk_generator.h"
 #include "texture.h"
 
-Chunk::Chunk(glm::vec3 pos, std::function<std::array<WorldBlock, CHUNK_SIZE_CUBED>(glm::vec3 position)> chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
-  blocks = chunkGeneratorFunc(pos);
+Chunk::Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc) : pos{pos}, m_mrb{mrb}, chunkGeneratorFunc{chunkGeneratorFunc} {
+  // blocks = chunkGeneratorFunc(pos);
+
+  mrb_value testValue = mrb_load_string(m_mrb.get(), "ChunkGenerator.flat");
+  RArray* myArray = RARRAY(testValue);
+  std::cout << myArray->as.heap.len << std::endl;
+  mrb_value firstElement = mrb_ary_ref(m_mrb.get(), testValue, 0);
+  std::cout << mrb_string_p(firstElement) << std::endl;
+  mrb_p(m_mrb.get(), firstElement);
+  const char* myCStr = mrb_string_cstr(m_mrb.get(), firstElement);
+  std::cout << myCStr << std::endl;
 }
 
 Chunk::~Chunk() {
