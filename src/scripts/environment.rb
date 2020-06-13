@@ -55,7 +55,7 @@ CHUNK_SIZE = 32;
 CHUNK_SIZE_SQUARED = CHUNK_SIZE * CHUNK_SIZE;
 
 class ChunkGenerator
-  def self.flat(position)
+  def self.flat
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|

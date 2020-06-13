@@ -17,7 +17,7 @@ int main() {
   std::string fileContents = File::read("./src/scripts/environment.rb");
   const char* rubyCode = fileContents.c_str();
   mrb_load_string(mrb, rubyCode);
-  mrb_value testValue = mrb_load_string(mrb, "ChunkGenerator.flat('foobar')");
+  mrb_value testValue = mrb_load_string(mrb, "ChunkGenerator.flat");
   RArray* myArray = RARRAY(testValue);
   std::cout << myArray->as.heap.len << std::endl;
   mrb_value firstElement = mrb_ary_ref(mrb, testValue, 0);
