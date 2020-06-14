@@ -2,8 +2,8 @@
 
 #include <array>
 #include <functional>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include <mruby.h>
 
@@ -15,11 +15,10 @@ class Chunk {
   public:
     // Instance variables
     glm::vec3 pos;
-    std::shared_ptr<mrb_state> m_mrb;
     std::string chunkGeneratorFunc;
 
     // Constructor
-    Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc);
+    Chunk(glm::vec3 pos, std::string chunkGeneratorFunc);
     ~Chunk();
 
     // Explicitly delete since these shouldn't be used
@@ -29,6 +28,7 @@ class Chunk {
     Chunk& operator=(Chunk &&) = delete; // Delete move assignment
 
     // Instance methods
+    void generate();
     void setMesh(std::vector<float> mesh);
     void render(const Shader &shader);
     bool isBlockAt(unsigned int x, unsigned int y, unsigned int z) const;

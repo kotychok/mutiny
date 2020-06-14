@@ -131,11 +131,12 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.perlin").first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), "ChunkGenerator.flat").first->second;
 
           // Then generate its mesh
           threadPool.push(
             [](int i, Chunk& chunk) {
+              chunk.generate();
               std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
               chunk.setMesh(mesh);
             },

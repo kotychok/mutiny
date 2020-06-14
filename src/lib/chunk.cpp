@@ -11,29 +11,52 @@
 #include "block.h"
 #include "chunk.h"
 #include "texture.h"
+#include "file.h"
 
-Chunk::Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc) : pos{pos}, m_mrb{mrb}, chunkGeneratorFunc{chunkGeneratorFunc} {
+Chunk::Chunk(glm::vec3 pos, std::string chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
+}
+
+Chunk::~Chunk() {
+}
+
+void Chunk::generate() {
+  // Initialize the mruby VM
+  mrb_state *mrb = mrb_open();
+
+  // Load in our ruby application environment into the VM
+  std::string fileContents = File::read("./src/scripts/environment.rb");
+  const char* rubyCode = fileContents.c_str();
+  mrb_load_string(mrb, rubyCode);
+
+  // I also need to do a bunch of binding to C++ methods.
+  // Possibly use mrubybind for this
+  // RClass *PerlinNoise_class = mrb_define_class(m_mrb.get(), "PerlinNoise", m_mrb->object_class);
+  // mrb_define_class_method(m_mrb.get(), PerlinNoise_class, "get_value", perlin_get_value, MRB_ARGS_REQ(3));
+
   std::string code = chunkGeneratorFunc + "(" + std::to_string(static_cast<int>(pos.x)) + "," + std::to_string(static_cast<int>(pos.y)) + "," + std::to_string(static_cast<int>(pos.z)) + ")";
   const char *c_str = code.c_str();
 
   // TODO Make a wrapper object that handles error checking.
-  mrb_value mrbBlocks = mrb_load_string(m_mrb.get(), c_str);
-  if (m_mrb.get()->exc) { // If there is an error
+  mrb_value mrbBlocks = mrb_load_string(mrb, c_str);
+  if (mrb->exc) { // If there is an error
     if (!mrb_undef_p(mrbBlocks)) {
-      mrb_print_error(m_mrb.get()); /* print exception object */
+      mrb_print_error(mrb); // print exception object
     }
   }
 
+  // FIXME I definitely get lag when crossing chunk boundary,
+  // and I'm gonna make a wild guess it's from copying this array.
+  // I bet if I could somehow prevent copying/looping these extra times that
+  // might go a long way to solving it.
   for (unsigned int i = 0; i < RARRAY_LEN(mrbBlocks); ++i) {
-    mrb_value element = mrb_ary_ref(m_mrb.get(), mrbBlocks, i);
+    mrb_value element = mrb_ary_ref(mrb, mrbBlocks, i);
     if (mrb_string_p(element)) {
-      std::string blockId = mrb_string_cstr(m_mrb.get(), element);
+      std::string blockId = mrb_string_cstr(mrb, element);
       blocks[i] = Block::createWorldBlock(blockId);
     }
   }
-}
 
-Chunk::~Chunk() {
+  mrb_close(mrb);
 }
 
 void Chunk::setMesh(std::vector<float> mesh) {
