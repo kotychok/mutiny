@@ -5,3 +5,4 @@ minimal_example/minimal
 .session-cache
 tmp
 *perf.data*
+mruby-2.1.1
