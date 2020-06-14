@@ -17,24 +17,37 @@ CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 C_OBJECTS := $(patsubst ./third_party_src/%.c, ./build/objects/%.o, $(C_SOURCES))
 CPP_OBJECTS := $(patsubst ./third_party_src/%.cpp, ./build/objects/%.o, $(CPP_SOURCES))
 OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS)
-ARCHIVES := vendor/libnoise.a vendor/libmruby.a
+ARCHIVES := ./vendor/libnoise.a ./vendor/libmruby.a
 
-# TODO I think I want to add libnoise to the project in a similar way as to how
-# I added mruby (gitignored source, tasks to compile it and move relevant file
-# to vendor).
-MUTINY_PREREQS := src/* src/**/* $(OBJECTS) ./vendor/libmruby.a
+MUTINY_PREREQS := src/* src/**/* $(OBJECTS) $(ARCHIVES)
 
 CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
+SHARED_OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
+PRODUCTION_OPTIONS := -O3
+DEBUG_OPTIONS := -g3 -O0
 
 #**********************************************************************
 # Tasks
 #**********************************************************************
-all: objects mutiny
+all: mutiny debug
 
 clean:
-	rm -rf build
+	rm -rf build vendor/*.a
+
+
+mutiny: ./build/mutiny
+	@echo ./build/mutiny
+
+./build/mutiny: $(MUTINY_PREREQS)
+	g++ $(PRODUCTION_OPTIONS) $(SHARED_OPTIONS) -o ./build/mutiny
+
+debug: ./build/debug
+	@echo ./build/debug
+
+./build/debug: $(MUTINY_PREREQS)
+	g++ $(DEBUG_OPTIONS) $(SHARED_OPTIONS) -o ./build/debug
+
 
 objects: $(OBJECTS)
 	@echo $(OBJECTS)
@@ -45,17 +58,9 @@ objects: $(OBJECTS)
 ./build/objects/%.o: ./third_party_src/%.cpp
 	g++ -isystem ./include -isystem ./include/imgui -c $< -o $@
 
-mutiny: ./build/mutiny
-	@echo ./build/mutiny
 
-./build/mutiny: $(MUTINY_PREREQS)
-	g++ -O3 $(OPTIONS) -o ./build/mutiny
-
-debug: ./build/debug
-	@echo ./build/debug
-
-./build/debug: $(MUTINY_PREREQS)
-	g++ -g3 -O0 $(OPTIONS) -o ./build/debug
+archives: $(ARCHIVES)
+	@echo $(ARCHIVES)
 
 #**********************************************************************
 # Testing
@@ -83,7 +88,7 @@ watch_tests:
 	find test -type f | entr -scr "make test"
 
 #**********************************************************************
-# mruby
+# Archives
 #**********************************************************************
 mruby:
 	cd ./vendor_src/mruby-2.1.1 && rake
@@ -91,6 +96,14 @@ mruby:
 ./vendor/libmruby.a: ./mruby_build_config.rb
 	make mruby
 	cp vendor_src/mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
+
+
+libnoise:
+	cd ./vendor_src/libnoise && mkdir -p build && cd build && cmake .. && make
+
+./vendor/libnoise.a:
+	make libnoise
+	cp vendor_src/libnoise/build/src/libnoise.a vendor/libnoise.a
 
 #**********************************************************************
 # Other Tasks
