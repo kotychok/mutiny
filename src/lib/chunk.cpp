@@ -14,7 +14,17 @@
 #include "texture.h"
 
 Chunk::Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc) : pos{pos}, m_mrb{mrb}, chunkGeneratorFunc{chunkGeneratorFunc} {
-  mrb_value mrbBlocks = mrb_load_string(m_mrb.get(), chunkGeneratorFunc.c_str());
+  std::string code = chunkGeneratorFunc + "(" + std::to_string(static_cast<int>(pos.x)) + "," + std::to_string(static_cast<int>(pos.y)) + "," + std::to_string(static_cast<int>(pos.z)) + ")";
+  const char *c_str = code.c_str();
+
+  // TODO Make a wrapper object that handles error checking.
+  mrb_value mrbBlocks = mrb_load_string(m_mrb.get(), c_str);
+  if (m_mrb.get()->exc) { // If there is an error
+    if (!mrb_undef_p(mrbBlocks)) {
+      mrb_print_error(m_mrb.get()); /* print exception object */
+    }
+  }
+
   for (unsigned int i = 0; i < RARRAY_LEN(mrbBlocks); ++i) {
     mrb_value element = mrb_ary_ref(m_mrb.get(), mrbBlocks, i);
     if (mrb_string_p(element)) {

@@ -114,7 +114,7 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.flat").first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.half_sphere").first->second;
 
           // Then generate its mesh
           threadPool.push(

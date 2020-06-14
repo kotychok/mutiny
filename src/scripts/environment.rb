@@ -1,5 +1,3 @@
-puts 'Hello, World from a file!'
-
 # At the top level, I am somewhat confident the API I want is something like
 # this.
 #
@@ -53,15 +51,136 @@ puts 'Hello, World from a file!'
 # instead of copy-pasted.
 CHUNK_SIZE = 32;
 CHUNK_SIZE_SQUARED = CHUNK_SIZE * CHUNK_SIZE;
+CHUNK_SIZE_HALVED = CHUNK_SIZE / 2;
+CHUNK_SIZE_QUARTERED = CHUNK_SIZE / 4;
 
 class ChunkGenerator
-  def self.flat
+  def self.flat(pos_x, pos_y, pos_z)
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
         blocks[index] = "dirt"
+      end
+    end
+    blocks
+  end
+
+  def self.flat_half_and_half(pos_x, pos_y, pos_z)
+    y = 0
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+        blocks[index] =
+          if x < CHUNK_SIZE_HALVED
+            "dirt"
+          else
+            "stone"
+          end
+      end
+    end
+    blocks
+  end
+
+  def self.flat_half_and_half_with_square(pos_x, pos_y, pos_z)
+    y = 0
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+        blocks[index] =
+          if x > CHUNK_SIZE / 4 && x < 3 * CHUNK_SIZE / 4 &&
+            z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4
+
+        "bedrock"
+          elsif x < CHUNK_SIZE_HALVED
+            "dirt"
+          else
+            "stone"
+          end
+      end
+    end
+    blocks
+  end
+
+  def self.flat_random(pos_x, pos_y, pos_z)
+    y = 0
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+        if rand() < 0.5
+          blocks[index] = "dirt"
+        else
+          blocks[index] = "stone"
+        end
+      end
+    end
+    blocks
+  end
+
+  def self.flat_with_plus(pos_x, pos_y, pos_z)
+    return [] if pos_y != 0
+
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        CHUNK_SIZE_QUARTERED.times do |y|
+          index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+          blocks[index] =
+            if y.zero?
+              "bedrock"
+            elsif x == CHUNK_SIZE_HALVED || z == CHUNK_SIZE_HALVED
+              "dirt"
+            end
+        end
+      end
+    end
+    blocks
+  end
+
+  def self.half(pos_x, pos_y, pos_z)
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        CHUNK_SIZE_HALVED.times do |y|
+          index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+          blocks[index] = "dirt"
+        end
+      end
+    end
+    blocks
+  end
+
+  def self.filled(pos_x, pos_y, pos_z)
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        CHUNK_SIZE.times do |y|
+          index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+          blocks[index] = "dirt"
+        end
+      end
+    end
+    blocks
+  end
+
+  def self.half_sphere(pos_x, pos_y, pos_z)
+    blocks = []
+    radius = CHUNK_SIZE_HALVED
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        8.times do |y|
+          blockX = x - CHUNK_SIZE / 2;
+          blockY = y - CHUNK_SIZE / 2;
+          blockZ = z - CHUNK_SIZE / 2;
+          if (Math.sqrt(blockX * blockX + blockY * blockY + blockZ * blockZ) < radius)
+            index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+            blocks[index] = "dirt"
+          end
+        end
       end
     end
     blocks
