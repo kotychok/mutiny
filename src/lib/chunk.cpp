@@ -10,7 +10,6 @@
 
 #include "block.h"
 #include "chunk.h"
-#include "chunk_generator.h"
 #include "texture.h"
 
 Chunk::Chunk(glm::vec3 pos, std::shared_ptr<mrb_state> mrb, std::string chunkGeneratorFunc) : pos{pos}, m_mrb{mrb}, chunkGeneratorFunc{chunkGeneratorFunc} {

@@ -8,7 +8,6 @@
 #include <mruby.h>
 
 #include "block.h"
-#include "chunk_generator.h"
 #include "constants.h"
 #include "shader.h"
 
