@@ -4,6 +4,7 @@ constexpr int CHUNK_SIZE { 32 };
 constexpr int CHUNK_SIZE_CUBED { CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE };
 constexpr int CHUNK_SIZE_SQUARED { CHUNK_SIZE * CHUNK_SIZE };
 constexpr int CHUNK_SIZE_HALVED { CHUNK_SIZE / 2 };
+constexpr int CHUNK_SIZE_QUARTERED { CHUNK_SIZE / 4 };
 
 // I define my light position and direction vectors as vec4s.
 //
