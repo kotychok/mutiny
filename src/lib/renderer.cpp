@@ -8,6 +8,7 @@
 #include <stb/stb_image.h>
 #include <glm/gtx/vector_angle.hpp>
 #include <mruby/compile.h>
+#include <noise/noise.h>
 
 #include "file.h"
 #include "memory_helper.h"
@@ -20,6 +21,17 @@
 // Debugging
 #include <glm/gtx/string_cast.hpp>
 
+noise::module::Perlin perlinNoise;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+mrb_value perlin_get_value(mrb_state *mrb, mrb_value self) {
+  double x {}, y {}, z {};
+  mrb_get_args(mrb, "fff", &x, &y, &z);
+  return mrb_float_value(mrb, perlinNoise.GetValue(x, y, z));
+}
+#pragma GCC diagnostic pop
+
 Renderer::Renderer() {
   // Initialize the mruby VM
   mrb_state *mrb = mrb_open();
@@ -29,6 +41,11 @@ Renderer::Renderer() {
   std::string fileContents = File::read("./src/scripts/environment.rb");
   const char* rubyCode = fileContents.c_str();
   mrb_load_string(m_mrb.get(), rubyCode);
+
+  // I also need to do a bunch of binding to C++ methods.
+  // Possibly use mrubybind for this
+  RClass *PerlinNoise_class = mrb_define_class(m_mrb.get(), "PerlinNoise", m_mrb->object_class);
+  mrb_define_class_method(m_mrb.get(), PerlinNoise_class, "get_value", perlin_get_value, MRB_ARGS_REQ(3));
 
   // Make sure images get loaded with the correct orientation.
   // TODO I think I want to have an Image::load method which
@@ -114,7 +131,7 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.half_sphere").first->second;
+          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), m_mrb, "ChunkGenerator.perlin").first->second;
 
           // Then generate its mesh
           threadPool.push(
