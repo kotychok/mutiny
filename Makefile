@@ -17,12 +17,15 @@ CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 C_OBJECTS := $(patsubst ./third_party_src/%.c, ./build/objects/%.o, $(C_SOURCES))
 CPP_OBJECTS := $(patsubst ./third_party_src/%.cpp, ./build/objects/%.o, $(CPP_SOURCES))
 OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS)
+ARCHIVES := vendor/libnoise.a vendor/libmruby.a
 
-MUTINY_PREREQS := src/* src/**/* $(OBJECTS)
+# TODO I think I want to add libnoise to the project in a similar way as to how
+# I added mruby (gitignored source, tasks to compile it and move relevant file
+# to vendor).
+MUTINY_PREREQS := src/* src/**/* $(OBJECTS) ./vendor/libmruby.a
 
 CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-ARCHIVES := vendor/libnoise.a vendor/libmruby.a
 OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 
 #**********************************************************************
@@ -82,6 +85,12 @@ watch_tests:
 #**********************************************************************
 # mruby
 #**********************************************************************
+mruby:
+	cd ./mruby-2.1.1 && rake
+
+./vendor/libmruby.a: ./mruby_build_config.rb
+	make mruby
+	cp mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
 
 #**********************************************************************
 # Other Tasks

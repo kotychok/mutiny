@@ -1,5 +1,8 @@
 MRuby::Build.new do |conf|
-  # load specific toolchain settings
+  # https://github.com/mattn/mruby-require#install-by-mrbgems
+  if ENV['OS'] != 'Windows_NT' then
+    conf.cc.flags << %w|-fPIC| # needed for using bundled gems
+  end
 
   # Gets set by the VS command prompts.
   if ENV['VisualStudioVersion'] || ENV['VSINSTALLDIR']
@@ -7,6 +10,19 @@ MRuby::Build.new do |conf|
   else
     toolchain :gcc
   end
+
+  # include the default GEMs
+  conf.gembox 'default'
+  # C compiler settings
+  # conf.cc do |cc|
+  #   cc.command = ENV['CC'] || 'gcc'
+  #   cc.flags = [ENV['CFLAGS'] || %w()]
+  #   cc.include_paths = ["#{root}/include"]
+  #   cc.defines = %w()
+  #   cc.option_include_path = %q[-I"%s"]
+  #   cc.option_define = '-D%s'
+  #   cc.compile_options = %Q[%{flags} -MMD -o "%{outfile}" -c "%{infile}"]
+  # end
 
   # Turn on `enable_debug` for better debugging
   # enable_debug
@@ -21,19 +37,7 @@ MRuby::Build.new do |conf|
   # conf.gem :mgem => 'mruby-onig-regexp'
   # conf.gem :github => 'mattn/mruby-onig-regexp'
   # conf.gem :git => 'git@github.com:mattn/mruby-onig-regexp.git', :branch => 'master', :options => '-v'
-
-  # include the default GEMs
-  conf.gembox 'default'
-  # C compiler settings
-  # conf.cc do |cc|
-  #   cc.command = ENV['CC'] || 'gcc'
-  #   cc.flags = [ENV['CFLAGS'] || %w()]
-  #   cc.include_paths = ["#{root}/include"]
-  #   cc.defines = %w()
-  #   cc.option_include_path = %q[-I"%s"]
-  #   cc.option_define = '-D%s'
-  #   cc.compile_options = %Q[%{flags} -MMD -o "%{outfile}" -c "%{infile}"]
-  # end
+  conf.gem github: "mattn/mruby-require"
 
   # mrbc settings
   # conf.mrbc do |mrbc|
