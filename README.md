@@ -1,5 +1,6 @@
 **Table of Contents**
 
+* [Project structure](#project-structure)
 * [Creating a Voxel Engine from Scratch](#creating-a-voxel-engine-from-scratch)
 * [0 - Bootstrap the project](#0---bootstrap-the-project)
 * [1 - Chunks](#1---chunks)
@@ -17,6 +18,21 @@
 * [11 - Multitexture Blocks](#11---multitexture-blocks)
 * [To Do:](#to-do)
 * [Resources](#resources)
+
+# Project structure
+
+README - Contains images for README.md
+assets - Contains textures
+bin - Contains misc binary files. Current ones are both used to generate README.md
+include - Third party header files
+src - My application source code
+test - My C++ application test code (what little of it exists)
+third_party_src - Source code for third party libraries to compile
+vendor - Compiled archive (.a) files
+vendor_src - Source code for vendor libraries
+
+I feel like there's some better way to organize ./include,
+./third_party_src, and ./vendor_src, but I'm not sure how.
 
 # Creating a Voxel Engine from Scratch
 

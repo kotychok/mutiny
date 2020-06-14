@@ -91,14 +91,37 @@ Tempfile.create do |html_file|
     # Remove the automatically included final section which contains metadata
     puts "\nConverting html to markdown"
     command = "reverse_markdown #{html_file.path} --github-flavored=true | tac | sed '0,/* * */d' | tac"
-    markdown = `#{command}`.strip
-    File.write readme_file.path, markdown
+    readme_contents = `#{command}`.strip
+    File.write readme_file.path, readme_contents
 
-    puts "\nInserting table of contents"
+    # Add in other project information.
+    puts "\nAdding more project information to the README"
+    readme_contents = readme_contents.prepend <<~MARKDOWN
+      # Project structure
+
+      README - Contains images for README.md
+      assets - Contains textures
+      bin - Contains misc binary files. Current ones are both used to generate README.md
+      include - Third party header files
+      src - My application source code
+      test - My C++ application test code (what little of it exists)
+      third_party_src - Source code for third party libraries to compile
+      vendor - Compiled archive (.a) files
+      vendor_src - Source code for vendor libraries
+
+      I feel like there's some better way to organize ./include,
+      ./third_party_src, and ./vendor_src, but I'm not sure how.\n
+    MARKDOWN
+    File.write readme_file.path, readme_contents
+
+
+    # Add in a table of contents
+    puts "\nInserting table of contents (this may take a while, ~30s)"
     command = "cat #{readme_file.path} | ./bin/gh-md-toc - | sed 's/^[	 ]*//'"
     table_of_contents = `#{command}`.strip
+    readme_contents = readme_contents.prepend "**Table of Contents**\n\n" + table_of_contents + "\n\n"
 
-    readme_contents = "**Table of Contents**\n\n" + table_of_contents + "\n\n" + markdown
+    # Write README contents to file.
     File.write "README.md", readme_contents
   end
 end
