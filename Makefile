@@ -1,9 +1,16 @@
+#**********************************************************************
+# Pre-Task Commands
+#
 # Use a dummy variable to run a shell command.
 # This happens when the Makefile is read.
 # i.e. before any make command is run.
-_dummy := $(shell mkdir -p build/objects)
-_dummy2 := $(shell mkdir -p build/test)
+#**********************************************************************
+_create_objects_dir_dummy := $(shell mkdir -p build/objects)
+_create_test_dir_dummy := $(shell mkdir -p build/test)
 
+#**********************************************************************
+# Variables
+#**********************************************************************
 C_SOURCES := $(wildcard ./third_party_src/*.c)
 CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 
@@ -18,7 +25,10 @@ LDLIBS := -lglfw -ldl -lstdc++fs
 ARCHIVES := vendor/libnoise.a vendor/libmruby.a
 OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 
-all: objects mutiny test
+#**********************************************************************
+# Tasks
+#**********************************************************************
+all: objects mutiny
 
 clean:
 	rm -rf build
@@ -36,7 +46,7 @@ mutiny: ./build/mutiny
 	@echo ./build/mutiny
 
 ./build/mutiny: $(MUTINY_PREREQS)
-	g++ $(OPTIONS) -O3 -o ./build/mutiny
+	g++ -O3 $(OPTIONS) -o ./build/mutiny
 
 debug: ./build/debug
 	@echo ./build/debug
@@ -44,7 +54,9 @@ debug: ./build/debug
 ./build/debug: $(MUTINY_PREREQS)
 	g++ -g3 -O0 $(OPTIONS) -o ./build/debug
 
+#**********************************************************************
 # Testing
+#**********************************************************************
 TEST_SOURCES := $(wildcard ./test/*.cpp)
 TEST_NAMES := $(patsubst ./test/%.cpp, %, $(TEST_SOURCES))
 
@@ -67,7 +79,13 @@ $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 watch_tests:
 	find test -type f | entr -scr "make test"
 
+#**********************************************************************
+# mruby
+#**********************************************************************
+
+#**********************************************************************
 # Other Tasks
+#**********************************************************************
 watch:
 	find src -type f | entr -scr "make mutiny && ./build/mutiny"
 
