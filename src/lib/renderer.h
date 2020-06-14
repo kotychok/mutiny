@@ -42,7 +42,7 @@ class Renderer {
   private:
     std::shared_ptr<mrb_state> m_mrb { nullptr };
 
-    ctpl::thread_pool threadPool { ctpl::thread_pool(9) };
+    ctpl::thread_pool threadPool { ctpl::thread_pool(20) };
 
     int blocksTextureUnitIndex {};
 

@@ -1,17 +1,9 @@
-#include <array>
-#include <algorithm>
-#include <vector>
-
-#include <glm/gtx/scalar_multiplication.hpp>
-#include <mruby.h>
 #include <mruby/compile.h>
 #include <mruby/array.h>
 #include <mruby/string.h>
 
-#include "block.h"
 #include "chunk.h"
-#include "texture.h"
-#include "file.h"
+#include "ruby_vm.h"
 
 Chunk::Chunk(glm::vec3 pos, std::string chunkGeneratorFunc) : pos{pos}, chunkGeneratorFunc{chunkGeneratorFunc} {
 }
@@ -20,18 +12,7 @@ Chunk::~Chunk() {
 }
 
 void Chunk::generate() {
-  // Initialize the mruby VM
-  mrb_state *mrb = mrb_open();
-
-  // Load in our ruby application environment into the VM
-  std::string fileContents = File::read("./src/scripts/environment.rb");
-  const char* rubyCode = fileContents.c_str();
-  mrb_load_string(mrb, rubyCode);
-
-  // I also need to do a bunch of binding to C++ methods.
-  // Possibly use mrubybind for this
-  // RClass *PerlinNoise_class = mrb_define_class(m_mrb.get(), "PerlinNoise", m_mrb->object_class);
-  // mrb_define_class_method(m_mrb.get(), PerlinNoise_class, "get_value", perlin_get_value, MRB_ARGS_REQ(3));
+  mrb_state *mrb = RubyVM::spawnVM();
 
   std::string code = chunkGeneratorFunc + "(" + std::to_string(static_cast<int>(pos.x)) + "," + std::to_string(static_cast<int>(pos.y)) + "," + std::to_string(static_cast<int>(pos.z)) + ")";
   const char *c_str = code.c_str();

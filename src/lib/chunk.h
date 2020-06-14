@@ -1,10 +1,9 @@
 #pragma once
 
 #include <array>
-#include <functional>
-#include <memory>
 #include <vector>
 
+#include <glm/gtx/scalar_multiplication.hpp>
 #include <mruby.h>
 
 #include "block.h"
