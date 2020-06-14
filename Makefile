@@ -86,11 +86,11 @@ watch_tests:
 # mruby
 #**********************************************************************
 mruby:
-	cd ./mruby-2.1.1 && rake
+	cd ./vendor_src/mruby-2.1.1 && rake
 
 ./vendor/libmruby.a: ./mruby_build_config.rb
 	make mruby
-	cp mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
+	cp vendor_src/mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
 
 #**********************************************************************
 # Other Tasks
