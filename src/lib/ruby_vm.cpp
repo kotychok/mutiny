@@ -18,8 +18,8 @@ mrb_state* RubyVM::spawnVM() {
 
   // Also add C++-defined functions to the Ruby VM.
   // Consider using mrubybind for this.
-  RClass *PerlinNoise_class = mrb_define_class(mrb, "PerlinNoise", mrb->object_class);
-  mrb_define_class_method(mrb, PerlinNoise_class, "get_value", Noise::getPerlinNoise, MRB_ARGS_REQ(3));
+  RClass *Noise_class = mrb_define_class(mrb, "Noise", mrb->object_class);
+  mrb_define_class_method(mrb, Noise_class, "get_perlin_noise", Noise::getPerlinNoise, MRB_ARGS_REQ(3));
 
   return mrb;
 }

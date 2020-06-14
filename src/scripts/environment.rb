@@ -200,7 +200,7 @@ class ChunkGenerator
           noise_x = block_x / CHUNK_SIZE + pos_x
           noise_z = block_z / CHUNK_SIZE + pos_z
 
-          generated_noise = (1 + PerlinNoise.get_value(noise_x, 0.0, noise_z)) / 2.0
+          generated_noise = (1 + Noise.get_perlin_noise(noise_x, 0.0, noise_z)) / 2.0
           noise = generated_noise.clamp(0.0, 1.0)
           raw_height = min_height + noise * (max_height + 1 - min_height)
           height = raw_height.clamp(min_height, max_height)
