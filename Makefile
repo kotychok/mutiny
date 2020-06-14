@@ -90,19 +90,24 @@ watch_tests:
 #**********************************************************************
 # Archives
 #**********************************************************************
-mruby:
-	cd ./vendor_src/mruby-2.1.1 && rake
+./vendor_src/mruby-2.1.1.zip:
+	wget -O ./vendor_src/mruby-2.1.1.zip https://github.com/mruby/mruby/archive/2.1.1.zip
+
+./vendor_src/mruby-2.1.1: ./vendor_src/mruby-2.1.1.zip
+	unzip ./vendor_src/mruby-2.1.1.zip -d ./vendor_src/
+	rm ./vendor_src/mruby-2.1.1/build_config.rb
+	cd ./vendor_src/mruby-2.1.1 && ln -s ../../mruby_build_config.rb build_config.rb
 
 ./vendor/libmruby.a: ./mruby_build_config.rb
-	make mruby
+	cd ./vendor_src/mruby-2.1.1 && rake
 	cp vendor_src/mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
 
 
-libnoise:
-	cd ./vendor_src/libnoise && mkdir -p build && cd build && cmake .. && make
+./vendor_src/libnoise:
+	cd ./vendor_src && git clone git@github.com:qknight/libnoise.git
 
 ./vendor/libnoise.a:
-	make libnoise
+	cd ./vendor_src/libnoise && mkdir -p build && cd build && cmake .. && make
 	cp vendor_src/libnoise/build/src/libnoise.a vendor/libnoise.a
 
 #**********************************************************************
