@@ -23,7 +23,7 @@ MUTINY_PREREQS := src/* src/**/* $(OBJECTS) $(ARCHIVES)
 
 CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-SHARED_OPTIONS := $(CPPFLAGS) src/*.cpp src/lib/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
+SHARED_OPTIONS := $(CPPFLAGS) src/*.cpp src/models/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 PRODUCTION_OPTIONS := -O3
 DEBUG_OPTIONS := -g3 -O0
 
@@ -63,31 +63,6 @@ archives: $(ARCHIVES)
 	@echo $(ARCHIVES)
 
 #**********************************************************************
-# Testing
-#**********************************************************************
-TEST_SOURCES := $(wildcard ./test/*.cpp)
-TEST_NAMES := $(patsubst ./test/%.cpp, %, $(TEST_SOURCES))
-
-test: $(TEST_NAMES)
-	@echo $(TEST_NAMES)
-
-define test_template
-$(1): ./build/test/$(1)
-	./build/test/$(1)
-
-$(1)-gdb: ./build/test/$(1)
-	gdb ./build/test/$(1)
-endef
-
-$(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
-
-./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
-	g++ -g3 $(CPPFLAGS) -I src/lib src/lib/*.cpp $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
-
-watch_tests:
-	find test -type f | entr -scr "make test"
-
-#**********************************************************************
 # Archives
 #**********************************************************************
 ./vendor_src/mruby-2.1.1.zip:
@@ -111,32 +86,59 @@ watch_tests:
 	cp vendor_src/libnoise/build/src/libnoise.a vendor/libnoise.a
 
 #**********************************************************************
-# Other Tasks
+# Testing
 #**********************************************************************
-watch:
-	find src -type f | entr -scr "make mutiny && ./build/mutiny"
+TEST_SOURCES := $(wildcard ./test/*.cpp)
+TEST_NAMES := $(patsubst ./test/%.cpp, %, $(TEST_SOURCES))
 
-min:
-	g++ -g3 $(CPPFLAGS) -o minimal_example/minimal minimal_example/*.c* $(LDLIBS)
+test: $(TEST_NAMES)
+	@echo $(TEST_NAMES)
 
-# * When program is segfaulting, easily generate and inspect core file *
+define test_template
+$(1): ./build/test/$(1)
+	./build/test/$(1)
+
+$(1)-gdb: ./build/test/$(1)
+	gdb ./build/test/$(1)
+endef
+
+$(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
+
+./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
+	g++ -g3 $(CPPFLAGS) -I src/*.cpp src/models/*.cpp $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
+
+watch_tests:
+	find test -type f | entr -scr "make test"
+
+#**********************************************************************
+# Debugging
+#**********************************************************************
+# When program is segfaulting, easily generate and inspect core file
 #
-# Ensures core files can be created,
-# destroys any existing core file,
-# creates the debug build,
-# runs it to segfault and generate new core file,
-# starts gdb with new core file.
+#     1. Ensures core files can be created
+#     2. Destroys any existing core file
+#     3. Creates the debug build
+#     4. Runs it to segfault and generate new core file
+#     5. Starts gdb with new core file
+#
 core: debug
 	ulimit -c unlimited && rm core; make debug && ./build/debug; gdb ./build/debug core
 
-# * Shortcut to debug core file in new tmux window *
+# Start new tmux window debugging core file
 gdbcore: debug
 	tmux new-window -n gdb
 	tmux send-keys -t gdb.0 "make core" C-m
 
+# Start new tmux window debugging debug build
 gdb: debug
 	tmux new-window -n gdb
 	tmux send-keys -t gdb.0 "gdb ./build/debug" C-m
+
+#**********************************************************************
+# Other Tasks
+#**********************************************************************
+watch:
+	find src -type f | entr -scr "make mutiny && ./build/mutiny"
 
 # * Exports my bookstack document as a GFM README.md file
 readme:

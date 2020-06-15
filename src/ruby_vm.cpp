@@ -5,7 +5,7 @@
 
 #include "constants.h"
 #include "file.h"
-#include "noise.h"
+#include "models/noise.h"
 #include "ruby_vm.h"
 #include "texture.h"
 

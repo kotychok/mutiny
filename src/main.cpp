@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "lib/window.h"
+#include "window.h"
 
 int main() {
   Window window;
