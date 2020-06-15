@@ -5,77 +5,84 @@
 #include <mini-yaml/yaml.hpp>
 #include <mruby.h>
 #include <mruby/hash.h>
+#include <mruby/string.h>
 #include <stb/stb_image.h>
 
 #include "texture.h"
 #include "side.h"
 
 mrb_state *Texture::s_mrb {};
+mrb_value Texture::s_mrbLoadsBlockTextureAtlasResult { mrb_nil_value() };
 mrb_value Texture::s_mrbBlockTextureAtlas { mrb_nil_value() };
 
-std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
+// std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
 
 // "Block Texture Atlas"
 //
 //     {
-//       Block::BEDROCK => {
-//         Side::NORTH => 0,
-//         Side::SOUTH => 0,
-//         Side::EAST => 0,
-//         Side::WEST => 0,
-//         Side::TOP => 0,
-//         Side::BOTTOM => 0,
+//       <int corresponding to Bedrock block type> => {
+//         north: {
+//           texture_index: 0,
+//           path: "./assets/bedrock.png",
+//         },
+//         ...
+//         bottom: {
+//           texture_index: 0,
+//           path: "./assets/bedrock.png",
+//         },
 //       },
-//       Block::GRASS => {
-//         Side::NORTH => 1,
-//         Side::SOUTH => 1,
-//         Side::EAST => 1,
-//         Side::WEST => 1,
-//         Side::TOP => 2,
-//         Side::BOTTOM => 3,
-//       }
+//       ...
+//       <int corresponding to Grass block type> => {
+//         north: {
+//           texture_index: 1,
+//           path: "./assets/grass-nsew.png",
+//         },
+//         ...
+//         bottom: {
+//           texture_index: 3,
+//           path: "./assets/grass-bottom.png",
+//         },
+//       },
+//       ...
 //     }
 
 void Texture::loadBlockTextures() {
+  // Initialize the Texture RubyVM and create the block texture atlas.
+  if (mrb_nil_p(s_mrbBlockTextureAtlas)) {
+    s_mrb = RubyVM::spawnVM();
+    s_mrbLoadsBlockTextureAtlasResult = mrbext_load_and_check_string(s_mrb, "LoadsBlockTextureAtlas.call");
+    s_mrbBlockTextureAtlas = mrb_hash_get(s_mrb, s_mrbLoadsBlockTextureAtlasResult, mrb_check_intern_cstr(s_mrb, "atlas"));
+  }
+
   // Create a new texture array
   GLuint textureID;
   glGenTextures(1, &textureID);
   glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
 
   // Configure how many images in the array and the size of each image.
-  Yaml::Node& blocksData = Block::blocksData();
   int imageSize = 16;
-  int blockCount = blocksData.Size() * 6; // We are being inefficient now and storing duplicates (1 layer for each side per block)
-  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, imageSize, imageSize, blockCount);
+  int textureCount = mrb_fixnum(mrb_hash_get(s_mrb, s_mrbLoadsBlockTextureAtlasResult, mrb_check_intern_cstr(s_mrb, "texture_count")));
+  glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, imageSize, imageSize, textureCount);
 
-  // Loop over the blocks data and save it in a form we can use later for rendering.
-  // This involves creating a map similar to the blocks data except instead of
-  // using strings to identify the block and the textures, we use the floats.
-  float currentBlockType = 1;
-  float currentTextureIndex = 0;
-  for (auto it = blocksData.Begin(); it != blocksData.End(); it++) {
-    Yaml::Node& blockNode = (*it).second;
-    Yaml::Node& textureNode = blockNode["texture"];
-    std::unordered_map<Side, float> sideToTextureIndex;
-    for (auto textureIt = textureNode.Begin(); textureIt != textureNode.End(); textureIt++) {
-      std::string sideString = (*textureIt).first;
-      Side side;
-      if (sideString == "north") side = Side::NORTH;
-      else if (sideString == "south") side = Side::SOUTH;
-      else if (sideString == "east") side = Side::EAST;
-      else if (sideString == "west") side = Side::WEST;
-      else if (sideString == "top") side = Side::TOP;
-      else if (sideString == "bottom") side = Side::BOTTOM;
-      std::string texturePath = (*textureIt).second.As<std::string>();
-      // std::cout << "texturePath: " << texturePath << ", textureIndex: " << currentTextureIndex << ", side: " << side << std::endl;
-      loadBlockImageIntoTexture(texturePath, currentTextureIndex);
-      sideToTextureIndex[side] = currentTextureIndex;
-      currentTextureIndex++;
-    }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+  mrb_hash_foreach(s_mrb, RHASH(s_mrbBlockTextureAtlas), [](mrb_state* mrb, mrb_value key, mrb_value value, void *data) -> int {
+      mrb_value mrbSidesToTextureInfo = std::move(value);
+      mrb_hash_foreach(s_mrb, RHASH(mrbSidesToTextureInfo), [](mrb_state* mrb, mrb_value key, mrb_value value, void *data) -> int {
+          mrb_value mrbTextureInfo = std::move(value);
 
-    blockTypeToSideToTextureIndex[currentBlockType] = sideToTextureIndex;
-    currentBlockType++;
-  }
+          mrb_value mrbTexturePath = mrb_hash_get(mrb, mrbTextureInfo, mrb_check_intern_cstr(mrb, "path"));
+          std::string texturePath = mrb_string_cstr(mrb, mrbTexturePath);
+
+          mrb_value mrbTextureIndex = mrb_hash_get(mrb, mrbTextureInfo, mrb_check_intern_cstr(mrb, "texture_index"));
+          float textureIndex = mrb_fixnum(mrbTextureIndex);
+
+          Texture::loadBlockImageIntoTexture(texturePath, textureIndex);
+          return 0;
+      }, (void*)0);
+      return 0;
+  }, (void*)0);
+#pragma GCC diagnostic pop
 
   glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
@@ -83,11 +90,6 @@ void Texture::loadBlockTextures() {
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  if (mrb_nil_p(s_mrbBlockTextureAtlas)) {
-    s_mrb = RubyVM::spawnVM();
-    s_mrbBlockTextureAtlas = mrbext_load_and_check_string(s_mrb, "LoadsBlockTextureAtlas.call");
-  }
 }
 
 void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
@@ -113,7 +115,8 @@ void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
 
 float Texture::getTextureIndexFromBlockType(BlockType blockType, Side side) {
   mrb_value mrbSideToTextureIndex = mrb_hash_get(s_mrb, s_mrbBlockTextureAtlas, mrb_fixnum_value(blockType));
-  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbext_side_to_sym(s_mrb, side));
+  mrb_value mrbTextureInfo = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbext_side_to_sym(s_mrb, side));
+  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbTextureInfo, mrb_check_intern_cstr(s_mrb, "texture_index"));
   float textureIndex = mrb_fixnum(mrbTextureIndex);
   return textureIndex;
 }

@@ -36,9 +36,9 @@ class ChunkGenerator
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
         blocks[index] =
           if x > CHUNK_SIZE / 4 && x < 3 * CHUNK_SIZE / 4 &&
-            z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4
+              z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4
 
-        "bedrock"
+            "bedrock"
           elsif x < CHUNK_SIZE_HALVED
             "dirt"
           else
@@ -55,10 +55,10 @@ class ChunkGenerator
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
-        if rand() < 0.5
-          blocks[index] = "dirt"
+        blocks[index] = if rand < 0.5
+          "dirt"
         else
-          blocks[index] = "stone"
+          "stone"
         end
       end
     end
@@ -117,10 +117,10 @@ class ChunkGenerator
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
         8.times do |y|
-          block_x = x - CHUNK_SIZE / 2;
-          blockY = y - CHUNK_SIZE / 2;
-          block_z = z - CHUNK_SIZE / 2;
-          if (Math.sqrt(block_x * block_x + blockY * blockY + block_z * block_z) < radius)
+          block_x = x - CHUNK_SIZE / 2
+          block_y = y - CHUNK_SIZE / 2
+          block_z = z - CHUNK_SIZE / 2
+          if Math.sqrt(block_x * block_x + block_y * block_y + block_z * block_z) < radius
             index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
             blocks[index] = "dirt"
           end
@@ -161,6 +161,6 @@ class ChunkGenerator
         end
       end
     end
-    return blocks
+    blocks
   end
 end

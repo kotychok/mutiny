@@ -7,6 +7,7 @@
 #include "file.h"
 #include "noise.h"
 #include "ruby_vm.h"
+#include "texture.h"
 
 mrb_state* RubyVM::spawnVM() {
   //*******************************************************************

@@ -1,75 +1,62 @@
-# Make and represent the output in ruby, realizing that how it looks in ruby,
-# you'll have to write the corresponding mruby C function calls to operate over
-# that data, or pull out the relevant values.
-#
-
 # **********************************************************************
 # Core
 #
 # This all is the the ruby extensions, it's part of the engine.
 # **********************************************************************
 class LoadsBlockTextureAtlas
-  #
-  # Returns {
-  #   <blockType> => {
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #   },
-  #   <blockType> => {
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #     <side> => <texture index>,
-  #   },
-  # }
-  #
+  TEXTURE_PATH = "./assets/"
+
   def self.call
-    puts "Loading mrbBlockTextureAtlas into memory..."
-
-    BlockEntry.all.each_with_object({}).with_index do |(block_entry, atlas), index|
-      block_type = index + 1
-      atlas[block_type] ||= {}
-
-      if block_entry.has_texture
-        # Every texture is the same, so we only need a single texture index for
-        # all sides
-        sides = [:north, :south, :east, :west, :top, :bottom]
-        atlas[block_type].merge! add_to_atlas(sides)
-      elsif block_entry.has_textures.any?
-        # Get a texture index for each grouping of sides
-        texture_specs = block_entry.has_textures
-        texture_specs.each do |texture_spec|
-          sides = get_sides_from_spec texture_spec
-          atlas[block_type].merge! add_to_atlas(sides)
-        end
-      else
-        raise "No block texture information provided"
-      end
-
-      atlas
-    end
+    {
+      atlas: atlas,
+      texture_count: texture_count
+    }
   end
 
   class << self
     private
 
-    # Returns {
-    #   :north => <index>,
-    #   :south => <index>,
-    #   ...
-    #   :top => <index>,
-    #   :bottom => <index>
-    # }
-    def add_to_atlas(sides)
+    def atlas
+      @atlas ||=
+        BlockEntry.all.each_with_object({}).with_index { |(block_entry, atlas), index|
+          block_type = index + 1
+          atlas[block_type] ||= {}
+
+          if block_entry.has_texture
+            # Every texture is the same, so we only need a single texture index for
+            # all sides
+            filename = "#{block_entry.id}.png"
+            sides = [:north, :south, :east, :west, :top, :bottom]
+            atlas[block_type].merge! add_to_atlas(filename, sides)
+          elsif block_entry.has_textures.any?
+            # Get a texture index for each grouping of sides
+            texture_specs = block_entry.has_textures
+            texture_specs.each do |texture_spec|
+              filename = "#{block_entry.id}-#{texture_spec}.png"
+              sides = get_sides_from_spec texture_spec
+              atlas[block_type].merge! add_to_atlas(filename, sides)
+            end
+          else
+            raise "No block texture information provided"
+          end
+        }
+    end
+
+    def texture_count
+      @texture_count ||=
+        begin
+          atlas
+          @current_texture_index + 1
+        end
+    end
+
+    def add_to_atlas(filename, sides)
       texture_index = reserve_texture_index
-      sides.each_with_object({}) do |side, side_to_texture_index|
-        side_to_texture_index[side] = texture_index
+      sides.each_with_object({}) do |side, sides_to_texture_info|
+        sides_to_texture_info[side] = {
+          texture_index: texture_index,
+          path: TEXTURE_PATH + filename
+        }
       end
     end
 
@@ -78,45 +65,36 @@ class LoadsBlockTextureAtlas
       when :north, :south, :east, :west, :top, :bottom
         [spec]
       else
-        # nsewtb
         spec.to_s.split("").map { |abbreviation|
-          case abbreviation
-          when "n"
-            :north
-          when "s"
-            :south
-          when "e"
-            :east
-          when "w"
-            :west
-          when "t"
-            :top
-          when "b"
-            :bottom
-          end
+          {
+            "n" => :north,
+            "s" => :south,
+            "e" => :east,
+            "w" => :west,
+            "t" => :top,
+            "b" => :bottom
+          }.fetch(abbreviation)
         }
       end
     end
 
     def reserve_texture_index
-      @texture_index ||= -1
-      @texture_index += 1
-      @texture_index
+      @current_texture_index ||= -1
+      @current_texture_index += 1
+      @current_texture_index
     end
   end
 end
 
 class ApplicationModel
   def initialize(attributes = {})
-    attributes.each do |attribute|
-      public_send "#{attribute}=", attribute
+    attributes.each do |attribute, value|
+      send "#{attribute}=", value
     end
   end
 end
 
 class BlockEntry < ApplicationModel
-  TEXTURE_PATH = "./assets/"
-
   attr_accessor :id, :name, :has_texture, :has_textures
 
   # The numeric blockType of a block is the index of the corresponding
@@ -124,7 +102,7 @@ class BlockEntry < ApplicationModel
   @block_entries = []
 
   def self.create(block_id, &config)
-    @block_entries << RegistrationContext.new.instance_eval(&config)
+    @block_entries << RegistrationContext.new(block_id).instance_eval(&config)
   end
 
   def self.all
@@ -132,8 +110,8 @@ class BlockEntry < ApplicationModel
   end
 
   class RegistrationContext
-    def initialize
-      @block_entry = BlockEntry.new
+    def initialize(block_id)
+      @block_entry = BlockEntry.new id: block_id
     end
 
     def name(name)

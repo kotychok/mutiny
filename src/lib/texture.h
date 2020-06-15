@@ -9,13 +9,14 @@
 
 class Texture {
   public:
-    static float getTextureIndexFromBlockType(BlockType blockType, Side side);
     static void loadBlockTextures();
     static void loadAstronomicalBodiesTextures();
+    static float getTextureIndexFromBlockType(BlockType blockType, Side side);
 
   private:
     static mrb_state *s_mrb;
+    static mrb_value s_mrbLoadsBlockTextureAtlasResult;
     static mrb_value s_mrbBlockTextureAtlas;
-    static std::unordered_map<BlockType, std::unordered_map<Side, float>> blockTypeToSideToTextureIndex;
+
     static void loadBlockImageIntoTexture(std::string path, float textureIndex);
 };
