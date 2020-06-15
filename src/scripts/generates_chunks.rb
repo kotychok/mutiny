@@ -1,4 +1,4 @@
-class ChunkGenerator
+class GeneratesChunks
   def self.flat(pos_x, pos_y, pos_z)
     y = 0
     blocks = []
