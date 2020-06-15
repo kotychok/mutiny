@@ -5,6 +5,7 @@
 
 #include "block.h"
 #include "side.h"
+#include "ruby_vm.h"
 
 class Texture {
   public:
@@ -13,6 +14,8 @@ class Texture {
     static void loadAstronomicalBodiesTextures();
 
   private:
+    static mrb_state *s_mrb;
+    static mrb_value s_mrbBlockTextureAtlas;
     static std::unordered_map<BlockType, std::unordered_map<Side, float>> blockTypeToSideToTextureIndex;
     static void loadBlockImageIntoTexture(std::string path, float textureIndex);
 };

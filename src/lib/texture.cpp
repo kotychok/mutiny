@@ -2,10 +2,15 @@
 #include <unordered_map>
 
 #include <glad/glad.h>
-#include <stb/stb_image.h>
 #include <mini-yaml/yaml.hpp>
+#include <mruby.h>
+#include <mruby/hash.h>
+#include <stb/stb_image.h>
 
 #include "texture.h"
+
+mrb_state *Texture::s_mrb {};
+mrb_value Texture::s_mrbBlockTextureAtlas { mrb_nil_value() };
 
 std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
 
@@ -81,6 +86,11 @@ void Texture::loadBlockTextures() {
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  if (mrb_nil_p(s_mrbBlockTextureAtlas)) {
+    s_mrb = RubyVM::spawnVM();
+    s_mrbBlockTextureAtlas = mrbext_load_and_check_string(s_mrb, "LoadsBlockTextureAtlas.call");
+  }
 }
 
 void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
@@ -104,9 +114,32 @@ void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
   stbi_image_free(data);
 }
 
-
 float Texture::getTextureIndexFromBlockType(BlockType blockType, Side side) {
-  return Texture::blockTypeToSideToTextureIndex.find(blockType)->second.find(side)->second;
+  mrb_value mrbSideToTextureIndex = mrb_hash_get(s_mrb, s_mrbBlockTextureAtlas, mrb_fixnum_value(blockType));
+  mrb_value mrbSideSymbol;
+  switch (side) {
+    case Side::NORTH:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "north");
+      break;
+    case Side::SOUTH:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "south");
+      break;
+    case Side::EAST:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "east");
+      break;
+    case Side::WEST:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "west");
+      break;
+    case Side::TOP:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "top");
+      break;
+    case Side::BOTTOM:
+      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "bottom");
+      break;
+  };
+  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbSideSymbol);
+  float textureIndex = mrb_fixnum(mrbTextureIndex);
+  return textureIndex;
 }
 
 void Texture::loadAstronomicalBodiesTextures() {

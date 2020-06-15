@@ -8,4 +8,3 @@ enum class Side {
   TOP,
   BOTTOM,
 };
-
