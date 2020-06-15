@@ -8,36 +8,33 @@
 #include <stb/stb_image.h>
 
 #include "texture.h"
+#include "side.h"
 
 mrb_state *Texture::s_mrb {};
 mrb_value Texture::s_mrbBlockTextureAtlas { mrb_nil_value() };
 
 std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
 
-// Loop over blocks [x]
-//   Loop over texture info [x]
-//     Normalize the representation to make it easy to find image for any side.
-//       Instead of the image path, map the block id and side to the texture layer index
-//         Store that and use it in the getTextureIndexFromBlockType
-//         e.g.:
-//         {
-//           Block::BEDROCK => {
-//             Side::NORTH => 0,
-//             Side::SOUTH => 0,
-//             Side::EAST => 0,
-//             Side::WEST => 0,
-//             Side::TOP => 0,
-//             Side::BOTTOM => 0,
-//           },
-//           Block::GRASS => {
-//             Side::NORTH => 1,
-//             Side::SOUTH => 1,
-//             Side::EAST => 1,
-//             Side::WEST => 1,
-//             Side::TOP => 2,
-//             Side::BOTTOM => 3,
-//           }
-//         }
+// "Block Texture Atlas"
+//
+//     {
+//       Block::BEDROCK => {
+//         Side::NORTH => 0,
+//         Side::SOUTH => 0,
+//         Side::EAST => 0,
+//         Side::WEST => 0,
+//         Side::TOP => 0,
+//         Side::BOTTOM => 0,
+//       },
+//       Block::GRASS => {
+//         Side::NORTH => 1,
+//         Side::SOUTH => 1,
+//         Side::EAST => 1,
+//         Side::WEST => 1,
+//         Side::TOP => 2,
+//         Side::BOTTOM => 3,
+//       }
+//     }
 
 void Texture::loadBlockTextures() {
   // Create a new texture array
@@ -116,28 +113,7 @@ void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
 
 float Texture::getTextureIndexFromBlockType(BlockType blockType, Side side) {
   mrb_value mrbSideToTextureIndex = mrb_hash_get(s_mrb, s_mrbBlockTextureAtlas, mrb_fixnum_value(blockType));
-  mrb_value mrbSideSymbol;
-  switch (side) {
-    case Side::NORTH:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "north");
-      break;
-    case Side::SOUTH:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "south");
-      break;
-    case Side::EAST:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "east");
-      break;
-    case Side::WEST:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "west");
-      break;
-    case Side::TOP:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "top");
-      break;
-    case Side::BOTTOM:
-      mrbSideSymbol = mrb_check_intern_cstr(s_mrb, "bottom");
-      break;
-  };
-  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbSideSymbol);
+  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbext_side_to_sym(s_mrb, side));
   float textureIndex = mrb_fixnum(mrbTextureIndex);
   return textureIndex;
 }
