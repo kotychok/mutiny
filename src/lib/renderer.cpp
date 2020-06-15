@@ -39,7 +39,6 @@ Renderer::Renderer() {
   //
   blocksTextureUnitIndex = TextureUnit::reserveTextureUnit();
   TextureUnit::activate(blocksTextureUnitIndex);
-  // TODO Thinking of moving to a service oriented design. LoadsBlockTextures::call();
   Texture::loadBlockTextures();
 
   //

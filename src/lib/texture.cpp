@@ -2,7 +2,6 @@
 #include <unordered_map>
 
 #include <glad/glad.h>
-#include <mini-yaml/yaml.hpp>
 #include <mruby.h>
 #include <mruby/hash.h>
 #include <mruby/string.h>

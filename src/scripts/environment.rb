@@ -3,6 +3,15 @@
 #
 # This all is the the ruby extensions, it's part of the engine.
 # **********************************************************************
+class LoadsBlocks
+  def self.call
+    BlockEntry.all.each_with_object({}).with_index { |(block_entry, map), index|
+      block_type = index + 1
+      map[block_entry.id] = block_type
+    }
+  end
+end
+
 class LoadsBlockTextureAtlas
   TEXTURE_PATH = "./assets/"
 
@@ -142,6 +151,8 @@ require "./src/scripts/chunk_generator"
 # Userland
 #
 # This is what a consumer of the api does
+#
+# Put in separate folder.
 # **********************************************************************
 BlockEntry.create :bedrock do
   name "Bedrock"

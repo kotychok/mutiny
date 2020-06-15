@@ -5,7 +5,7 @@ class ChunkGenerator
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
-        blocks[index] = "dirt"
+        blocks[index] = :dirt
       end
     end
     blocks
@@ -19,9 +19,9 @@ class ChunkGenerator
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
         blocks[index] =
           if x < CHUNK_SIZE_HALVED
-            "dirt"
+            :dirt
           else
-            "stone"
+            :stone
           end
       end
     end
@@ -38,11 +38,11 @@ class ChunkGenerator
           if x > CHUNK_SIZE / 4 && x < 3 * CHUNK_SIZE / 4 &&
               z > CHUNK_SIZE / 4 && z < 3 * CHUNK_SIZE / 4
 
-            "bedrock"
+            :bedrock
           elsif x < CHUNK_SIZE_HALVED
-            "dirt"
+            :dirt
           else
-            "stone"
+            :stone
           end
       end
     end
@@ -56,9 +56,9 @@ class ChunkGenerator
       CHUNK_SIZE.times do |z|
         index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
         blocks[index] = if rand < 0.5
-          "dirt"
+          :dirt
         else
-          "stone"
+          :stone
         end
       end
     end
@@ -75,9 +75,9 @@ class ChunkGenerator
           index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
           blocks[index] =
             if y.zero?
-              "bedrock"
+              :bedrock
             elsif x == CHUNK_SIZE_HALVED || z == CHUNK_SIZE_HALVED
-              "dirt"
+              :dirt
             end
         end
       end
@@ -91,14 +91,14 @@ class ChunkGenerator
       CHUNK_SIZE.times do |z|
         CHUNK_SIZE_HALVED.times do |y|
           index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
-          blocks[index] = "dirt"
+          blocks[index] = :dirt
         end
       end
     end
     blocks
   end
 
-  def self.filled(pos_x, pos_y, pos_z, block_id = "dirt")
+  def self.filled(pos_x, pos_y, pos_z, block_id = :dirt)
     blocks = []
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
@@ -122,7 +122,7 @@ class ChunkGenerator
           block_z = z - CHUNK_SIZE / 2
           if Math.sqrt(block_x * block_x + block_y * block_y + block_z * block_z) < radius
             index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
-            blocks[index] = "dirt"
+            blocks[index] = :dirt
           end
         end
       end
@@ -134,7 +134,7 @@ class ChunkGenerator
     blocks = []
     case pos_y
     when 0..1
-      blocks = filled pos_x, pos_y, pos_z, "stone"
+      blocks = filled pos_x, pos_y, pos_z, :stone
     when 2
       min_height = 0
       max_height = CHUNK_SIZE
@@ -153,9 +153,9 @@ class ChunkGenerator
             index = block_z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + block_x
             blocks[index] =
               if y <= height - 3
-                "stone"
+                :stone
               else
-                "grass"
+                :grass
               end
           end
         end

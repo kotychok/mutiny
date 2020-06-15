@@ -1,5 +1,6 @@
 #include <mruby/compile.h>
 #include <mruby/array.h>
+#include <mruby/hash.h>
 #include <mruby/string.h>
 
 #include "chunk.h"
@@ -19,12 +20,15 @@ void Chunk::generate() {
 
   mrb_value mrbBlocks = mrbext_load_and_check_string(mrb, c_str);
 
+  mrb_value mrbLoadsBlocksResult = mrbext_load_and_check_string(mrb, "LoadsBlocks.call");
+
   // TODO Is there a way to do this that doesn't create another array?
   for (unsigned int i = 0; i < RARRAY_LEN(mrbBlocks); ++i) {
     mrb_value element = mrb_ary_ref(mrb, mrbBlocks, i);
-    if (mrb_string_p(element)) {
-      std::string blockId = mrb_string_cstr(mrb, element);
-      blocks[i] = Block::createWorldBlock(blockId);
+    if (mrb_symbol_p(element)) {
+      mrb_value mrbBlockType = mrb_hash_get(mrb, mrbLoadsBlocksResult, element);
+      BlockType blockType = mrb_fixnum(mrbBlockType);
+      blocks[i] = WorldBlock { blockType };
     }
   }
 
