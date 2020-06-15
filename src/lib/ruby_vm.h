@@ -1,6 +1,9 @@
 #pragma once
 
 #include <mruby.h>
+#include <mruby/compile.h>
+
+#include "mrbext.h"
 
 /*
  * RubyVM is my wrapper over mruby.

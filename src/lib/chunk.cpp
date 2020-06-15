@@ -17,18 +17,9 @@ void Chunk::generate() {
   std::string code = chunkGeneratorFunc + "(" + std::to_string(static_cast<int>(pos.x)) + "," + std::to_string(static_cast<int>(pos.y)) + "," + std::to_string(static_cast<int>(pos.z)) + ")";
   const char *c_str = code.c_str();
 
-  // TODO Make a wrapper object that handles error checking.
-  mrb_value mrbBlocks = mrb_load_string(mrb, c_str);
-  if (mrb->exc) { // If there is an error
-    if (!mrb_undef_p(mrbBlocks)) {
-      mrb_print_error(mrb); // print exception object
-    }
-  }
+  mrb_value mrbBlocks = mrbext_load_and_check_string(mrb, c_str);
 
-  // FIXME I definitely get lag when crossing chunk boundary,
-  // and I'm gonna make a wild guess it's from copying this array.
-  // I bet if I could somehow prevent copying/looping these extra times that
-  // might go a long way to solving it.
+  // TODO Is there a way to do this that doesn't create another array?
   for (unsigned int i = 0; i < RARRAY_LEN(mrbBlocks); ++i) {
     mrb_value element = mrb_ary_ref(mrb, mrbBlocks, i);
     if (mrb_string_p(element)) {
