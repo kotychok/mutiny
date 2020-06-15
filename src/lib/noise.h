@@ -5,8 +5,8 @@
 
 class Noise {
   public:
-    static mrb_value getPerlinNoise(mrb_state *mrb, mrb_value self);
+    static double getPerlinNoise(double x, double y, double z);
   private:
-    static noise::module::Perlin perlinNoise;
+    static noise::module::Perlin s_perlinNoise;
 };
 
