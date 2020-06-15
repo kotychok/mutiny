@@ -148,33 +148,8 @@ end
 require "./src/scripts/chunk_generator"
 
 # **********************************************************************
-# Userland
-#
-# This is what a consumer of the api does
-#
-# Put in separate folder.
+# Load user scripts
 # **********************************************************************
-BlockEntry.create :bedrock do
-  name "Bedrock"
-  has_texture
-end
-
-BlockEntry.create :dirt do
-  name "Dirt"
-  has_texture
-end
-
-BlockEntry.create :grass do
-  name "Grass"
-  has_textures :top, :bottom, :nsew
-end
-
-BlockEntry.create :cobblestone do
-  name "Cobblestone"
-  has_texture
-end
-
-BlockEntry.create :stone do
-  name "Stone"
-  has_texture
+Dir.glob("./user_scripts/**/entry.rb").sort.each do |x|
+  require x
 end
