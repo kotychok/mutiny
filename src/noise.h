@@ -5,7 +5,7 @@
 
 class Noise {
   public:
-    static double getPerlinNoise(double x, double y, double z);
+    static double perlin(double x, double y, double z);
   private:
     static noise::module::Perlin s_perlinNoise;
 };

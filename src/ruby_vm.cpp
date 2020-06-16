@@ -44,16 +44,16 @@ mrb_state* RubyVM::spawnVM() {
   // # Ruby style
   //
   // class CNoise
-  //   def self.get_perlin_noise(x, y, z); end
+  //   def self.perlin(x, y, z); end
   // end
   //
   RClass *CNoise_class = mrb_define_class(mrb, "CNoise", mrb->object_class);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-  mrb_define_class_method(mrb, CNoise_class, "get_perlin_noise", [](mrb_state *mrb, mrb_value self) -> mrb_value {
+  mrb_define_class_method(mrb, CNoise_class, "perlin", [](mrb_state *mrb, mrb_value self) -> mrb_value {
       double x {}, y {}, z {};
       mrb_get_args(mrb, "fff", &x, &y, &z);
-      return mrb_float_value(mrb, Noise::getPerlinNoise(x, y, z));
+      return mrb_float_value(mrb, Noise::perlin(x, y, z));
   }, MRB_ARGS_REQ(3));
 #pragma GCC diagnostic pop
 
