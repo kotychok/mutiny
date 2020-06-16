@@ -4,7 +4,6 @@
 
 #include "mesher_greedy.h"
 #include "texture.h"
-#include "print_side.h"
 
 std::vector<float> MesherGreedy::computeChunkMesh(const Chunk &chunk) {
   std::vector<float> mesh {};

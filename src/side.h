@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 enum class Side {
   NORTH,
   SOUTH,
@@ -8,3 +10,5 @@ enum class Side {
   TOP,
   BOTTOM,
 };
+
+std::ostream& operator<<(std::ostream& o, const Side side);

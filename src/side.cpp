@@ -1,7 +1,3 @@
-#pragma once
-
-#include <ostream>
-
 #include "side.h"
 
 std::ostream& operator<<(std::ostream& o, const Side side) {
