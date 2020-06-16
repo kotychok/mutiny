@@ -9,7 +9,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "constants.h"
-#include "lerp.h"
+#include "util/lerp.h"
 
 class DirectionalLight {
   public:
