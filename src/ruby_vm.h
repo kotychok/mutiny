@@ -3,8 +3,6 @@
 #include <mruby.h>
 #include <mruby/compile.h>
 
-#include "mrbext.h"
-
 /*
  * RubyVM is my wrapper over mruby.
  *
@@ -17,3 +15,8 @@ class RubyVM {
   public:
     static mrb_state* spawnVM();
 };
+
+/*
+ * Whatever addition util functions I find useful
+ */
+mrb_value mrbext_load_and_check_string(mrb_state *mrb, const char *c_str);

@@ -15,8 +15,8 @@ std::ostream& operator<<(std::ostream& o, const std::array<T, N>& arr)
 
 // https://stackoverflow.com/a/19152438
   template <class T>
-std::ostream& operator<<(std::ostream& o, const std::vector<T>& arr)
+std::ostream& operator<<(std::ostream& o, const std::vector<T>& vec)
 {
-  copy(arr.cbegin(), arr.cend(), std::ostream_iterator<T>(o, ", "));
+  copy(vec.cbegin(), vec.cend(), std::ostream_iterator<T>(o, ", "));
   return o;
 }

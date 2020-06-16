@@ -1,15 +1,15 @@
 {
-  "src/lib/*.cpp": {
+  "src/*.cpp": {
     "type": "src",
     "alternate": ["test/{}_test.cpp"],
-    "related": ["src/lib/{}.h"]
+    "related": ["src/{}.h"]
   },
-  "src/lib/*.h": {
+  "src/*.h": {
     "type": "header",
-    "alternate": "src/lib/{}.cpp"
+    "alternate": "src/{}.cpp"
   },
   "test/*_test.cpp": {
     "type": "test",
-    "alternate": "src/lib/{}.cpp"
+    "alternate": "src/{}.cpp"
   }
 }

@@ -1,9 +1,6 @@
 # pragma once
 
-#include <array>
-#include <iterator>
 #include <ostream>
-#include <vector>
 
 #include <glm/glm.hpp>
 

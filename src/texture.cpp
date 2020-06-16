@@ -7,7 +7,6 @@
 #include <mruby/string.h>
 #include <stb/stb_image.h>
 
-#include "mrbext/mrbext_side.h"
 #include "side.h"
 #include "texture.h"
 

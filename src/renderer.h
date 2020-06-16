@@ -1,7 +1,5 @@
 #pragma once
 
-#include "map_with_tuple_keys.h"
-
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -19,6 +17,7 @@
 #include "chunk.h"
 #include "directional_light.h"
 #include "shader.h"
+#include "util/map_with_tuple_keys.h"
 
 typedef std::tuple<int, int, int> xyz;
 
