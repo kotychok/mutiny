@@ -4,7 +4,7 @@
 #include <mruby/compile.h>
 
 #include "constants.h"
-#include "file.h"
+#include "util/file.h"
 #include "models/noise.h"
 #include "ruby_vm.h"
 #include "texture.h"

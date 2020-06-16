@@ -9,7 +9,7 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <mruby/compile.h>
 
-#include "file.h"
+#include "util/file.h"
 #include "memory_helper.h"
 #include "mesher_greedy.h"
 #include "renderer.h"

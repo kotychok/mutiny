@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "shader.h"
-#include "file.h"
+#include "util/file.h"
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath) {
   GLuint vertex = compileShader(vertexPath, GL_VERTEX_SHADER);
