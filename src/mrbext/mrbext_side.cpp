@@ -1,4 +1,4 @@
-#include "side.h"
+#include "./mrbext_side.h"
 
 mrb_value mrbext_side_to_sym(mrb_state *mrb, Side side) {
   mrb_value mrbSideSymbol;

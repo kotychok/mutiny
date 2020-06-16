@@ -11,6 +11,8 @@ _create_test_dir_dummy := $(shell mkdir -p build/test)
 #**********************************************************************
 # Variables
 #**********************************************************************
+SRC := src/*.cpp src/**/*.cpp
+
 C_SOURCES := $(wildcard ./third_party_src/*.c)
 CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 
@@ -23,7 +25,7 @@ MUTINY_PREREQS := src/* src/**/* $(OBJECTS) $(ARCHIVES)
 
 CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-SHARED_OPTIONS := $(CPPFLAGS) src/*.cpp src/models/*.cpp $(OBJECTS) $(ARCHIVES) $(LDLIBS)
+SHARED_OPTIONS := $(CPPFLAGS) $(SRC) $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 PRODUCTION_OPTIONS := -O3
 DEBUG_OPTIONS := -g3 -O0
 
@@ -105,7 +107,7 @@ endef
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 
 ./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
-	g++ -g3 $(CPPFLAGS) -I src/*.cpp src/models/*.cpp $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
+	g++ -g3 $(CPPFLAGS) -I $(ASDF) $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
 
 watch_tests:
 	find test -type f | entr -scr "make test"

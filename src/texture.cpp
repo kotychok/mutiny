@@ -7,8 +7,9 @@
 #include <mruby/string.h>
 #include <stb/stb_image.h>
 
-#include "texture.h"
+#include "mrbext/mrbext_side.h"
 #include "side.h"
+#include "texture.h"
 
 mrb_state *Texture::s_mrb {};
 mrb_value Texture::s_mrbLoadsBlockTextureAtlasResult { mrb_nil_value() };
