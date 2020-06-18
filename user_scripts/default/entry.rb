@@ -22,3 +22,13 @@ BlockEntry.create :stone do
   name "Stone"
   has_texture
 end
+
+BlockEntry.create :oak do
+  name "Oak"
+  has_textures :nsew, :tb
+end
+
+BlockEntry.create :leaves do
+  name "Leaves"
+  has_texture
+end
