@@ -1,5 +1,5 @@
 class GeneratesChunks
-  def self.flat(pos_x, pos_y, pos_z)
+  def self.flat(chunk_x, chunk_y, chunk_z)
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|
@@ -11,7 +11,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.flat_half_and_half(pos_x, pos_y, pos_z)
+  def self.flat_half_and_half(chunk_x, chunk_y, chunk_z)
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|
@@ -28,7 +28,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.flat_half_and_half_with_square(pos_x, pos_y, pos_z)
+  def self.flat_half_and_half_with_square(chunk_x, chunk_y, chunk_z)
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|
@@ -49,7 +49,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.flat_random(pos_x, pos_y, pos_z)
+  def self.flat_random(chunk_x, chunk_y, chunk_z)
     y = 0
     blocks = []
     CHUNK_SIZE.times do |x|
@@ -65,8 +65,8 @@ class GeneratesChunks
     blocks
   end
 
-  def self.flat_with_plus(pos_x, pos_y, pos_z)
-    return [] if pos_y != 0
+  def self.flat_with_plus(chunk_x, chunk_y, chunk_z)
+    return [] if chunk_y != 0
 
     blocks = []
     CHUNK_SIZE.times do |x|
@@ -85,7 +85,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.half(pos_x, pos_y, pos_z)
+  def self.half(chunk_x, chunk_y, chunk_z)
     blocks = []
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
@@ -98,7 +98,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.filled(pos_x, pos_y, pos_z, block_id = :dirt)
+  def self.filled(chunk_x, chunk_y, chunk_z, block_id = :dirt)
     blocks = []
     CHUNK_SIZE.times do |x|
       CHUNK_SIZE.times do |z|
@@ -111,7 +111,7 @@ class GeneratesChunks
     blocks
   end
 
-  def self.half_sphere(pos_x, pos_y, pos_z)
+  def self.half_sphere(chunk_x, chunk_y, chunk_z)
     blocks = []
     radius = CHUNK_SIZE_HALVED
     CHUNK_SIZE.times do |x|
@@ -130,19 +130,21 @@ class GeneratesChunks
     blocks
   end
 
-  def self.perlin(pos_x, pos_y, pos_z)
+  def self.perlin(chunk_x, chunk_y, chunk_z)
     blocks = []
-    case pos_y
+
+    case chunk_y
     when 0..1
-      blocks = filled pos_x, pos_y, pos_z, :stone
+      blocks = filled chunk_x, chunk_y, chunk_z, :stone
     when 2
+      # Generate landscape
       min_height = 0
       max_height = CHUNK_SIZE
 
       CHUNK_SIZE.times do |block_x|
         CHUNK_SIZE.times do |block_z|
-          noise_x = block_x / CHUNK_SIZE + pos_x
-          noise_z = block_z / CHUNK_SIZE + pos_z
+          noise_x = block_x / CHUNK_SIZE + chunk_x
+          noise_z = block_z / CHUNK_SIZE + chunk_z
 
           generated_noise = (1 + CNoise.perlin(noise_x, 0.0, noise_z)) / 2.0
           noise = generated_noise.clamp(0.0, 1.0)
