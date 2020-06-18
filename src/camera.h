@@ -10,7 +10,7 @@
 class Camera {
   private:
     float yaw { 270.0f };
-    float pitch { 0.0f };
+    float pitch { -30.0f };
     glm::vec3 cameraFront { computeCameraFront() };
     glm::vec3 cameraUp { glm::vec3(0.0f, 1.0f,  0.0f) };
     int width { Window::WIDTH };
@@ -40,7 +40,7 @@ class Camera {
     float speed { 40.0f };
     float sensitivity { 0.05f };
 
-    glm::vec3 position { glm::vec3(0.0f, 94.0f, 0.0f) };
+    glm::vec3 position { glm::vec3(0.0f, 120.0f, 0.0f) };
 
     glm::vec3 computeCameraFront();
 
