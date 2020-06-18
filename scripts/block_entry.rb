@@ -1,7 +1,7 @@
 class BlockEntry
   extend CreatableWithDSL
 
-  attr_accessor :id, :name, :has_texture, :has_textures
+  attr_accessor :id, :pack, :name, :has_texture, :has_textures
 
   dsl :name, :string
   dsl :has_texture, :boolean

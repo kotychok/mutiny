@@ -1,5 +1,5 @@
 class LoadsBlockTextureAtlas
-  TEXTURE_PATH = "./assets/"
+  TEXTURE_PATH = "./user_scripts/"
 
   def self.call
     {
@@ -20,14 +20,14 @@ class LoadsBlockTextureAtlas
           if block_entry.has_texture
             # Every texture is the same, so we only need a single texture index for
             # all sides
-            filename = "#{block_entry.id}.png"
+            filename = "#{block_entry.pack}/assets/#{block_entry.id}.png"
             sides = [:north, :south, :east, :west, :top, :bottom]
             atlas[block_type].merge! add_to_atlas(filename, sides)
           elsif block_entry.has_textures.any?
             # Get a texture index for each grouping of sides
             texture_specs = block_entry.has_textures
             texture_specs.each do |texture_spec|
-              filename = "#{block_entry.id}-#{texture_spec}.png"
+              filename = "#{block_entry.pack}/assets/#{block_entry.id}-#{texture_spec}.png"
               sides = get_sides_from_spec texture_spec
               atlas[block_type].merge! add_to_atlas(filename, sides)
             end
@@ -46,11 +46,12 @@ class LoadsBlockTextureAtlas
     end
 
     def add_to_atlas(filename, sides)
+      path = TEXTURE_PATH + filename
       texture_index = reserve_texture_index
       sides.each_with_object({}) do |side, sides_to_texture_info|
         sides_to_texture_info[side] = {
           texture_index: texture_index,
-          path: TEXTURE_PATH + filename
+          path: path
         }
       end
     end

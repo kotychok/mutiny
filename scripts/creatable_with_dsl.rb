@@ -3,6 +3,8 @@ module CreatableWithDSL
     @context_class ||= Class.new {
       def initialize(record)
         @record = record
+        pack = caller.find { |x| x =~ /user_scripts/ }.match(/user_scripts\/(\w+)/)[1]
+        @record.pack = pack
       end
     }
   end
