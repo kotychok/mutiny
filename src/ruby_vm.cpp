@@ -36,7 +36,7 @@ mrb_state* RubyVM::spawnVM() {
   //*******************************************************************
   // Load in our ruby application environment into the VM.
   //*******************************************************************
-  mrbext_load_and_check_string(mrb, "require './src/scripts/environment'");
+  mrbext_load_and_check_string(mrb, "require './scripts/environment'");
 
   //*******************************************************************
   // Load in more C++-defined classes, methods, etc that

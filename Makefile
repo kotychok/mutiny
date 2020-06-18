@@ -140,7 +140,7 @@ gdb: debug
 # Other Tasks
 #**********************************************************************
 watch:
-	find src -type f | entr -scr "make mutiny && ./build/mutiny"
+	find src scripts -type f | entr -scr "make mutiny && ./build/mutiny"
 
 # * Exports my bookstack document as a GFM README.md file
 readme:
