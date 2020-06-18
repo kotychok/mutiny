@@ -14,37 +14,6 @@ mrb_state *Texture::s_mrb {};
 mrb_value Texture::s_mrbLoadsBlockTextureAtlasResult { mrb_nil_value() };
 mrb_value Texture::s_mrbBlockTextureAtlas { mrb_nil_value() };
 
-// std::unordered_map<BlockType, std::unordered_map<Side, float>> Texture::blockTypeToSideToTextureIndex {};
-
-// "Block Texture Atlas"
-//
-//     {
-//       <int corresponding to Bedrock block type> => {
-//         north: {
-//           texture_index: 0,
-//           path: "./assets/bedrock.png",
-//         },
-//         ...
-//         bottom: {
-//           texture_index: 0,
-//           path: "./assets/bedrock.png",
-//         },
-//       },
-//       ...
-//       <int corresponding to Grass block type> => {
-//         north: {
-//           texture_index: 1,
-//           path: "./assets/grass-nsew.png",
-//         },
-//         ...
-//         bottom: {
-//           texture_index: 3,
-//           path: "./assets/grass-bottom.png",
-//         },
-//       },
-//       ...
-//     }
-
 void Texture::loadBlockTextures() {
   // Initialize the Texture RubyVM and create the block texture atlas.
   if (mrb_nil_p(s_mrbBlockTextureAtlas)) {
@@ -66,14 +35,14 @@ void Texture::loadBlockTextures() {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
   mrb_hash_foreach(s_mrb, RHASH(s_mrbBlockTextureAtlas), [](mrb_state* mrb, mrb_value key, mrb_value value, void *data) -> int {
-      mrb_value mrbSidesToTextureInfo = std::move(value);
-      mrb_hash_foreach(s_mrb, RHASH(mrbSidesToTextureInfo), [](mrb_state* mrb, mrb_value key, mrb_value value, void *data) -> int {
-          mrb_value mrbTextureInfo = std::move(value);
+      mrb_value mrbSidesToSideData = std::move(value);
+      mrb_hash_foreach(s_mrb, RHASH(mrbSidesToSideData), [](mrb_state* mrb, mrb_value key, mrb_value value, void *data) -> int {
+          mrb_value mrbSideData = std::move(value);
 
-          mrb_value mrbTexturePath = mrb_hash_get(mrb, mrbTextureInfo, mrb_check_intern_cstr(mrb, "path"));
+          mrb_value mrbTexturePath = mrb_hash_get(mrb, mrbSideData, mrb_check_intern_cstr(mrb, "path"));
           std::string texturePath = mrb_string_cstr(mrb, mrbTexturePath);
 
-          mrb_value mrbTextureIndex = mrb_hash_get(mrb, mrbTextureInfo, mrb_check_intern_cstr(mrb, "texture_index"));
+          mrb_value mrbTextureIndex = mrb_hash_get(mrb, mrbSideData, mrb_check_intern_cstr(mrb, "texture_index"));
           float textureIndex = mrb_fixnum(mrbTextureIndex);
 
           Texture::loadBlockImageIntoTexture(texturePath, textureIndex);
@@ -114,8 +83,8 @@ void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
 
 float Texture::getTextureIndexFromBlockType(BlockType blockType, Side side) {
   mrb_value mrbSideToTextureIndex = mrb_hash_get(s_mrb, s_mrbBlockTextureAtlas, mrb_fixnum_value(blockType));
-  mrb_value mrbTextureInfo = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbext_side_to_sym(s_mrb, side));
-  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbTextureInfo, mrb_check_intern_cstr(s_mrb, "texture_index"));
+  mrb_value mrbSideData = mrb_hash_get(s_mrb, mrbSideToTextureIndex, mrbext_side_to_sym(s_mrb, side));
+  mrb_value mrbTextureIndex = mrb_hash_get(s_mrb, mrbSideData, mrb_check_intern_cstr(s_mrb, "texture_index"));
   float textureIndex = mrb_fixnum(mrbTextureIndex);
   return textureIndex;
 }
