@@ -22,11 +22,6 @@
 #include <glm/gtx/string_cast.hpp>
 
 Renderer::Renderer() {
-  // Initialize the mruby VM
-  mrb_state *mrb = RubyVM::spawnVM();
-  mrb_load_string(mrb, "puts 'Hello, World'");
-  mrb_close(mrb);
-
   // Make sure images get loaded with the correct orientation.
   // TODO I think I want to have an Image::load method which
   // can call this itself and not need to care about it here.
