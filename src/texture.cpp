@@ -62,7 +62,7 @@ void Texture::loadBlockTextures() {
 
 void Texture::loadBlockImageIntoTexture(std::string path, float textureIndex) {
   int width, height, nrChannels;
-  unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+  unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
 
   glTexSubImage3D(
     GL_TEXTURE_2D_ARRAY,
