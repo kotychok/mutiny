@@ -32,3 +32,8 @@ BlockEntry.create :leaves do
   name "Leaves"
   has_texture
 end
+
+BlockEntry.create :mossy_stone_brick do
+  name "Mossy Stone Brick"
+  has_texture
+end

@@ -27,6 +27,16 @@ class GeneratesChunks
         [x, y + h, z]
       }
     end
+
+    def self.cube(xi, yi, zi, xf, yf, zf)
+      (xi..xf).flat_map do |x|
+        (yi..yf).flat_map do |y|
+          (zi..zf).map do |z|
+            [x, y, z]
+          end
+        end
+      end
+    end
   end
 
   class WorldGen
@@ -61,6 +71,41 @@ class GeneratesChunks
 
       leaves_coords.each do |x, y, z|
         blocks[index3d(x, y, z)] = :leaves
+      end
+
+      blocks
+    end
+
+    def self.house_foundation(blocks, x, y, z)
+      width = 2
+      length = 8
+      depth = 10
+      # What I really want is for it to go until it hits the ground for each
+      # x,z spot, but I can cheat it by just picking a big enough depth
+      coords = Shape.cube(
+        x, y - depth, z,
+        x + width, y, z + length
+      )
+
+      coords.each do |x, y, z|
+        unless is_outside(x, y, z)
+          blocks[index3d(x, y, z)] = :mossy_stone_brick
+        end
+      end
+
+      # This will be at the corner of the chunk and back by 1 on both z and x.
+      # This will be "broken" and only show a 1x1 instead of a 2x2.
+      #
+      # The code needs to be able to poke into other chunks somehow.
+      coords = Shape.cube(
+        x - 1, y - depth, z - 1,
+        x, y, z
+      )
+
+      coords.each do |x, y, z|
+        unless is_outside(x, y, z)
+          blocks[index3d(x, y, z)] = :oak
+        end
       end
 
       blocks
@@ -250,11 +295,17 @@ class GeneratesChunks
       trees_per_chunk.times do
         x = (3..(CHUNK_SIZE - 4)).to_a.sample
         z = (3..(CHUNK_SIZE - 4)).to_a.sample
-        surface_y = heights[z * CHUNK_SIZE + x]
+        surface_y = heights[x + z * CHUNK_SIZE]
         if (result = WorldGen.simple_tree(blocks, x, surface_y, z))
           blocks = result
         end
       end
+
+      # Add house foundation
+      x = 0
+      z = 0
+      surface_y = heights[x + CHUNK_SIZE * z]
+      blocks = WorldGen.house_foundation(blocks, x, surface_y, z)
     end
     blocks
   end
