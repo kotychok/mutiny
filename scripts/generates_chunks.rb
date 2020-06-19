@@ -236,6 +236,8 @@ class GeneratesChunks
             blocks[index] =
               if y <= height - 3
                 :stone
+              elsif y <= height - 2
+                :dirt
               else
                 :grass
               end
