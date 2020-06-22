@@ -16,6 +16,7 @@
 * [10 - Async Chunk Loading](#10---async-chunk-loading)
 * [10a - Camera jump bug](#10a---camera-jump-bug)
 * [11 - Multitexture Blocks](#11---multitexture-blocks)
+* [12 - Scripting](#12---scripting)
 * [To Do:](#to-do)
 * [Resources](#resources)
 
@@ -344,13 +345,288 @@ I also got sloppy with git and so my rename refactoring is just in the same comm
 
 [![multitexture_blocks.png](./README/multitexture_blocks.png)](./README/multitexture_blocks.png)
 
+# 12 - Scripting
+
+[011-multitexture-blocks...012-scripting](https://github.com/boatrite/mutiny/compare/011-multitexture-blocks...012-scripting)
+
+This was a huge lift because I had to learn mruby, specifically the C api which is not documented aside from the source (although to be fair the source is really good to look through and learn from). Also updated the build system a bit. Moved block definitions and world gen to ruby. Came up with basic mod/content pack/whatever concept to load arbitrary bundles of ruby. Made some small world gen improvements using the new ruby api. This section is more resource and code heavy, as it's basically some stream of consciousness summaries I wrote after I got something working.
+
+* * *
+
+Resources:
+
+- [mruby repo](https://github.com/mruby/mruby)
+  - [Compile](https://github.com/mruby/mruby/blob/master/doc/guides/compile.md). Need to compile mruby to get the archive file libmruby.a which we link in to the C++ application.
+  - [How to Use the mruby Debugger](https://github.com/mruby/mruby/blob/master/doc/guides/debugger.md). Always relevant.
+  - [Limitations and Differences](https://github.com/mruby/mruby/blob/master/doc/limitations.md). Differences between CRuby and mruby.
+  - [Gems](https://github.com/mruby/mruby/blob/master/doc/guides/mrbgems.md)
+    - [This part](https://github.com/mruby/mruby/blob/master/doc/guides/mrbgems.md#c-extension) of the gems doc shows a simple example of how to make a C++ function callable in Ruby using `mrb_define_class_method`
+  - I've gotten a lot of value reading the mruby source. 
+    - [mruby.h](https://github.com/mruby/mruby/blob/master/include/mruby/data.h). Lots of documentation in this file, has a lot of the "core" methods. Like methods that create classes, define methods, call methods on objects/classes, etc.
+    - [array.h](https://github.com/mruby/mruby/blob/master/include/mruby/array.h). Arbitrarily opened this file to poke around and got a lot of value from reading a full example of "here is how to make a complex thing available in Ruby". Seeing what the C code is that creates the corresponding Ruby code will likely be very useful for writing my own. 
+      - Arrays are particularly relevant too since that's an important thing.. Maybe it's a lot easier than I think to have an array of strings or array of structs used in both C++ and ruby.
+- mruby [API docs](http://mruby.org/docs/api/)
+- [List of gems](http://mruby.org/libraries/)
+- A hello world [example](http://mruby.org/docs/articles/executing-ruby-code-with-mruby.html)
+- [mrubybind](https://github.com/ktaobo/mrubybind) for easily calling methods and passing simple types between ruby and c++
+- AnthonySuper's ["mruby, C++, and Template Magic"](https://anthony.noided.media/blog/programming/c++/ruby/2016/05/12/mruby-cpp-and-template-magic.html) on passing advanced types between ruby and c++ 
+  - [mrb\_wrapper.hpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/include/mrb_wrapper.hpp)
+  - [script\_engine.hpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/include/script_engine.hpp)
+  - [script\_engine.cpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/src/script_engine.cpp)
+  - Corresponding reddit [post](https://www.reddit.com/r/cpp/comments/4kourc/using_templates_to_bind_mruby_into_a_c_program/)
+  - Corresponding github [repo](https://github.com/AnthonySuper/Experimental-2D-Engine)
+- StackOverflow [post](https://stackoverflow.com/questions/30689643/calling-mruby-vm-in-c) about calling a method on an mrb\_value
+- This [series](https://dev.to/roryo/storing-c-data-in-an-mruby-class-50k4). That specific post is about sharing data between C++ and Ruby, and is another good example for how I might create C++ objects from Ruby.
+- [Here's another](https://github.com/Secretchronicles/TSC/blob/devel/tsc/src/scripting/scripting.hpp) application which uses mruby as a scripting engine. Might have a lot of useful code to read.
+
+More:
+
+- [StackOverflow posts tagged "mruby"](https://stackoverflow.com/questions/tagged/mruby). I haven't looked into this, but it could be worth browsing and/or searching through.
+
+* * *
+
+I've been reading about mruby and am now getting around to actually adding it in, so I figured I'd write up what I'm doing.
+
+I just downloaded mruby-2.1.1 and compiled it by running `rake` and it worked without issue. I copied the two `.a` files to my project's vendor directory (where I store precompiled `.a` files). I added `libmruby.a` to my Makefile's compiler options.
+
+I copied the mruby include directory to my project and was able to compile it with code similar to their [example](http://mruby.org/docs/articles/executing-ruby-code-with-mruby.html).
+
+```
+mrb_state *mrb = mrb_open();
+if (!mrb) { return 1; }
+mrb_load_string(mrb, "puts 'Hello, World!'");
+mrb_close(mrb);
+```
+
+And now there's a minimal working mruby example to expand on.
+
+* * *
+
+Next up I definitely want to write code in actual ruby files and not C++ strings, so I'll get that working.
+
+I wrote up a small File util to give a nice and easy way to read contents from a file and there it is:
+
+```
+std::string fileContents = File::read("./scripts/hello_world.rb");
+const char* rubyCode = fileContents.c_str();
+mrb_load_string(mrb, rubyCode);
+```
+
+I also refactored the Shader code to use this new File::read util. I just found out that there is an `mrb_load_file` method (defined in compile.h), but whatever.
+
+* * *
+
+Next I stumbled my way through figuring out how to pull data out of an array created in ruby.
+
+Looking at the definition for mrb\_load\_string, it returns an `mrb_value`, so that's how we can get our array's value in C++. Then I used some macro to turn that from an `mrb_value` into an `RArray*`. That was sort of a guess based off of something else I saw somewhere else. After which I could pull data out of the RArray struct.
+
+```
+CHUNK_SIZE = 32;
+CHUNK_SIZE_SQUARED = CHUNK_SIZE * CHUNK_SIZE;
+
+class ChunkGenerator
+  def self.flat(position)
+    y = 0
+    blocks = []
+    CHUNK_SIZE.times do |x|
+      CHUNK_SIZE.times do |z|
+        index = z * CHUNK_SIZE_SQUARED + y * CHUNK_SIZE + x
+        blocks[index] = "dirt"
+      end
+    end
+    blocks
+  end
+end
+
+ChunkGenerator.flat("foobar")
+```
+
+```
+std::string fileContents = File::read("./src/scripts/environment.rb");
+const char* rubyCode = fileContents.c_str();
+mrb_value testValue = mrb_load_string(mrb, rubyCode);
+RArray* myArray = RARRAY(testValue);
+std::cout << myArray->as.heap.len << std::endl;
+```
+
+I can also use the C array methods to get an item at a specific index.
+
+```
+std::string fileContents = File::read("./src/scripts/environment.rb");
+const char* rubyCode = fileContents.c_str();
+mrb_value testValue = mrb_load_string(mrb, rubyCode);
+mrb_value firstElement = mrb_ary_ref(mrb, testValue, 0);
+std::cout << mrb_string_p(firstElement) << std::endl; // Print whether firstElement is a string
+mrb_p(mrb, firstElement);
+const char* myCStr = mrb_string_cstr(mrb, firstElement);
+std::cout << myCStr << std::endl;
+```
+
+So there's a rudimentary ability to pull values out of ruby.
+
+* * *
+
+Here's a refactor that makes it less dumb. Obviously remove the call to ChunkGenerator from the ruby file now that we're doing it here.
+
+```
+std::string fileContents = File::read("./src/scripts/environment.rb");
+const char* rubyCode = fileContents.c_str();
+mrb_load_string(mrb, rubyCode);
+mrb_value testValue = mrb_load_string(mrb, "ChunkGenerator.flat('foobar')");
+```
+
+This is a much nicer way of pulling data out of ruby. First load up our environment, then call the method we just defined when loading the environment.
+
+I think I'll get rid of the argument for now (since flat doesn't need it anyways), and update the engine to use a ruby string instead of passing around the C++ std::function, and I should be able to get an MVP of using ruby as world gen.
+
+* * *
+
+I updated the code so that Renderer now keeps track of the mrb\_state pointer. I pass it into the Chunk contructor and run the ruby to generate the chunk there, then pull out the block ids from the ruby array and make WorldBlock structs with the ids.
+
+I converted over all chunk gen except perlin, which currently uses a library, so I'm going to make some bindings for that so I can call it in ruby.
+
+This isn't the nicest looked code, but:
+
+```
+noise::module::Perlin perlinNoise;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+mrb_value perlin_get_value(mrb_state *mrb, mrb_value self) {
+  double x {}, y {}, z {};
+  mrb_get_args(mrb, "fff", &x, &y, &z);
+  return mrb_float_value(mrb, perlinNoise.GetValue(x, y, z));
+}
+#pragma GCC diagnostic pop
+```
+
+The last 4 lines are the new lines added to the mruby VM initialization section of the code.
+
+```
+// Initialize the mruby VM
+mrb_state *mrb = mrb_open();
+m_mrb = std::shared_ptr<mrb_state>(mrb);
+
+// Load in our ruby application environment into the VM
+std::string fileContents = File::read("./src/scripts/environment.rb");
+const char* rubyCode = fileContents.c_str();
+mrb_load_string(m_mrb.get(), rubyCode);
+
+// I also need to do a bunch of binding to C++ methods.
+// Possibly use mrubybind for this
+RClass *PerlinNoise_class = mrb_define_class(m_mrb.get(), "PerlinNoise", m_mrb->object_class);
+mrb_define_class_method(m_mrb.get(), PerlinNoise_class, "get_value", perlin_get_value, MRB_ARGS_REQ(3));
+```
+
+* * *
+
+I get lag spikes when crossing chunk boundaries again, and guess what I noticed. I do chunk generation in the main thread. And now that there's all this other code, it takes long enough that it lags for a bit. So I moved that to the same thread that does the meshing (I just do the generation first), and that sorta worked. The thing is, mruby is not multithread safe. So only a single thread can be doing something on the mrb\_state at a time. But I want to keep my thread pool count at a higher number and not 1, so really the only solution I could find was to [spin up an entire new mrb vm](https://github.com/mruby/mruby/issues/5005)... And it totally works. Perf looks fine so far, but I haven't stress tested it.
+
+* * *
+
+Next up I automated my mruby compilation to make it easier to add new gems (which require a recompilation since that's how mruby gems work).
+
+I copied the mruby-2.1.1 directory into my project and gitignored it.
+
+Added a few make tasks
+
+```
+mruby:
+	cd ./mruby-2.1.1 && rake
+
+./vendor/libmruby.a: ./mruby_build_config.rb
+	make mruby
+	cp mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
+```
+
+You can see I created a new file `mruby_build_config.rb` in my project's root directory. This is actually the `build_config.rb` file that _was_ in the `mruby-2.1.1` dir, but I moved it out, renamed it, and then symlinked it back in. This let's me check in my mruby build config into source control, which I absolutely want to do, without having to check in all the mruby source.
+
+Now I have an easy way to get the updated `libmruby.a` file whenever I add a new gem. Like `mruby-require` which was the impetus for doing this.
+
+I refactored and automated my build system a bit more. There are tasks to download the mruby and libnoise source if it's not present, configure the mruby source, and compile the mruby and libnoise libraries and move the archive files into place.
+
+* * *
+
+Now that my mruby has mruby-require, I split my environment.rb into that and chunk\_generator.rb, so there's a proof of concept for how require works. Next up, I need to define some constants in the VM that are available in C++, specifically the CHUNK\_SIZE constants.
+
+```
+mrb_define_const(mrb, mrb->kernel_module, "CHUNK_SIZE", mrb_fixnum_value(CHUNK_SIZE));
+mrb_define_const(mrb, mrb->kernel_module, "CHUNK_SIZE_CUBED", mrb_fixnum_value(CHUNK_SIZE_CUBED));
+mrb_define_const(mrb, mrb->kernel_module, "CHUNK_SIZE_SQUARED", mrb_fixnum_value(CHUNK_SIZE_SQUARED));
+mrb_define_const(mrb, mrb->kernel_module, "CHUNK_SIZE_HALVED", mrb_fixnum_value(CHUNK_SIZE_HALVED));
+mrb_define_const(mrb, mrb->kernel_module, "CHUNK_SIZE_QUARTERED", mrb_fixnum_value(CHUNK_SIZE_QUARTERED));
+```
+
+* * *
+
+Added an easy way to load a string and check if there were errors. Kept the api similar to the C style.
+
+mrbext.h
+
+```
+#pragma once
+
+#include <mruby.h>
+
+mrb_value mrbext_load_and_check_string(mrb_state *mrb, const char *c_str);
+```
+
+mrbext.cpp
+
+```
+#include <cstdlib>
+
+#include <mruby/compile.h>
+
+#include "mrbext.h"
+
+mrb_value mrbext_load_and_check_string(mrb_state *mrb, const char *code) {
+  mrb_value mrbResult = mrb_load_string(mrb, code);
+  if (mrb->exc) { // If there is an error
+    if (!mrb_undef_p(mrbResult)) {
+      mrb_print_error(mrb); // print exception object
+      exit(1);
+    }
+  }
+  return mrbResult;
+}
+```
+
+Using this and mruby-require give us an easy way to execute a chunk of ruby code and get line numbers if there's an error: `mrbext_load_and_check_string(mrb, "require './src/scripts/environment'");`. Here I load in my environment.rb which currently contains all my ruby.
+
+* * *
+
+Next up I moved the block definitions and block config file loading into ruby. And got rid of the mini-yaml C++ library (since it's all be in ruby).
+
+I talked a bit about spinning up multiple ruby VMs so that I can run ruby snippets in multiple threads. Sometimes I find it useful to store a long existing mrb\_state\* as a static class member, and sometimes they are short lived getting created and closed within a method call.
+
+It seems both approaches are useful so far. Right now, each VM includes all ruby and C extensions. I'm not sure whether I'll eventually want to speciallize multiple different types of VMs (like one specifically to be used in Chunk, and another in Texture) or whether having a single, generic, all ruby included VM will be better. Latter seems simpler, so I'm doing that for now, but if I eventually have a serious ton of ruby and things like generation/meshing seem slow, I could always see if only loading what's required makes it faster.
+
+I'm doing a fair bit of metaprogramming in ruby to get a "nice" dsl for adding blocks. It'll probably change a lot as I use it more.
+
+I have separate locations for "engine" scripts and "user" scripts (i.e. mods, packs, whatever). Engine scripts are what's required to support the modding api and help bridge between the C++ and the Ruby. Right now all user scripts are required in alphabetical order when the VM starts.
+
+I moved the texture assets the the user scripts dir. Refactored some of the ruby. Got to the point where I want to actually use the new scripting abilities to do smarter worldgen. Specifically, grass blocks being only used when there is not a block directly on top of it. And after that, trees.
+
+* * *
+
+Well the first obvious thing to do is just make trees completely inside the chunk first. So I did that. Also fixed my grass. And added a little bit to start testing cross-chunk structures. Anything more advanced, specifically solving cross-chunk worldgen is going to require some serious lifting. I have some ideas but won't get into it now, so this section will wrap up now with those smaller worldgen changes.
+
+I would like to find out if I can figure out how to _not_ clone the array in Chunk::generate. If I can somehow get that data instead of cloning, I could possibly do some of the WorldBlock stuff in ruby as well.
+
+Oh yeah, segfault issues are starting to get worse, kinda unusable since moving around can crash only after a couple of seconds. So yeah look into that too.
+
+* * *
+
+Some screenshots of new worldgen:
+
+[![scripted_worldgen.png](./README/scripted_worldgen.png)](./README/scripted_worldgen.png)
+
 # To Do:
 
-- **Scripting support**
-
-I want to add in mruby asap and get as much C++ code converted over as I think is reasonable. Definitely chunk generator (i.e. world gen) code. Definitely block definitions. Probably not much else at the current moment? We'll see.
-
 - **Advanced voxel rendering**
+
+Update: I think I actually want to decrease voxel size all together instead of going this other route.
 
 The idea here is that I want to be able to render 1/16, 1/8, 1/4, and 1/2 block-sized voxels for various reasons.
 
