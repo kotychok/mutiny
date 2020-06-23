@@ -105,16 +105,17 @@ void Renderer::update(double dt) {
 
         if (chunks.find(key) == chunks.end()) {
           // If our chunk is not loaded, we need to create it
-          Chunk &chunk = chunks.try_emplace(key, glm::vec3(ix, iy, iz), "GeneratesChunks.perlin").first->second;
+          std::shared_ptr<Chunk> chunkPtr = std::make_shared<Chunk>(glm::vec3(ix, iy, iz), "GeneratesChunks.perlin");
+          chunks[key] = chunkPtr;
 
           // Then generate its mesh
           threadPool.push(
-            [](int i, Chunk& chunk) {
-              chunk.generate();
-              std::vector<float> mesh = MesherGreedy::computeChunkMesh(chunk);
-              chunk.setMesh(mesh);
+            [](int i, std::shared_ptr<Chunk> chunkPtr) {
+              chunkPtr->generate();
+              std::vector<float> mesh = MesherGreedy::computeChunkMesh(*chunkPtr);
+              chunkPtr->setMesh(mesh);
             },
-            std::ref(chunk)
+            chunkPtr
           );
         }
       }
@@ -372,9 +373,9 @@ void Renderer::renderAstronomicalBodies() {
 }
 
 void Renderer::renderScene(const Shader& shader) {
-  for (std::pair<const xyz, Chunk>& kv : chunks) {
-    Chunk& chunk = kv.second;
-    chunk.render(shader);
+  for (std::pair<const xyz, std::shared_ptr<Chunk>>& kv : chunks) {
+    std::shared_ptr<Chunk> chunkPtr = kv.second;
+    chunkPtr->render(shader);
   }
 }
 

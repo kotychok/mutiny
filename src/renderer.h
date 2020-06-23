@@ -52,7 +52,7 @@ class Renderer {
     Camera camera { Camera() };
     glm::ivec3 lastCameraChunkPosition {};
 
-    std::unordered_map<xyz, Chunk, hash_tuple::hash<xyz>> chunks {};
+    std::unordered_map<xyz, std::shared_ptr<Chunk>, hash_tuple::hash<xyz>> chunks {};
     int viewingDistance { 6 };
     std::unordered_set<xyz, hash_tuple::hash<xyz>> lastAreaOfInterest {};
 
