@@ -6,3 +6,5 @@ minimal_example/minimal
 tmp
 *perf.data*
 vendor_src
+env.sh
+vcpkg

@@ -139,9 +139,14 @@ gdb: debug
 #**********************************************************************
 # Other Tasks
 #**********************************************************************
+SHELL := /bin/bash # Make `source` command available.
+ENV := source env.sh # Set environment variables for BookStack auth
+BOOKSTACK_CLI_CMD=RUBYOPT=-W:no-experimental bundle exec bookstack-cli
+
 watch:
 	find src scripts -type f | entr -scr "make mutiny && ./build/mutiny"
 
-# * Exports my bookstack document as a GFM README.md file
-readme:
-	./bin/create_README
+README.md:
+	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=README.md --output_dir=creating-a-voxel-engine-from-scratch chapter hot-creating-a-voxel-engine-from-scratch
+
+.PHONY: watch README.md
