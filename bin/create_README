@@ -12,23 +12,23 @@ Dir["./README/**/*"].each do |file|
   FileUtils.rm file
 end
 
-PROFILE = 'fq0yteia.default'
+PROFILE = "fq0yteia.default"
 
 ## Create a file to cache session in so we don't have to fetch it every time
 ## this script runs
 ##
 ## If the file is not present or the cookie is expired, refetch (this will
 ## require closing firefox)
-SESSION_CACHE_FILE=".session-cache"
+SESSION_CACHE_FILE = ".session-cache"
 
 def generate_session_cache_file
-  command = %Q(sqlite3 -line ~/.mozilla/firefox/#{PROFILE}/cookies.sqlite "SELECT value, expiry FROM moz_cookies WHERE name = 'bookstack_session';" | sed -s 's/ //g')
+  command = %(sqlite3 -line ~/.mozilla/firefox/#{PROFILE}/cookies.sqlite "SELECT value, expiry FROM moz_cookies WHERE name = 'bookstack_session';" | sed -s 's/ //g')
   contents = `#{command}`
   File.write SESSION_CACHE_FILE, contents
   puts "Wrote new session cache file"
 end
 
-if File.exists? SESSION_CACHE_FILE
+if File.exist? SESSION_CACHE_FILE
   puts "Found .session-cache"
   expiry = `grep expiry < #{SESSION_CACHE_FILE} | cut -d'=' -f2`.to_i
   if expiry < Time.now.to_i
@@ -45,18 +45,18 @@ end
 # Fetch the post
 # In order to read from the cookie database, firefox will have to be closed
 # (this will also ensure current value is flushed to db)
-SESSION=`grep value < .session-cache | cut -d'=' -f2`.strip
-command = %Q(curl 'http://localhost:8080/books/projects/page/creating-a-voxel-engine-from-scratch/export/html' --silent -H "Cookie: bookstack_session=#{SESSION}")
+SESSION = `grep value < .session-cache | cut -d'=' -f2`.strip
+command = %(curl 'http://localhost:8080/books/projects/page/creating-a-voxel-engine-from-scratch/export/html' --silent -H "Cookie: bookstack_session=#{SESSION}")
 html = `#{command}`
 
 # Extract the images
-IMAGE_URL_REGEX=/(http:\/\/localhost:8080)?\/uploads\/images\/gallery\/\d{4}-\d{2}-\w{3}\/[a-zA-Z0-9_\-\.]+/
-IMAGE_NAME_REGEX=/(http:\/\/localhost:8080)?\/uploads\/images\/gallery\/\d{4}-\d{2}-\w{3}\/\K[a-zA-Z0-9_\-\.]+/
+IMAGE_URL_REGEX = /(http:\/\/localhost:8080)?\/uploads\/images\/gallery\/\d{4}-\d{2}-\w{3}\/[a-zA-Z0-9_\-.]+/
+IMAGE_NAME_REGEX = /(http:\/\/localhost:8080)?\/uploads\/images\/gallery\/\d{4}-\d{2}-\w{3}\/\K[a-zA-Z0-9_\-.]+/
 
-DATA_REGEX=/data:image\/[^;]*;base64,[a-zA-Z0-9+\/=]*/
-BASE64_REGEX=/data:image\/[^;]*;base64,\K[a-zA-Z0-9+\/=]*/
+DATA_REGEX = /data:image\/[^;]*;base64,[a-zA-Z0-9+\/=]*/
+BASE64_REGEX = /data:image\/[^;]*;base64,\K[a-zA-Z0-9+\/=]*/
 
-new_html = html.split("\n").map do |html_line|
+new_html = html.split("\n").map { |html_line|
   image_match = html_line.match(IMAGE_NAME_REGEX)
   if image_match
     puts ""
@@ -65,7 +65,7 @@ new_html = html.split("\n").map do |html_line|
     puts "Found image #{image_name}"
 
     base64_match = html_line.match(BASE64_REGEX)
-    raise "Found bookstack image but no base64" if !base64_match
+    raise "Found bookstack image but no base64" unless base64_match
     base64 = base64_match[0]
 
     local_image_path = "./README/#{image_name}"
@@ -81,7 +81,7 @@ new_html = html.split("\n").map do |html_line|
   else
     html_line
   end
-end.join("\n")
+}.join("\n")
 
 Tempfile.create do |html_file|
   File.write html_file.path, new_html
@@ -113,7 +113,6 @@ Tempfile.create do |html_file|
       ./third_party_src, and ./vendor_src, but I'm not sure how.\n
     MARKDOWN
     File.write readme_file.path, readme_contents
-
 
     # Add in a table of contents
     puts "\nInserting table of contents (this may take a while, ~30s)"
