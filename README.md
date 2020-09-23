@@ -1,55 +1,24 @@
-**Table of Contents**
-
-* [Project structure](#project-structure)
-* [Creating a Voxel Engine from Scratch](#creating-a-voxel-engine-from-scratch)
-* [0 - Bootstrap the project](#0---bootstrap-the-project)
-* [1 - Chunks](#1---chunks)
-* [2 - Chunk loading and unloading](#2---chunk-loading-and-unloading)
-* [3 - Meshing](#3---meshing)
-* [4 - GUI](#4---gui)
-* [5 - Multiple block types](#5---multiple-block-types)
-* [5a - Chunk render optimization](#5a---chunk-render-optimization)
-* [6 - Procedural generation](#6---procedural-generation)
-* [7 - Lighting](#7---lighting)
-* [8 - Shadows](#8---shadows)
-* [9 - Day and Night](#9---day-and-night)
-* [10 - Async Chunk Loading](#10---async-chunk-loading)
-* [10a - Camera jump bug](#10a---camera-jump-bug)
-* [11 - Multitexture Blocks](#11---multitexture-blocks)
-* [12 - Scripting](#12---scripting)
-* [To Do:](#to-do)
-* [Resources](#resources)
-
-# Project structure
-
-README - Contains images for README.md
-assets - Contains textures
-bin - Contains misc binary files. Current ones are both used to generate README.md
-include - Third party header files
-src - My application source code
-test - My C++ application test code (what little of it exists)
-third_party_src - Source code for third party libraries to compile
-vendor - Compiled archive (.a) files
-vendor_src - Source code for vendor libraries
-
-I feel like there's some better way to organize ./include,
-./third_party_src, and ./vendor_src, but I'm not sure how.
-
 # Creating a Voxel Engine from Scratch
 
-It is next to impossible to find a thorough resource on how to do this, so I guess I'll pull a bunch together to figure it out and write about what I learn.
+I wanted to document my progress in creating a voxel engine, so I've been doing that. It often helps me think to write about what I'm doing while I do it, more or less rubber duck debugging. I'm not really sure who it's written for besides myself, but ¯\_(ツ)\_/¯ here it is. Each section has a Github link to the corresponding code. It's a diff between the code I started at (what was at the end of the last section) to what it is at the end of the given section. It's been a pretty interesting project. I really wasn't sure where to start, so after finding out what I could, I just started doing one thing after another based off of what made sense at the time. I'm more or less new to graphics programming in general, but a few basics can do quite a bit.
 
-Ideally, I can write this in such a way that it's useful to other people.
-
-The main issue I have right now is that I have no idea what order to do anything in. Lots of resources assume a certain amount of knowledge or are about a specific bit of functionality.
-
-I'm going to assume general programming and OpenGL knowledge, but anything related to voxel development itself, I will ideally write about in more detail. Basically, what I would have loved to have as a step-by-step tutorial.
-
-My idea is that while there will be a lot of source code written, I'll just link to it on Github. I'll try to make the commits atomic enough to be understandable by themselves. I'll then use the space here to write about the concepts involved, specifically the order in which I implement certain functionality. There are lots of concerns: chunks, rendering efficiency, world saving/serialization, chunk loading/unloading, chunk generation, ... and so much more.
-
-And of course, what I'm going to be doing is just what I figure out. It probably won't be the best or most efficient or create the engine you might want, but when you know nothing the best thing to do is just start and use what you learn later on to make what you really want. That's my plan at least :)
-
-So here we go.
+- [0 - Bootstrap the project](#page-97)
+- [1 - Chunks](#page-98)
+- [2 - Chunk loading and unloading](#page-99)
+- [3 - Meshing](#page-100)
+- [4 - GUI](#page-101)
+- [5 - Multiple block types](#page-102)
+- [5a - Chunk render optimization](#page-103)
+- [6 - Procedural generation](#page-104)
+- [7 - Lighting](#page-105)
+- [8 - Shadows](#page-106)
+- [9 - Day and Night](#page-107)
+- [10 - Async Chunk Loading](#page-108)
+- [10a - Camera jump bug](#page-109)
+- [11 - Multitexture Blocks](#page-110)
+- [12 - Scripting](#page-111)
+- [12a - Fix the segfaults](#page-112)
+- [13 - Cross-Chunk Structure Generation and More Scripting](#page-113)
 
 # 0 - Bootstrap the project
 
@@ -61,7 +30,7 @@ To get to this point, I used [learnopengl.com](https://learnopengl.com/). It'll 
 
 You should be able to render something like this after finishing the basic tutorial:
 
-[![dirt_plane.png](./README/dirt_plane.png)](./README/dirt_plane.png)
+[![dirt_plane.png](creating-a-voxel-engine-from-scratch/dirt_plane.png)](creating-a-voxel-engine-from-scratch/dirt_plane.png)
 
 # 1 - Chunks
 
@@ -108,7 +77,7 @@ For now, an array of 1s and 0s should be sufficient. If there is a 1, draw a blo
 
 I wrote up some temporary code to make each chunk filled with half a sphere, and this is the result. You should be able to get something similar now:
 
-[![chunks.png](./README/screenshot_13.png)](./README/screenshot_13.png)
+[![chunks.png](creating-a-voxel-engine-from-scratch/screenshot_13.png)](creating-a-voxel-engine-from-scratch/screenshot_13.png)
 
 # 2 - Chunk loading and unloading
 
@@ -140,7 +109,7 @@ I ran into quite a few issues with memory management. I ended up adding lots of 
 
 Anyways, after figuring out the memory issues -- by the way, I also disabled the copy and move constructors as well as the copy and move assignment operators, which should hopefully make it harder to make mistakes since the compiler will check me -- anyways, after doing that I was able to implement the loading and unloading logic without too many issues.
 
-[![chunk-loading-unloading.gif](./README/chunk-loading-unloading.gif)](./README/chunk-loading-unloading.gif)
+[![chunk-loading-unloading.gif](creating-a-voxel-engine-from-scratch/chunk-loading-unloading.gif)](creating-a-voxel-engine-from-scratch/chunk-loading-unloading.gif)
 
 # 3 - Meshing
 
@@ -187,9 +156,9 @@ Having done that, there are some other improvements we can start thinking about,
 - More stuff [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evd70sh/)
 - Also, right now we store both `quads` and `quadMeshes`. This probably uses about 33% more memory than it needs to. We can discard the quads entirely after created the `quadMeshes`, or better yet, just create the `quadMesh` directly from the quad vertices directly in the meshing algorithm. I'm going to save this very easy optimization for later once we have proper profiling and can more easily see the benefits to our optimizations.
 
-[![mesh_plane.png](./README/mesh_plane.png)](./README/mesh_plane.png)
+[![mesh_plane.png](creating-a-voxel-engine-from-scratch/mesh_plane.png)](creating-a-voxel-engine-from-scratch/mesh_plane.png)
 
-[![mesh_half_sphere.png](./README/mesh_half_sphere.png)](./README/mesh_half_sphere.png)
+[![mesh_half_sphere.png](creating-a-voxel-engine-from-scratch/mesh_half_sphere.png)](creating-a-voxel-engine-from-scratch/mesh_half_sphere.png)
 
 # 4 - GUI
 
@@ -201,7 +170,7 @@ Take a look at the commits if you want, it's nothing terribly surprising.
 
 One thing I didn't add right now, but think I will in the future is a command menu. I would like to be able to hit /, open up a text input to type a command (e.g. /wires, /axes, etc). This would be more convenient than having to use the mouse. Maybe I'll look into it when I get tired of clicking all the time.
 
-[![gui.png](./README/gui.png)](./README/gui.png)
+[![gui.png](creating-a-voxel-engine-from-scratch/gui.png)](creating-a-voxel-engine-from-scratch/gui.png)
 
 # 5 - Multiple block types
 
@@ -222,7 +191,7 @@ The other minor changes are much more obvious. The fact that the height and widt
 
 Something exciting about this change is that we now have face/directional information which I believe can be used to further optimize the culling. I'm not quite sure how this would work, but it's something to consider later on if we need to start working on performance optimizations.
 
-[![multiple-block-types.gif](./README/multiple-block-types.gif)](./README/multiple-block-types.gif)
+[![multiple-block-types.gif](creating-a-voxel-engine-from-scratch/multiple-block-types.gif)](creating-a-voxel-engine-from-scratch/multiple-block-types.gif)
 
 # 5a - Chunk render optimization
 
@@ -246,7 +215,7 @@ Another tiny gotcha is that `GetNoise` will return values in between -1 and 1. T
 
 Last note: it's pretty hard to discern the terrain since everything is evenly lit. I think I'll look into lighting somewhat soon in order to improve this.
 
-[![procgen.png](./README/procgen.png)](./README/procgen.png)
+[![procgen.png](creating-a-voxel-engine-from-scratch/procgen.png)](creating-a-voxel-engine-from-scratch/procgen.png)
 
 # 7 - Lighting
 
@@ -254,7 +223,7 @@ Last note: it's pretty hard to discern the terrain since everything is evenly li
 
 I followed the [LearnOpenGL tutorials](https://learnopengl.com/Lighting/Colors). It was very straightforward. I ended up implementing ambient, diffuse and specular lighting for directional and point lights. I'll probably add in spotlights at some point in the maybe near future, but didn't feel a big need to right now. I don't have anything to add to what the tutorial offered.
 
-[![diffuse.png](./README/diffuse.png)](./README/diffuse.png)[![attenuation.png](./README/attenuation.png)](./README/attenuation.png)[![directional_and_point_lights.png](./README/directional_and_point_lights.png)](./README/directional_and_point_lights.png)
+[![diffuse.png](creating-a-voxel-engine-from-scratch/diffuse.png)](creating-a-voxel-engine-from-scratch/diffuse.png)[![attenuation.png](creating-a-voxel-engine-from-scratch/attenuation.png)](creating-a-voxel-engine-from-scratch/attenuation.png)[![directional_and_point_lights.png](creating-a-voxel-engine-from-scratch/directional_and_point_lights.png)](creating-a-voxel-engine-from-scratch/directional_and_point_lights.png)
 
 # 8 - Shadows
 
@@ -272,7 +241,7 @@ To get this done, I added some debugging tools. One of them is rendering the dep
 
 I also added a sharper contrast mode using red and green to indicate shadows and no shadows respectively. This made it far easier to see what was going on since the shadows could blend in with the textures a bit, especially when there was shadow acne.
 
-[![shadows_with_acne.png](./README/shadows_with_acne.png)](./README/shadows_with_acne.png)[![shadows.gif](./README/shadows.gif)](./README/shadows.gif)
+[![shadows_with_acne.png](creating-a-voxel-engine-from-scratch/shadows_with_acne.png)](creating-a-voxel-engine-from-scratch/shadows_with_acne.png)[![shadows.gif](creating-a-voxel-engine-from-scratch/shadows.gif)](creating-a-voxel-engine-from-scratch/shadows.gif)
 
 # 9 - Day and Night
 
@@ -284,7 +253,7 @@ Anyways, I did a simple interpolation of the sky color to change it from light t
 
 I think what's more interesting is the problem I ran into where as light strength decreases, there is a point at which the ambient value for 2/3 of the faces become the same which effectively makes them indistinguishable which makes the whole scene appear flat and lose that 3d aspect. It's been a little bit now since I've actively thought about this, so I don't really have the entire context in my brain, but my instinct says this has got to be a simple fix for this. I tried a few things but no dice. I think I need to take a step back and think about it to figure it out.
 
-[![day-night-1.gif](./README/day-night-1.gif)](./README/day-night-1.gif)[![day-night-2.gif](./README/day-night-2.gif)](./README/day-night-2.gif)
+[![day-night-1.gif](creating-a-voxel-engine-from-scratch/day-night-1.gif)](creating-a-voxel-engine-from-scratch/day-night-1.gif)[![day-night-2.gif](creating-a-voxel-engine-from-scratch/day-night-2.gif)](creating-a-voxel-engine-from-scratch/day-night-2.gif)
 
 # 10 - Async Chunk Loading
 
@@ -319,11 +288,11 @@ _These gifs are garbage but I think it's still possible to tell the difference. 
 
 Before:
 
-[![boundary-lag.gif](./README/boundary-lag.gif)](./README/boundary-lag.gif)
+[![boundary-lag.gif](creating-a-voxel-engine-from-scratch/boundary-lag.gif)](creating-a-voxel-engine-from-scratch/boundary-lag.gif)
 
 After:
 
-[![boundary-lag-fixed.gif](./README/boundary-lag-fixed.gif)](./README/boundary-lag-fixed.gif)
+[![boundary-lag-fixed.gif](creating-a-voxel-engine-from-scratch/boundary-lag-fixed.gif)](creating-a-voxel-engine-from-scratch/boundary-lag-fixed.gif)
 
 # 10a - Camera jump bug
 
@@ -343,7 +312,7 @@ Of course, I did make it more complicated for myself which may or may not have b
 
 I also got sloppy with git and so my rename refactoring is just in the same commit where I load the block data from file which is in the same commit I add in multiple texture support. It is what it is, and I eventually got it working (with way more effort than if I had proceeded more mindfully).
 
-[![multitexture_blocks.png](./README/multitexture_blocks.png)](./README/multitexture_blocks.png)
+[![multitexture_blocks.png](creating-a-voxel-engine-from-scratch/multitexture_blocks.png)](creating-a-voxel-engine-from-scratch/multitexture_blocks.png)
 
 # 12 - Scripting
 
@@ -620,129 +589,32 @@ Oh yeah, segfault issues are starting to get worse, kinda unusable since moving 
 
 Some screenshots of new worldgen:
 
-[![scripted_worldgen.png](./README/scripted_worldgen.png)](./README/scripted_worldgen.png)
+[![scripted_worldgen.png](creating-a-voxel-engine-from-scratch/scripted_worldgen.png)](creating-a-voxel-engine-from-scratch/scripted_worldgen.png)
 
-# To Do:
+# 12a - Fix the segfaults
 
-- **Advanced voxel rendering**
+Finally, I have a good solution to fix the segfaulting that's been plaguing me forever. It was pretty simple, and maybe in hindsight obvious? Either way, a good learning C++ moment. In my `chunks` map, I replaced the values which were `Chunk`s with a shared pointer to the Chunk object (`std::shared_ptr<Chunk>`). Now, I can still call `chunks.erase`, but passing it the the shared pointer instead of the object directly. So when I have a thread that now runs after erase has been called -- and since it was given the shared pointer now instead of a reference to the Chunk -- the Chunk object is still around and the thread successfully completes. It of course throws away all the work we did since the shared pointer no longer is referenced anywhere so the Chunk instance is deleted, but that's totally okay for now.
 
-Update: I think I actually want to decrease voxel size all together instead of going this other route.
+# 13 - Cross-Chunk Structure Generation and More Scripting
 
-The idea here is that I want to be able to render 1/16, 1/8, 1/4, and 1/2 block-sized voxels for various reasons.
+I've been thinking about how to solve the issue of world gen on continuous structures across chunk boundaries, and that's led me to wanting to figure out more about mruby.
 
-Some things I might want to procedurally render at 1/16 scale: Flowers, trees (limbs), leaves, string and wires?, ...
+[How to write mruby bindings for objects with relations](https://gist.github.com/archSeer/6157161) is a great mruby example. Shows how to use mrb\_data\_type, Data\_Wrap\_Struct, and some other friends in order to define an mruby class which creates instances of C++ classes when the mruby class itself is initialized. This seems like a very possible solution to a problem I have now, where I'm trying to figure out how to share data between mruby and C++. But it's not yet an entire solution..
 
-At 1/8: ... not sure, but since I definitely want 1/6 and 1/2 and 1/4, no reason not to do 1/8.
+Something interesting about this example is that in the deallocate methods, for Tone it uses `std::shared_ptr<Tone>*` and for Sprite it uses `Sprite*`.
 
-At 1/2 and 1/4: Fence posts, bars, poles, tree (limbs), ...
+With templates it's probably possible to write some sort of mrb\_attr\_accessor which would be like the moon\_mrb\_sprite\_tone\_getter/setting functions.
 
-It should be possible to render multiple objects within a single block sized space. If I wanted to get fancy, there might need to be some sort of z-index to in case there is overlap?
+Hmm, Data\_Get\_Struct is a thing.. I could construct my Chunk objects in Ruby (backed by a C++ class), get a shared\_ptr to them, put _that_ in my chunks map.. I could do these things. Idk if I want to, but at this point I'm really just trying to understand what all this mruby stuff is; the application will come later.
 
-- **Investigate small FPS drop across chunk boundaries when viewing distance is 10**
+Also, the fact that we're looking at a relationship here is cool and useful, but I think this trick could be applied to regular types too? Like an int or a string you wanted to keep in sync between ruby and c++ because the object is used in both ruby and c++ code... hmm
 
-See end of Part 10 for notes.
+What the heck is `mrbc_context_new`? Appears to be used with mrb\_load\_file\_cxt which is used to load and execute ruby code. Ah, it's used to load mruby from a file. There's a couple of lines it needs to do that and this is one of them.
 
-- **Creation & Destruction**
+Finally looking at the ruby. It's interesting that Sprite is _also_ defined here in ruby even though moon\_mrb\_sprite\_init defines the class too. I wonder if you even need that class def in ruby. Or if it's there for documentation? Seems risky if it gets out of sync (so don't do that I guess).
 
-This is highly related to the previous. Once I can render various scales of voxels, I'll want to consider things like place blocks, placing voxel models at various scales, deleting them, how explosions would work.
+I should compile and run this example to see the output and make sure I understand it.
 
-In particular I want to call out this idea of "hunks" of voxels. e.g. Imagine blowing apart a large rock. That won't break up into nice cubes, you're going to get mostly jagged hunks, some large, some small. But the thing is, you'll want those separate bits to be treated like a single object you can interact it. So if you try to throw, pick up, destroy a large chunk of rock, it should be possible. Physics should also work sensibly for these hunks.
+After all of that, I'm not even sure if this is close to what I want. I don't think I really want to _define_ the chunks in ruby. I want to keep the definition in c++ like it is, AH, but what I do _need_ to do is define my ChunkFoobarer in C++ not ruby! And define all the methods in C++. Which sucks, because writing ruby in c is annoying, but it's fine. The minimum I need to write is likely the code to define the class and the initializer method, then I can keep my `call` definition in ruby I THINK. But this would be the ideal world. I'd probably also have to somehow define a Chunk in ruby such that it can link up to the chunk I pass in. Yup, okay so I also need a Chunk class defined in the Ruby VM from C++ land. This is exactly where I need this mrb\_data\_type stuff and all this pointer-y thingies.
 
-As I dive into this, I might split this up more, like how my next bullet is for having a block picker to place and destroy a block. After that, I think voxel models would be good as well
-
-- 
-
-**Block picker, placing blocks, destroying blocks**
-
-- 
-
-**Portals**
-
-- 
-
-**Vehicles**
-
-Inspiration: [Teardown](https://store.steampowered.com/app/1167630/Teardown/)
-
-- **Movability, Push, Pull**
-
-Think Minecraft pistons. This is going to get a bit into mechanics a bit, but I think rendering will still have to support it. Need to be able to animate a block between a start state and an end state. Maybe can take some inspiration from how css animations are specified. i.e. duration, interpolation style.
-
-Anyways, I want to be able to move blocks, probably want to be able to specify whether an object should move with another object or not. e.g. a torch on a block, if the block is pushed up, the torch should move with it. Some things should be able to prevent movement
-
-- **Voxel partical animations**
-
-Flames, smoke, water droplets, rain, steam. Basically just normal particles but I'd want to render them all as cubes for the aesthetic.
-
-- 
-
-**Lighting Updates**
-
-  - Shadows with transparent objects
-  - Point shadow map
-  - Blending - e.g. colored glass/stained glass.
-  - Deferred shading
-  - Render some sort of light or torch object model at point light position.
-- 
-
-**Chunk writing/reading to/from disk**
-
-I think maybe start by optimizing how we store blocks in the Chunk, since that's what we'll serialize to disk. By optimizing that, we'll make it use less memory per chunk as well as less disk space per chunk.
-
-Then, we'll probably need some concept of a "World". When our program is first started, we'll need to create a world with some default chunks. I think the easiest thing to do is not do generation now, so we'll generate a rather large world from the start, but only a few of those chunks will be loaded right away. As the camera moves, we'll handle the reading and writing to save/load the existing chunks.
-
-# Resources
-
-Ray tracing
-
-- [A Fast Voxel Traversal Algorithm for Ray Tracing](http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf)
-- [Optimised CPU Ray Marching in a Voxel World](https://vercidium.com/blog/optimised-voxel-raymarching/) and [source](https://github.com/Vercidium/voxel-ray-marching)
-- [A Ray-Box Intersection Algorithm and Efficient Dynamic Voxel Rendering](http://www.jcgt.org/published/0007/03/04/paper-lowres.pdf)
-
-Direct State Access
-
-- https://www.khronos.org/opengl/wiki/Direct\_State\_Access
-
-Automated testing
-
-- https://stackoverflow.com/questions/1586230/automated-testing-for-opengl-application
-
-Normals
-
-- https://www.enkisoftware.com/devlogpost-20150131-1-Normal-generation-in-the-pixel-shader
-- https://c0de517e.blogspot.com/2008/10/normals-without-normals.html
-- https://bitbucket.org/volumesoffun/polyvox/wiki/Computing%20normals%20in%20a%20fragment%20shader
-
-Other walkthru links
-
-- [Here](https://en.wikibooks.org/wiki/OpenGL_Programming/Glescraft_1) is a resource that goes thru some steps of creating a voxel engine called Glescraft.
-
-Palette Compression
-
-- https://hbfs.wordpress.com/2011/03/22/compressing-voxel-worlds/
-- https://old.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased\_compression\_for\_chunked\_discrete/
-
-Octrees
-
-- [Efficient Sparse Voxel Octrees](https://research.nvidia.com/sites/default/files/pubs/2010-02_Efficient-Sparse-Voxel/laine2010i3d_paper.pdf)
-- [Efficient Sparse Voxel Octrees - Analysis, Extensions, and Implementation](https://pdfs.semanticscholar.org/5ca0/7a56725f8ae6c74778a86a4736ebaab6add6.pdf)
-- [Sparse voxel octree Wikipedia](https://en.wikipedia.org/wiki/Sparse_voxel_octree)
-- [The sparse tree data structure](https://yacas.readthedocs.io/en/latest/book_of_algorithms/multivar.html)
-- [Sparse Voxel Octree Raytracing based Occlusion Culling (Theory)](https://voxels.blogspot.com/2015/05/sparse-voxel-octree-raytracing-based.html)
-
-Culling
-
-- [Voxel Occlusion Testing: A Shadow Determination Accelerator for Ray Tracing](http://graphicsinterface.org/wp-content/uploads/gi1990-26.pdf)
-
-Lighting
-
-- http://math.hws.edu/graphicsbook/c7/s2.html
-- https://www.khronos.org/opengl/wiki/Shader\_Storage\_Buffer\_Object (for variable number of things passed to the shaders, e.g. lights)
-- https://forum.beyond3d.com/threads/modern-textureless-deferred-rendering-techniques.57611/
-
-Vulkan
-
-- https://developer.nvidia.com/rtx/raytracing/vkray
-- https://nvpro-samples.github.io/vk\_raytracing\_tutorial/
-- https://github.com/nvpro-samples/vk\_raytracing\_tutorial
-- https://github.com/PacktPublishing/Vulkan-Cookbook
+Now that I know the next step, I can sleep and pick this up tomorrow. Definining Chunk and ChunkFoobarer in part in C++ so I can use them in Ruby. Gotta keep ChunkFoobarer "in sync" like the Sprite class I think. And Chunk is like the examples Tone model. In the example, Sprite has\_one Tone. In my code, ChunkFoobarer has\_many Chunks.
