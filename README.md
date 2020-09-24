@@ -593,6 +593,8 @@ Some screenshots of new worldgen:
 
 # 12a - Fix the segfaults
 
+[012-scripting...012a-fix-segfaults](https://github.com/boatrite/mutiny/compare/012-scripting...012a-fix-segfaults)
+
 Finally, I have a good solution to fix the segfaulting that's been plaguing me forever. It was pretty simple, and maybe in hindsight obvious? Either way, a good learning C++ moment. In my `chunks` map, I replaced the values which were `Chunk`s with a shared pointer to the Chunk object (`std::shared_ptr<Chunk>`). Now, I can still call `chunks.erase`, but passing it the the shared pointer instead of the object directly. So when I have a thread that now runs after erase has been called -- and since it was given the shared pointer now instead of a reference to the Chunk -- the Chunk object is still around and the thread successfully completes. It of course throws away all the work we did since the shared pointer no longer is referenced anywhere so the Chunk instance is deleted, but that's totally okay for now.
 
 # 13 - Cross-Chunk Structure Generation and More Scripting
