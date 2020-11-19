@@ -5,6 +5,7 @@ PATH
       amazing_print
       httparty
       nokogiri
+      reverse_markdown
       thor
 
 GEM

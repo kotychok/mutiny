@@ -146,19 +146,21 @@ BOOKSTACK_CLI_CMD=RUBYOPT=-W:no-experimental bundle exec bookstack-cli
 watch:
 	find src scripts -type f | entr -scr "make mutiny && ./build/mutiny"
 
+SLUG := hot-creating-a-voxel-engine-from-scratch
+
 README.md:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=README.md chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=README.md --output_dir=creating-a-voxel-engine-from-scratch chapter $(SLUG)
 
 tmp/creating-a-voxel-engine-from-scratch.raw.pdf:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=pdf --output_file=$@ chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=pdf --output_file=$@ chapter $(SLUG)
 tmp/creating-a-voxel-engine-from-scratch.raw.txt:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=plaintext --output_file=$@ chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=plaintext --output_file=$@ chapter $(SLUG)
 tmp/creating-a-voxel-engine-from-scratch.raw.html:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=html --output_file=$@ chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) raw_export --type=html --output_file=$@ chapter $(SLUG)
 tmp/creating-a-voxel-engine-from-scratch.md:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=$@ chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=$@ chapter $(SLUG)
 tmp/creating-a-voxel-engine-from-scratch.html:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) export --html --output_file=$@ chapter creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) export --html --output_file=$@ chapter $(SLUG)
 
 EXTS = md html raw.pdf raw.txt raw.html
 .PHONY: watch README.md $(addprefix tmp/creating-a-voxel-engine-from-scratch.,$(EXTS))

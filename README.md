@@ -1,24 +1,23 @@
 # Creating a Voxel Engine from Scratch
 
-I wanted to document my progress in creating a voxel engine, so I've been doing that. It often helps me think to write about what I'm doing while I do it, more or less rubber duck debugging. I'm not really sure who it's written for besides myself, but ¯\_(ツ)\_/¯ here it is. Each section has a Github link to the corresponding code. It's a diff between the code I started at (what was at the end of the last section) to what it is at the end of the given section. It's been a pretty interesting project. I really wasn't sure where to start, so after finding out what I could, I just started doing one thing after another based off of what made sense at the time. I'm more or less new to graphics programming in general, but a few basics can do quite a bit.
+I wanted to document my progress in creating a voxel engine, so I've been doing that. It often helps me think to write about what I'm doing while I do it, more or less rubber duck debugging. I'm not really sure who it's written for besides myself, but ¯\\_(ツ)\_/¯ here it is. Each section has a Github link to the corresponding code. It's a diff between the code I started at (what was at the end of the last section) to what it is at the end of the given section. It's been a pretty interesting project. I really wasn't sure where to start, so after finding out what I could, I just started doing one thing after another based off of what made sense at the time. I'm more or less new to graphics programming in general, but a few basics can do quite a bit.
 
-- [0 - Bootstrap the project](#page-97)
-- [1 - Chunks](#page-98)
-- [2 - Chunk loading and unloading](#page-99)
-- [3 - Meshing](#page-100)
-- [4 - GUI](#page-101)
-- [5 - Multiple block types](#page-102)
-- [5a - Chunk render optimization](#page-103)
-- [6 - Procedural generation](#page-104)
-- [7 - Lighting](#page-105)
-- [8 - Shadows](#page-106)
-- [9 - Day and Night](#page-107)
-- [10 - Async Chunk Loading](#page-108)
-- [10a - Camera jump bug](#page-109)
-- [11 - Multitexture Blocks](#page-110)
-- [12 - Scripting](#page-111)
-- [12a - Fix the segfaults](#page-112)
-- [13 - Cross-Chunk Structure Generation and More Scripting](#page-113)
+- [0 - Bootstrap the project](#0---bootstrap-the-project)
+- [1 - Chunks](#1---chunks)
+- [2 - Chunk loading and unloading](#2---chunk-loading-and-unloading)
+- [3 - Meshing](#3---meshing)
+- [4 - GUI](#4---gui)
+- [5 - Multiple block types](#5---multiple-block-types)
+- [5a - Chunk render optimization](#5a---chunk-render-optimization)
+- [6 - Procedural generation](#6---procedural-generation)
+- [7 - Lighting](#7---lighting)
+- [8 - Shadows](#8---shadows)
+- [9 - Day and Night](#9---day-and-night)
+- [10 - Async Chunk Loading](#10---async-chunk-loading)
+- [10a - Camera jump bug](#10a---camera-jump-bug)
+- [11 - Multitexture Blocks](#11---multitexture-blocks)
+- [12 - Scripting](#12---scripting)
+- [12a - Fix the segfaults](#12a---fix-the-segfaults)
 
 # 0 - Bootstrap the project
 
@@ -50,7 +49,7 @@ The general outline for how I did this is:
 
 - Create a chunk class with nothing more than a render method, and move the render code for our plane to it. Chunks will have to render their own blocks/vertices, so this is a good first thing to do to make this area available to write future code in.
 - Render an array of chunks. This will introduce the fact that chunks have a position. This position is normalized with respect to the chunk size so that the chunk position vectors won't have to change regardless of what the chunk size is. e.g. Two chunks next to each other might have positions (0, 0, 0) and (1, 0, 0). Not (0, 0, 0) and (16, 0, 0). - This also makes chunk position invariant with respect to where blocks are aligned in the chunk. More written about this later.
-- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk 
+- Define the chunk's position's x and z to be the center of the chunk, and the chunk's position's y to be the bottom of the chunk
   - I liked the symmetry around the xz plane (i.e. the horizontal plane) and the fact that a chunk at the bottom of the map would start at y = 0 (if we define the bottom of the world at y = 0, which I am).
 - Add an array of blocks to the Chunk class which store a 1 or 0, indicating whether the block at that position is present or absent.
 
@@ -143,10 +142,10 @@ The rough order I did this in is:
 
 Having done that, there are some other improvements we can start thinking about, which I might look into next or at a later time. We'll see. But anyways, here's a list with some thoughts and/or links for future reference:
 
-- Can we cull chunk faces that are next to each other? 
-  - From the /r/VoxelGameDev discord, JWNJWN mentioned it would be possible to store duplicate voxel data in each chunk, the blocks right next to the edge, that we could use to occlusion check.
-  - Also from the /r/VoxelGameDev discord, Vercidium mentioned their `isBlockAt` method takes the world position and handles checking blocks outside the current chunk. Since our other chunks are already loaded in memory, we could do something similar without too much trouble.
-- Can we cull vertices that aren't visible from the current camera position? 
+- Can we cull chunk faces that are next to each other?
+  - Store duplicate voxel data in each chunk, the blocks right next to the edge, that we could use to occlusion check.
+  - A possible `isBlockAt` method that takes the world position and handles checking blocks outside the current chunk. Since our other chunks are already loaded in memory, we could do something similar without too much trouble.
+- Can we cull vertices that aren't visible from the current camera position?
   - Perhaps by implementing logic that looks at cube faces with respect to camera position, as mentioned [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evfzn05/).
   - Also by frustrum culling, to remove all vertices that aren't even in the camera's field of view.
   - Other culling? How about culling vertices hidden by other blocks (ray casting?)
@@ -179,7 +178,7 @@ One thing I didn't add right now, but think I will in the future is a command me
 Finally! We have a few things to do here
 
 - Add a Block struct and define some BlockTypes
-- Figure out how to render the correct texture based on the block type 
+- Figure out how to render the correct texture based on the block type
   - Use some stubbed out quads here to test the rendering
 - Update the meshing algorithm to handle multiple block types
 
@@ -330,15 +329,15 @@ Resources:
   - [Limitations and Differences](https://github.com/mruby/mruby/blob/master/doc/limitations.md). Differences between CRuby and mruby.
   - [Gems](https://github.com/mruby/mruby/blob/master/doc/guides/mrbgems.md)
     - [This part](https://github.com/mruby/mruby/blob/master/doc/guides/mrbgems.md#c-extension) of the gems doc shows a simple example of how to make a C++ function callable in Ruby using `mrb_define_class_method`
-  - I've gotten a lot of value reading the mruby source. 
+  - I've gotten a lot of value reading the mruby source.
     - [mruby.h](https://github.com/mruby/mruby/blob/master/include/mruby/data.h). Lots of documentation in this file, has a lot of the "core" methods. Like methods that create classes, define methods, call methods on objects/classes, etc.
-    - [array.h](https://github.com/mruby/mruby/blob/master/include/mruby/array.h). Arbitrarily opened this file to poke around and got a lot of value from reading a full example of "here is how to make a complex thing available in Ruby". Seeing what the C code is that creates the corresponding Ruby code will likely be very useful for writing my own. 
+    - [array.h](https://github.com/mruby/mruby/blob/master/include/mruby/array.h). Arbitrarily opened this file to poke around and got a lot of value from reading a full example of "here is how to make a complex thing available in Ruby". Seeing what the C code is that creates the corresponding Ruby code will likely be very useful for writing my own.
       - Arrays are particularly relevant too since that's an important thing.. Maybe it's a lot easier than I think to have an array of strings or array of structs used in both C++ and ruby.
 - mruby [API docs](http://mruby.org/docs/api/)
 - [List of gems](http://mruby.org/libraries/)
 - A hello world [example](http://mruby.org/docs/articles/executing-ruby-code-with-mruby.html)
 - [mrubybind](https://github.com/ktaobo/mrubybind) for easily calling methods and passing simple types between ruby and c++
-- AnthonySuper's ["mruby, C++, and Template Magic"](https://anthony.noided.media/blog/programming/c++/ruby/2016/05/12/mruby-cpp-and-template-magic.html) on passing advanced types between ruby and c++ 
+- AnthonySuper's ["mruby, C++, and Template Magic"](https://anthony.noided.media/blog/programming/c++/ruby/2016/05/12/mruby-cpp-and-template-magic.html) on passing advanced types between ruby and c++
   - [mrb\_wrapper.hpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/include/mrb_wrapper.hpp)
   - [script\_engine.hpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/include/script_engine.hpp)
   - [script\_engine.cpp](https://github.com/AnthonySuper/Experimental-2D-Engine/blob/master/src/script_engine.cpp)
@@ -596,27 +595,3 @@ Some screenshots of new worldgen:
 [012-scripting...012a-fix-segfaults](https://github.com/boatrite/mutiny/compare/012-scripting...012a-fix-segfaults)
 
 Finally, I have a good solution to fix the segfaulting that's been plaguing me forever. It was pretty simple, and maybe in hindsight obvious? Either way, a good learning C++ moment. In my `chunks` map, I replaced the values which were `Chunk`s with a shared pointer to the Chunk object (`std::shared_ptr<Chunk>`). Now, I can still call `chunks.erase`, but passing it the the shared pointer instead of the object directly. So when I have a thread that now runs after erase has been called -- and since it was given the shared pointer now instead of a reference to the Chunk -- the Chunk object is still around and the thread successfully completes. It of course throws away all the work we did since the shared pointer no longer is referenced anywhere so the Chunk instance is deleted, but that's totally okay for now.
-
-# 13 - Cross-Chunk Structure Generation and More Scripting
-
-I've been thinking about how to solve the issue of world gen on continuous structures across chunk boundaries, and that's led me to wanting to figure out more about mruby.
-
-[How to write mruby bindings for objects with relations](https://gist.github.com/archSeer/6157161) is a great mruby example. Shows how to use mrb\_data\_type, Data\_Wrap\_Struct, and some other friends in order to define an mruby class which creates instances of C++ classes when the mruby class itself is initialized. This seems like a very possible solution to a problem I have now, where I'm trying to figure out how to share data between mruby and C++. But it's not yet an entire solution..
-
-Something interesting about this example is that in the deallocate methods, for Tone it uses `std::shared_ptr<Tone>*` and for Sprite it uses `Sprite*`.
-
-With templates it's probably possible to write some sort of mrb\_attr\_accessor which would be like the moon\_mrb\_sprite\_tone\_getter/setting functions.
-
-Hmm, Data\_Get\_Struct is a thing.. I could construct my Chunk objects in Ruby (backed by a C++ class), get a shared\_ptr to them, put _that_ in my chunks map.. I could do these things. Idk if I want to, but at this point I'm really just trying to understand what all this mruby stuff is; the application will come later.
-
-Also, the fact that we're looking at a relationship here is cool and useful, but I think this trick could be applied to regular types too? Like an int or a string you wanted to keep in sync between ruby and c++ because the object is used in both ruby and c++ code... hmm
-
-What the heck is `mrbc_context_new`? Appears to be used with mrb\_load\_file\_cxt which is used to load and execute ruby code. Ah, it's used to load mruby from a file. There's a couple of lines it needs to do that and this is one of them.
-
-Finally looking at the ruby. It's interesting that Sprite is _also_ defined here in ruby even though moon\_mrb\_sprite\_init defines the class too. I wonder if you even need that class def in ruby. Or if it's there for documentation? Seems risky if it gets out of sync (so don't do that I guess).
-
-I should compile and run this example to see the output and make sure I understand it.
-
-After all of that, I'm not even sure if this is close to what I want. I don't think I really want to _define_ the chunks in ruby. I want to keep the definition in c++ like it is, AH, but what I do _need_ to do is define my ChunkFoobarer in C++ not ruby! And define all the methods in C++. Which sucks, because writing ruby in c is annoying, but it's fine. The minimum I need to write is likely the code to define the class and the initializer method, then I can keep my `call` definition in ruby I THINK. But this would be the ideal world. I'd probably also have to somehow define a Chunk in ruby such that it can link up to the chunk I pass in. Yup, okay so I also need a Chunk class defined in the Ruby VM from C++ land. This is exactly where I need this mrb\_data\_type stuff and all this pointer-y thingies.
-
-Now that I know the next step, I can sleep and pick this up tomorrow. Definining Chunk and ChunkFoobarer in part in C++ so I can use them in Ruby. Gotta keep ChunkFoobarer "in sync" like the Sprite class I think. And Chunk is like the examples Tone model. In the example, Sprite has\_one Tone. In my code, ChunkFoobarer has\_many Chunks.
