@@ -7,3 +7,4 @@ tmp
 *perf.data*
 vendor_src
 env.sh
+vcpkg
