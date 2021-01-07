@@ -1,14 +1,4 @@
 #**********************************************************************
-# Pre-Task Commands
-#
-# Use a dummy variable to run a shell command.
-# This happens when the Makefile is read.
-# i.e. before any make command is run.
-#**********************************************************************
-_create_objects_dir_dummy := $(shell mkdir -p build/objects)
-_create_test_dir_dummy := $(shell mkdir -p build/test)
-
-#**********************************************************************
 # Variables
 #**********************************************************************
 SRC := src/*.cpp src/**/*.cpp
@@ -19,13 +9,28 @@ CPP_SOURCES := $(wildcard ./third_party_src/*.cpp)
 C_OBJECTS := $(patsubst ./third_party_src/%.c, ./build/objects/%.o, $(C_SOURCES))
 CPP_OBJECTS := $(patsubst ./third_party_src/%.cpp, ./build/objects/%.o, $(CPP_SOURCES))
 OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS)
-ARCHIVES := ./vendor/libnoise.a ./vendor/libmruby.a
 
-MUTINY_PREREQS := src/* src/**/* $(OBJECTS) $(ARCHIVES)
-
-CPPFLAGS := -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
+CPPFLAGS = -std=c++17 -pthread -pedantic-errors -Wall -Weffc++ -Wextra -Wsign-conversion -isystem ./include
 LDLIBS := -lglfw -ldl -lstdc++fs
-SHARED_OPTIONS := $(CPPFLAGS) $(SRC) $(OBJECTS) $(ARCHIVES) $(LDLIBS)
+
+# vendor
+VENDOR_DIR := vendor
+
+# libnoise
+LIBNOISE_ARCHIVE_PATH := $(VENDOR_DIR)/libnoise/build/src/libnoise.a
+ARCHIVES += $(LIBNOISE_ARCHIVE_PATH)
+LIBNOISE_HEADERS_PATH := $(VENDOR_DIR)/libnoise/src
+CPPFLAGS += -isystem $(LIBNOISE_HEADERS_PATH)
+
+# mruby
+MRUBY_VERSION := 2.1.1
+MRUBY_ARCHIVE_PATH := $(VENDOR_DIR)/mruby-$(MRUBY_VERSION)/build/host/lib/libmruby.a
+ARCHIVES += $(MRUBY_ARCHIVE_PATH)
+MRUBY_HEADERS_PATH := $(VENDOR_DIR)/mruby-$(MRUBY_VERSION)/include
+CPPFLAGS += -isystem $(MRUBY_HEADERS_PATH)
+
+MUTINY_PREREQS = src/* src/**/* $(OBJECTS) $(ARCHIVES)
+SHARED_OPTIONS = $(CPPFLAGS) $(SRC) $(OBJECTS) $(ARCHIVES) $(LDLIBS)
 PRODUCTION_OPTIONS := -O3
 DEBUG_OPTIONS := -g3 -O0
 
@@ -35,13 +40,14 @@ DEBUG_OPTIONS := -g3 -O0
 all: mutiny debug
 
 clean:
-	rm -rf build vendor/*.a
+	rm -rf build
 
 
 mutiny: ./build/mutiny
 	@echo ./build/mutiny
 
 ./build/mutiny: $(MUTINY_PREREQS)
+	echo $(ARCHIVES)
 	g++ $(PRODUCTION_OPTIONS) $(SHARED_OPTIONS) -o ./build/mutiny
 
 debug: ./build/debug
@@ -54,38 +60,61 @@ debug: ./build/debug
 objects: $(OBJECTS)
 	@echo $(OBJECTS)
 
-./build/objects/%.o: ./third_party_src/%.c
+./build/objects/%.o: ./third_party_src/%.c | build/objects
 	g++ -isystem ./include -c $< -o $@
 
-./build/objects/%.o: ./third_party_src/%.cpp
+./build/objects/%.o: ./third_party_src/%.cpp | build/objects
 	g++ -isystem ./include -isystem ./include/imgui -c $< -o $@
 
+build/objects: | build
+	mkdir -p $@
+
+build:
+	mkdir -p $@
 
 archives: $(ARCHIVES)
 	@echo $(ARCHIVES)
 
 #**********************************************************************
-# Archives
+# Vendor
 #**********************************************************************
-./vendor_src/mruby-2.1.1.zip:
-	wget -O ./vendor_src/mruby-2.1.1.zip https://github.com/mruby/mruby/archive/2.1.1.zip
 
-./vendor_src/mruby-2.1.1: ./vendor_src/mruby-2.1.1.zip
-	unzip ./vendor_src/mruby-2.1.1.zip -d ./vendor_src/
-	rm ./vendor_src/mruby-2.1.1/build_config.rb
-	cd ./vendor_src/mruby-2.1.1 && ln -s ../../mruby_build_config.rb build_config.rb
+vendor_clean:
+	rm -rf $(VENDOR_DIR)
 
-./vendor/libmruby.a: ./mruby_build_config.rb
-	cd ./vendor_src/mruby-2.1.1 && rake
-	cp vendor_src/mruby-2.1.1/build/host/lib/libmruby.a vendor/libmruby.a
+$(VENDOR_DIR):
+	mkdir -p $@
 
+#**********************************
+# libnoise
+#**********************************
+libnoise.a: $(LIBNOISE_ARCHIVE_PATH)
 
-./vendor_src/libnoise:
-	cd ./vendor_src && git clone git@github.com:qknight/libnoise.git
+.PHONY: libnoise.a
 
-./vendor/libnoise.a:
-	cd ./vendor_src/libnoise && mkdir -p build && cd build && cmake .. && make
-	cp vendor_src/libnoise/build/src/libnoise.a vendor/libnoise.a
+$(LIBNOISE_ARCHIVE_PATH): | $(VENDOR_DIR)/libnoise
+	cd $(VENDOR_DIR)/libnoise && mkdir -p build && cd build && cmake .. && make
+
+$(VENDOR_DIR)/libnoise: | $(VENDOR_DIR)
+	cd $(VENDOR_DIR) && git clone git@github.com:qknight/libnoise.git
+
+#**********************************
+# mruby
+#**********************************
+libmruby.a: $(MRUBY_ARCHIVE_PATH)
+
+.PHONY: libmruby.a
+
+$(MRUBY_ARCHIVE_PATH): mruby_build_config.rb | $(VENDOR_DIR)/mruby-$(MRUBY_VERSION)
+	cd $(VENDOR_DIR)/mruby-$(MRUBY_VERSION) && rake
+
+$(VENDOR_DIR)/mruby-$(MRUBY_VERSION): $(VENDOR_DIR)/mruby-$(MRUBY_VERSION).zip
+	unzip $< -d $(VENDOR_DIR)/
+	rm $(VENDOR_DIR)/mruby-$(MRUBY_VERSION)/build_config.rb
+	cd $(VENDOR_DIR)/mruby-$(MRUBY_VERSION) && ln -s ../../mruby_build_config.rb build_config.rb
+
+$(VENDOR_DIR)/mruby-$(MRUBY_VERSION).zip: | $(VENDOR_DIR)
+	wget -O $@ https://github.com/mruby/mruby/archive/$(MRUBY_VERSION).zip
 
 #**********************************************************************
 # Testing
@@ -106,8 +135,11 @@ endef
 
 $(foreach test_name, $(TEST_NAMES), $(eval $(call test_template,$(test_name))))
 
-./build/test/%: ./test/%.cpp $(MUTINY_PREREQS)
+build/test/%: test/%.cpp $(MUTINY_PREREQS) | build/test
 	g++ -g3 $(CPPFLAGS) -I $(ASDF) $< $(OBJECTS) $(ARCHIVES) $(LDLIBS) -o $@
+
+build/test:
+	mkdir -p $@
 
 watch_tests:
 	find test -type f | entr -scr "make test"

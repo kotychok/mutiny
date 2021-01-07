@@ -8,3 +8,4 @@ tmp
 vendor_src
 env.sh
 vcpkg
+vendor
