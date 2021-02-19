@@ -1,6 +1,14 @@
-# Creating a Voxel Engine from Scratch
+# Creating a Voxel Renderer from Scratch
 
-I wanted to document my progress in creating a voxel engine, so I've been doing that. It often helps me think to write about what I'm doing while I do it, more or less rubber duck debugging. I'm not really sure who it's written for besides myself, but ¯\\_(ツ)\_/¯ here it is. Each section has a Github link to the corresponding code. It's a diff between the code I started at (what was at the end of the last section) to what it is at the end of the given section. It's been a pretty interesting project. I really wasn't sure where to start, so after finding out what I could, I just started doing one thing after another based off of what made sense at the time. I'm more or less new to graphics programming in general, but a few basics can do quite a bit.
+Update Feb 2021: I'm declaring this project done :) I realized I wanted to start working on some related, but slightly different things, and I thought it made more sense to me to start a new project. I'm really happy with having ended this project by adding in mruby scripting, and I expect this to be a nice reference for myself in the future.
+
+---
+
+I wanted to document my progress in creating a voxel renderer, so I've been doing that. It often helps me think to write about what I'm doing while I do it, more or less rubber duck debugging. Sometimes I want to jot down some code or links for reference later. Some of the parts I rewrote like I'm writing a tutorial ¯\\_(ツ)\_/¯. I'm not really sure who it's written for besides myself, but here it is.
+
+Each section has a Github link to the corresponding code. It's a diff between the code I started at (what was at the end of the last section) to what it is at the end of the given section.
+
+It's been a pretty interesting project. I really wasn't sure where to start, so after finding out what I could, I just started doing one thing after another based off of what made sense at the time. When I first started, I was more or less new to graphics programming in general, but as it turns out a few basics can do quite a bit.
 
 - [0 - Bootstrap the project](#0---bootstrap-the-project)
 - [1 - Chunks](#1---chunks)
@@ -29,7 +37,7 @@ To get to this point, I used [learnopengl.com](https://learnopengl.com/). It'll 
 
 You should be able to render something like this after finishing the basic tutorial:
 
-[![dirt_plane.png](creating-a-voxel-engine-from-scratch/dirt_plane.png)](creating-a-voxel-engine-from-scratch/dirt_plane.png)
+[![dirt_plane.png](creating-a-voxel-renderer-from-scratch/dirt_plane.png)](creating-a-voxel-renderer-from-scratch/dirt_plane.png)
 
 # 1 - Chunks
 
@@ -76,7 +84,7 @@ For now, an array of 1s and 0s should be sufficient. If there is a 1, draw a blo
 
 I wrote up some temporary code to make each chunk filled with half a sphere, and this is the result. You should be able to get something similar now:
 
-[![chunks.png](creating-a-voxel-engine-from-scratch/screenshot_13.png)](creating-a-voxel-engine-from-scratch/screenshot_13.png)
+[![chunks.png](creating-a-voxel-renderer-from-scratch/screenshot_13.png)](creating-a-voxel-renderer-from-scratch/screenshot_13.png)
 
 # 2 - Chunk loading and unloading
 
@@ -108,7 +116,7 @@ I ran into quite a few issues with memory management. I ended up adding lots of 
 
 Anyways, after figuring out the memory issues -- by the way, I also disabled the copy and move constructors as well as the copy and move assignment operators, which should hopefully make it harder to make mistakes since the compiler will check me -- anyways, after doing that I was able to implement the loading and unloading logic without too many issues.
 
-[![chunk-loading-unloading.gif](creating-a-voxel-engine-from-scratch/chunk-loading-unloading.gif)](creating-a-voxel-engine-from-scratch/chunk-loading-unloading.gif)
+[![chunk-loading-unloading.gif](creating-a-voxel-renderer-from-scratch/chunk-loading-unloading.gif)](creating-a-voxel-renderer-from-scratch/chunk-loading-unloading.gif)
 
 # 3 - Meshing
 
@@ -155,9 +163,9 @@ Having done that, there are some other improvements we can start thinking about,
 - More stuff [here](https://old.reddit.com/r/VoxelGameDev/comments/cj3kwi/heres_an_article_explaining_in_detail_how_i/evd70sh/)
 - Also, right now we store both `quads` and `quadMeshes`. This probably uses about 33% more memory than it needs to. We can discard the quads entirely after created the `quadMeshes`, or better yet, just create the `quadMesh` directly from the quad vertices directly in the meshing algorithm. I'm going to save this very easy optimization for later once we have proper profiling and can more easily see the benefits to our optimizations.
 
-[![mesh_plane.png](creating-a-voxel-engine-from-scratch/mesh_plane.png)](creating-a-voxel-engine-from-scratch/mesh_plane.png)
+[![mesh_plane.png](creating-a-voxel-renderer-from-scratch/mesh_plane.png)](creating-a-voxel-renderer-from-scratch/mesh_plane.png)
 
-[![mesh_half_sphere.png](creating-a-voxel-engine-from-scratch/mesh_half_sphere.png)](creating-a-voxel-engine-from-scratch/mesh_half_sphere.png)
+[![mesh_half_sphere.png](creating-a-voxel-renderer-from-scratch/mesh_half_sphere.png)](creating-a-voxel-renderer-from-scratch/mesh_half_sphere.png)
 
 # 4 - GUI
 
@@ -169,7 +177,7 @@ Take a look at the commits if you want, it's nothing terribly surprising.
 
 One thing I didn't add right now, but think I will in the future is a command menu. I would like to be able to hit /, open up a text input to type a command (e.g. /wires, /axes, etc). This would be more convenient than having to use the mouse. Maybe I'll look into it when I get tired of clicking all the time.
 
-[![gui.png](creating-a-voxel-engine-from-scratch/gui.png)](creating-a-voxel-engine-from-scratch/gui.png)
+[![gui.png](creating-a-voxel-renderer-from-scratch/gui.png)](creating-a-voxel-renderer-from-scratch/gui.png)
 
 # 5 - Multiple block types
 
@@ -190,7 +198,7 @@ The other minor changes are much more obvious. The fact that the height and widt
 
 Something exciting about this change is that we now have face/directional information which I believe can be used to further optimize the culling. I'm not quite sure how this would work, but it's something to consider later on if we need to start working on performance optimizations.
 
-[![multiple-block-types.gif](creating-a-voxel-engine-from-scratch/multiple-block-types.gif)](creating-a-voxel-engine-from-scratch/multiple-block-types.gif)
+[![multiple-block-types.gif](creating-a-voxel-renderer-from-scratch/multiple-block-types.gif)](creating-a-voxel-renderer-from-scratch/multiple-block-types.gif)
 
 # 5a - Chunk render optimization
 
@@ -214,7 +222,7 @@ Another tiny gotcha is that `GetNoise` will return values in between -1 and 1. T
 
 Last note: it's pretty hard to discern the terrain since everything is evenly lit. I think I'll look into lighting somewhat soon in order to improve this.
 
-[![procgen.png](creating-a-voxel-engine-from-scratch/procgen.png)](creating-a-voxel-engine-from-scratch/procgen.png)
+[![procgen.png](creating-a-voxel-renderer-from-scratch/procgen.png)](creating-a-voxel-renderer-from-scratch/procgen.png)
 
 # 7 - Lighting
 
@@ -222,7 +230,7 @@ Last note: it's pretty hard to discern the terrain since everything is evenly li
 
 I followed the [LearnOpenGL tutorials](https://learnopengl.com/Lighting/Colors). It was very straightforward. I ended up implementing ambient, diffuse and specular lighting for directional and point lights. I'll probably add in spotlights at some point in the maybe near future, but didn't feel a big need to right now. I don't have anything to add to what the tutorial offered.
 
-[![diffuse.png](creating-a-voxel-engine-from-scratch/diffuse.png)](creating-a-voxel-engine-from-scratch/diffuse.png)[![attenuation.png](creating-a-voxel-engine-from-scratch/attenuation.png)](creating-a-voxel-engine-from-scratch/attenuation.png)[![directional_and_point_lights.png](creating-a-voxel-engine-from-scratch/directional_and_point_lights.png)](creating-a-voxel-engine-from-scratch/directional_and_point_lights.png)
+[![diffuse.png](creating-a-voxel-renderer-from-scratch/diffuse.png)](creating-a-voxel-renderer-from-scratch/diffuse.png)[![attenuation.png](creating-a-voxel-renderer-from-scratch/attenuation.png)](creating-a-voxel-renderer-from-scratch/attenuation.png)[![directional_and_point_lights.png](creating-a-voxel-renderer-from-scratch/directional_and_point_lights.png)](creating-a-voxel-renderer-from-scratch/directional_and_point_lights.png)
 
 # 8 - Shadows
 
@@ -240,7 +248,7 @@ To get this done, I added some debugging tools. One of them is rendering the dep
 
 I also added a sharper contrast mode using red and green to indicate shadows and no shadows respectively. This made it far easier to see what was going on since the shadows could blend in with the textures a bit, especially when there was shadow acne.
 
-[![shadows_with_acne.png](creating-a-voxel-engine-from-scratch/shadows_with_acne.png)](creating-a-voxel-engine-from-scratch/shadows_with_acne.png)[![shadows.gif](creating-a-voxel-engine-from-scratch/shadows.gif)](creating-a-voxel-engine-from-scratch/shadows.gif)
+[![shadows_with_acne.png](creating-a-voxel-renderer-from-scratch/shadows_with_acne.png)](creating-a-voxel-renderer-from-scratch/shadows_with_acne.png)[![shadows.gif](creating-a-voxel-renderer-from-scratch/shadows.gif)](creating-a-voxel-renderer-from-scratch/shadows.gif)
 
 # 9 - Day and Night
 
@@ -252,7 +260,7 @@ Anyways, I did a simple interpolation of the sky color to change it from light t
 
 I think what's more interesting is the problem I ran into where as light strength decreases, there is a point at which the ambient value for 2/3 of the faces become the same which effectively makes them indistinguishable which makes the whole scene appear flat and lose that 3d aspect. It's been a little bit now since I've actively thought about this, so I don't really have the entire context in my brain, but my instinct says this has got to be a simple fix for this. I tried a few things but no dice. I think I need to take a step back and think about it to figure it out.
 
-[![day-night-1.gif](creating-a-voxel-engine-from-scratch/day-night-1.gif)](creating-a-voxel-engine-from-scratch/day-night-1.gif)[![day-night-2.gif](creating-a-voxel-engine-from-scratch/day-night-2.gif)](creating-a-voxel-engine-from-scratch/day-night-2.gif)
+[![day-night-1.gif](creating-a-voxel-renderer-from-scratch/day-night-1.gif)](creating-a-voxel-renderer-from-scratch/day-night-1.gif)[![day-night-2.gif](creating-a-voxel-renderer-from-scratch/day-night-2.gif)](creating-a-voxel-renderer-from-scratch/day-night-2.gif)
 
 # 10 - Async Chunk Loading
 
@@ -287,11 +295,11 @@ _These gifs are garbage but I think it's still possible to tell the difference. 
 
 Before:
 
-[![boundary-lag.gif](creating-a-voxel-engine-from-scratch/boundary-lag.gif)](creating-a-voxel-engine-from-scratch/boundary-lag.gif)
+[![boundary-lag.gif](creating-a-voxel-renderer-from-scratch/boundary-lag.gif)](creating-a-voxel-renderer-from-scratch/boundary-lag.gif)
 
 After:
 
-[![boundary-lag-fixed.gif](creating-a-voxel-engine-from-scratch/boundary-lag-fixed.gif)](creating-a-voxel-engine-from-scratch/boundary-lag-fixed.gif)
+[![boundary-lag-fixed.gif](creating-a-voxel-renderer-from-scratch/boundary-lag-fixed.gif)](creating-a-voxel-renderer-from-scratch/boundary-lag-fixed.gif)
 
 # 10a - Camera jump bug
 
@@ -311,7 +319,7 @@ Of course, I did make it more complicated for myself which may or may not have b
 
 I also got sloppy with git and so my rename refactoring is just in the same commit where I load the block data from file which is in the same commit I add in multiple texture support. It is what it is, and I eventually got it working (with way more effort than if I had proceeded more mindfully).
 
-[![multitexture_blocks.png](creating-a-voxel-engine-from-scratch/multitexture_blocks.png)](creating-a-voxel-engine-from-scratch/multitexture_blocks.png)
+[![multitexture_blocks.png](creating-a-voxel-renderer-from-scratch/multitexture_blocks.png)](creating-a-voxel-renderer-from-scratch/multitexture_blocks.png)
 
 # 12 - Scripting
 
@@ -588,7 +596,7 @@ Oh yeah, segfault issues are starting to get worse, kinda unusable since moving 
 
 Some screenshots of new worldgen:
 
-[![scripted_worldgen.png](creating-a-voxel-engine-from-scratch/scripted_worldgen.png)](creating-a-voxel-engine-from-scratch/scripted_worldgen.png)
+[![scripted_worldgen.png](creating-a-voxel-renderer-from-scratch/scripted_worldgen.png)](creating-a-voxel-renderer-from-scratch/scripted_worldgen.png)
 
 # 12a - Fix the segfaults
 

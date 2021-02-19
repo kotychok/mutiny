@@ -179,6 +179,6 @@ watch:
 	find src scripts -type f | entr -scr "make mutiny && ./build/mutiny"
 
 README.md:
-	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=README.md --output_dir=creating-a-voxel-engine-from-scratch chapter hot-creating-a-voxel-engine-from-scratch
+	$(ENV) && $(BOOKSTACK_CLI_CMD) export --output_file=README.md --output_dir=creating-a-voxel-renderer-from-scratch chapter hot-creating-a-voxel-renderer-from-scratch
 
 .PHONY: watch README.md
